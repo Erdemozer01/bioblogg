@@ -1,0 +1,60 @@
+{% extends "blog/layouts/base-fullscreen.html" %}
+{% load django_bootstrap5 %}
+{% block title %} Kayıt Ol {% endblock %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}{% endblock %}
+
+{% block content %}
+
+    <!-- Section -->
+    <section class="min-vh-100 d-flex bg-primary align-items-center">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-12 col-md-8 col-lg-6 justify-content-center">
+                    <div class="card bg-primary shadow-soft border-light p-4">
+                        <div class="card-header text-center pb-0">
+                            <h2 class="mb-0 h5">Üye Ol</h2>
+                        </div>
+                        <div class="card-body">
+                            {% if messages %}
+                                <ul class="messages">
+                                    {% for message in messages %}
+                                        <li{% if message.tags %}
+                                            class="{{ message.tags }}"{% endif %}>
+                                            {{ message }}. Giriş Yapmak için <a href="{% url "login" %}">tıklayınız</a>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                            <form method="post">
+                                {% csrf_token %}
+                                <!-- Form -->
+                                <div class="form-group">
+                                    {% bootstrap_form form %}
+                                </div>
+                                <button type="submit" class="btn btn-block btn-primary">Üye Ol</button>
+                                <a href="{% url "blog:anasayfa" %}">
+                                    <button class="btn btn-block btn-primary mt-3">Vazgeç</button>
+                                </a>
+
+                            </form>
+
+                            <div class="d-block d-sm-flex justify-content-center align-items-center mt-4">
+                                <span class="font-weight-normal">
+                                    Zaten Üyemisin ?
+                                    <a href="{% url "login" %}" class="font-weight-bold">Giriş Yapın</a>
+                                </span>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}{% endblock javascripts %}

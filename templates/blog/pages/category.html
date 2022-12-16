@@ -1,0 +1,442 @@
+{% extends "blog/layouts/base.html" %}
+{% load static %}
+{% load hitcount_tags %}
+
+{% block title %}
+    {% if "archive" in request.build_absolute_uri %}
+        Blog | Aylık Arşiv ( {{ month }} / {{ year }} )
+
+    {% elif "categories" in request.build_absolute_uri %}
+        Blog | Tüm Kategoriler
+
+    {% elif "category" in request.build_absolute_uri %}
+        Blog | {{ category_name }} Kategorisi
+    {% endif %}
+
+{% endblock %}
+
+
+{% block stylesheets %}
+    <!-- Custom styles for this template -->
+    <link href="https://fonts.googleapis.com/css?family=Playfair&#43;Display:700,900&amp;display=swap" rel="stylesheet">
+    <!-- Custom styles for this template -->
+    <link href="{% static "blog/assets/css/blog.css" %}" rel="stylesheet">
+
+    <script src=
+                    "https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.js">
+    </script>
+
+    <script src=
+                    "https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.js">
+    </script>
+
+    <link href=
+                  "http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/themes/ui-lightness/jquery-ui.css"
+          rel="stylesheet" type="text/css"/>
+
+{% endblock %}
+
+{% block content %}
+    {% if "archive" in request.build_absolute_uri %}
+        <main class="container mt-8">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-12 col-md-8 text-center">
+                        <h1 class="display-2 mb-4 text-underline">Aylık Arşiv ( {{ month }} / {{ year }} )</h1>
+                    </div>
+                </div>
+            </div>
+            <!-- Kartlar -->
+            <div class="row mb-2 mx-auto">
+                {% for object in object_list %}
+                    <!-- Makale Bölümü -->
+                    <div class="col-md-4">
+                        <div class="col-12 mb-4 mb-lg-5">
+
+                            <div class="card bg-primary border-light shadow-soft">
+
+                                <div class="card-header p-3">
+
+                                    <img src="{{ object.cover.url }}" class="card-img-top rounded"
+                                         alt="{{ object.title }}">
+                                </div>
+                                <div class="card-body pt-2">
+                                    <div class="media d-flex align-items-center justify-content-between">
+                                        <div class="post-group">
+                                            <a href="#" data-toggle="tooltip" data-placement="top" title=""
+                                               data-original-title="23k followers">
+                                                <img class="avatar-sm mr-2 img-fluid rounded-circle"
+                                                     src="/static/assets/img/team/profile-picture-2.jpg"
+                                                     alt="{{ object.author }}"> {{ object.author }}
+                                            </a>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                                <span class="small">
+                                                    <span class="far fa-calendar-alt mr-2"></span>
+                                                    {{ object.created }}
+                                                </span>
+                                        </div>
+                                    </div>
+                                    <h3 class="h5 card-title mt-4">{{ object.title }}</h3>
+                                    <p class="card-text">{{ object.text|safe|truncatechars_html:100 }}</p>
+                                    <a href="{% url "blog:post_detail" object.category|slugify object.slug object.pk object.author object.author.pk object.created.date %}"
+                                       class="btn btn-primary btn-sm">Ayrıntılar</a>
+                                    {% if object.author.username == request.user.username %}
+                                        <div class="btn-group float-right">
+                                            <button class="btn btn-link border-0 dropdown-toggle dropdown-toggle-split m-0 p-0"
+                                                    data-toggle="dropdown" aria-haspopup="true"
+                                                    aria-expanded="false">
+                                    <span class="icon icon-sm">
+                                        <span class="fas fa-ellipsis-h icon-secondary"></span>
+                                    </span>
+                                                <span class="sr-only">Toggle Dropdown</span>
+                                            </button>
+                                            <div class="dropdown-menu">
+                                                <a class="dropdown-item"
+                                                   href="{% url "blog:post_update" object.pk object.title %}">
+                                                    <span class="fas fa-edit mr-2"></span>
+                                                    Güncelle
+                                                </a>
+                                                <a class="dropdown-item text-danger"
+                                                   href="{% url "blog:post_delete" object.pk %}"><span
+                                                        class="fa fa-trash mr-2"
+                                                        aria-hidden="true"></span>
+                                                    Gönderiyi Sil
+                                                </a>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            <!-- Paginator  -->
+            <div class="col-md-6">
+                <div class="mt-4">
+                    <nav aria-label="Blog page navigation">
+                        <ul class="pagination">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" aria-label="first link"
+                                       href="?page={{ page_obj.previous_page_number }}">
+                                        <span class="fas fa-angle-double-left"></span>
+                                    </a>
+                                </li>
+                            {% endif %}
+                            {% for i in page_obj.paginator.page_range %}
+                                {% if page_obj.number == i %}
+                                    <li class="page-item active">
+                                        <a class="page-link" href="#">{{ i }}</a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ i }}">{{ i }}</a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" aria-label="first link"
+                                       href="?page={{ page_obj.next_page_number }}">
+                                        <span class="fas fa-angle-double-right"></span>
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </main>
+
+    {% elif "categories" in request.build_absolute_uri %}
+        <main class="container mt-8">
+            <!-- Mesajlar -->
+            <div class="container">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-success alert-dismissible shadow-soft fade show" role="alert">
+
+                            <span class="alert-inner--icon">
+                                <span class="far fa-thumbs-up"></span>
+                            </span>
+
+                            <span class="alert-inner--text"><strong>Tebrikler!</strong>  {{ message }} </span>
+
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                <div class="row justify-content-center">
+                    <div class="col-6 col-md-4 text-center">
+                        <h1 class="display-3 mb-4 text-underline">Tüm Kategoriler</h1>
+                    </div>
+                </div>
+            </div>
+
+            <form method="get">
+                <div class="form-group col-6 mx-auto">
+                    <div class="input-group mb-6">
+                        <div class="input-group-prepend">
+                                <span class="input-group-text">
+                                    <span class="fas fa-search"></span>
+                                </span>
+                        </div>
+
+                        <input class="form-control" id="tags" placeholder="Kategori adı"
+                               type="text" name="search" value="{{ request.GET.search }}">
+
+                        <script>
+                            $(function () {
+                                var availableTags = [
+                                    {% for category in category_list %}
+                                        "{{ category.title }}",
+                                    {% endfor %}
+                                ];
+                                $("#tags").autocomplete({
+                                    source: availableTags
+                                });
+                            });
+                        </script>
+
+                    </div>
+                </div>
+            </form>
+
+            {% if category_list %}
+
+                <!-- Kartlar -->
+                <div class="row mb-2 mx-auto">
+                    {% for category in category_list %}
+                        <div class="col-12 col-md-6 col-lg-4 mb-5">
+                            <a class="card border-light shadow-soft animate-up-5"
+                               href="{% url "blog:category" category.slug %}">
+                                <img src="{{ category.image.url }}"
+                                     class="card-img-top rounded-top" alt="{{ category.title }}">
+                                <div class="card-body">
+                                    <h3 class="h5 card-title mt-3">{{ category.title }} Kategorisi</h3>
+                                    <p class="card-text">{{ category.explain }}</p>
+                                </div>
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Paginator  -->
+                <div class="col-md-6 container-fluid">
+                    <div class="mt-4">
+                        <nav aria-label="Blog page navigation">
+                            <ul class="pagination">
+
+                                {% if page_obj.has_previous %}
+
+                                    <li class="page-item">
+                                        <a class="page-link" aria-label="ilk sayfa" title="ilk sayfa"
+                                           href="?page=1">
+                                            <span class="fas fa-angle-double-left"></span>
+                                        </a>
+                                    </li>
+
+                                    <li class="page-item">
+                                        <a class="page-link rounded" aria-label="önceki sayfa" title="önceki sayfa"
+                                           href="?page={{ page_obj.previous_page_number }}">
+                                            <span class="fas fa-angle-left"></span>
+                                        </a>
+                                    </li>
+
+                                {% endif %}
+
+                                {% for number in page_obj.paginator.page_range %}
+                                    {% if page_obj.number == number %}
+                                        <li class="page-item active">
+                                            <a class="page-link" href="#">{{ number }}</a>
+                                        </li>
+                                    {% else %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ number }}">{{ number }}</a>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+
+                                {% if page_obj.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link rounded" aria-label="first link" title="sonraki sayfa"
+                                           href="?page={{ page_obj.next_page_number }}">
+                                            <span class="fas fa-angle-right"></span>
+                                        </a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" aria-label="first link" title="son sayfa"
+                                           href="?page={{ page_obj.paginator.num_pages }}">
+                                            <span class="fas fa-angle-double-right"></span>
+                                        </a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item">
+                                        <a class="page-link" aria-label="first link" href="#">
+                                            <span class="fas fa-angle-double-right"></span>
+                                        </a>
+                                    </li>
+                                {% endif %}
+
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            {% else %}
+                <div class="row justify-content-center">
+                    <div class="col-6 col-md-4 text-center">
+                        <h4 class=" mb-4"> Kategori Bulunamadı :( </h4>
+                    </div>
+                </div>
+            {% endif %}
+        </main>
+
+    {% elif "category" in request.build_absolute_uri %}
+        <main class="container mt-8">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-12 col-md-8 text-center">
+                        <h1 class="font-weight-bolder mb-3">{{ category_name }} Kategorisi
+                            {% if request.user.is_superuser or request.user.is_staff %}
+                                <span class="ml-2">
+                                    <div class="btn-group">
+                                        <button class="btn btn-link border-0 dropdown-toggle dropdown-toggle-split m-0 p-0"
+                                                data-toggle="dropdown" aria-haspopup="true"
+                                                aria-expanded="false">
+                                                <span class="icon icon-sm">
+                                                    <span class="fas fa-ellipsis-h icon-secondary"></span>
+                                                </span>
+                                            <span class="sr-only">Toggle Dropdown</span>
+                                        </button>
+                                        <div class="dropdown-menu">
+                                            <a class="dropdown-item"
+                                               href="{% url "blog:category_update" category_name.pk category_name.title %}">
+                                                <span class="fas fa-edit mr-2"></span>
+                                                Güncelle
+                                            </a>
+                                            <a class="dropdown-item"
+                                               href="{% url "blog:category_delete" category_name.pk %}">
+                                                <span class="fas fa-trash-alt mr-2"></span>
+                                                Sil
+                                            </a>
+                                        </div>
+                                    </div>
+                                </span>
+                            {% endif %}
+                        </h1>
+                        <p class="mb-5">{{ category_name.explain }}</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Kartlar -->
+            <div class="row mb-2 mx-auto">
+                {% for object in category_post %}
+                    <!-- Makale Bölümü -->
+                    <div class="col-md-4">
+                        <div class="col-12 mb-4 mb-lg-5">
+
+                            <div class="card bg-primary border-light shadow-soft">
+
+                                <div class="card-header p-3">
+
+                                    <img src="{{ object.cover.url }}" class="card-img-top rounded"
+                                         alt="{{ object.title }}">
+                                </div>
+                                <div class="card-body pt-2">
+                                    <div class="media d-flex align-items-center justify-content-between">
+                                        <div class="post-group">
+                                            <a href="#" data-toggle="tooltip" data-placement="top" title=""
+                                               data-original-title="23k followers">
+                                                <img class="avatar-sm mr-2 img-fluid rounded-circle"
+                                                     src="/static/assets/img/team/profile-picture-2.jpg"
+                                                     alt="{{ object.author }}"> {{ object.author }}
+                                            </a>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <span class="small"><span
+                                                    class="far fa-calendar-alt mr-2"></span>{{ object.created }}</span>
+                                        </div>
+                                    </div>
+                                    <h3 class="h5 card-title mt-4">{{ object.title }}</h3>
+                                    <p class="card-text">{{ object.text|safe|truncatechars_html:100 }}</p>
+                                    <a href="{% url "blog:post_detail" object.category|slugify object.slug object.pk object.author object.author.pk object.created.date %}"
+                                       class="btn btn-primary btn-sm">Ayrıntılar</a>
+                                    {% if object.author.username == request.user.username %}
+                                        <div class="btn-group float-right">
+                                            <button class="btn btn-link border-0 dropdown-toggle dropdown-toggle-split m-0 p-0"
+                                                    data-toggle="dropdown" aria-haspopup="true"
+                                                    aria-expanded="false">
+                                    <span class="icon icon-sm">
+                                        <span class="fas fa-ellipsis-h icon-secondary"></span>
+                                    </span>
+                                                <span class="sr-only">Toggle Dropdown</span>
+                                            </button>
+                                            <div class="dropdown-menu">
+                                                <a class="dropdown-item"
+                                                   href="{% url "blog:post_update" object.pk object.title %}">
+                                                    <span class="fas fa-edit mr-2"></span>
+                                                    Güncelle
+                                                </a>
+                                                <a class="dropdown-item text-danger"
+                                                   href="{% url "blog:post_delete" object.pk %}"><span
+                                                        class="fa fa-trash mr-2"
+                                                        aria-hidden="true"></span>
+                                                    Gönderiyi Sil
+                                                </a>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            <!-- Paginator  -->
+            <div class="col-md-6">
+                <div class="mt-4">
+                    <nav aria-label="Blog page navigation">
+                        <ul class="pagination">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" aria-label="first link"
+                                       href="?page={{ page_obj.previous_page_number }}">
+                                        <span class="fas fa-angle-double-left"></span>
+                                    </a>
+                                </li>
+                            {% endif %}
+                            {% for i in page_obj.paginator.page_range %}
+                                {% if page_obj.number == i %}
+                                    <li class="page-item active">
+                                        <a class="page-link" href="#">{{ i }}</a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ i }}">{{ i }}</a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" aria-label="first link"
+                                       href="?page={{ page_obj.next_page_number }}">
+                                        <span class="fas fa-angle-double-right"></span>
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </main>
+    {% endif %}
+{% endblock %}
+

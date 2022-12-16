@@ -1,0 +1,47 @@
+# byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+bioinformatic/files/*
+
+bioinformatic/apps/clustal-omega-1.2.2-win64
+bioinformatic/apps/clustalw2.exe
+bioinformatic/apps/muscle3.8.425_win32.exe
+bioinformatic/apps/paml4.9j/*
+
+bioinformatic/views/trees.py
+
+.idea
+idea
+# tests and coverage
+*.pytest_cache
+.coverage
+
+# database & logs
+*.db
+*.sqlite3
+*.log
+
+# venv
+env
+venv
+
+# other
+.DS_Store
+
+# javascript
+package-lock.json
+
+staticfiles/*
+!staticfiles/.gitkeep 
+.vscode/symbols.json
+
+static/assets/node_modules
+static/assets/yarn.lock
+static/assets/.temp
+
+try.py
+
+
+media/*
+

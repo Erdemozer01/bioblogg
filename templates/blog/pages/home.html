@@ -1,0 +1,536 @@
+{% extends "blog/layouts/base.html" %}
+{% load static %}
+{% load hitcount_tags %}
+{% block title %} Blog | Anasayfa {% endblock %}
+
+{% block stylesheets %}
+    <!-- Custom styles for this template -->
+    <link href="https://fonts.googleapis.com/css?family=Playfair&#43;Display:700,900&amp;display=swap" rel="stylesheet">
+    <!-- Custom styles for this template -->
+    <link href="{% static "blog/assets/css/blog.css" %}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+    {% if object_list %}
+
+        <main class="container mt-7">
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-success alert-dismissible shadow-soft fade show" role="alert">
+
+                        <span class="alert-inner--icon">
+                            <span class="far fa-thumbs-up"></span>
+                        </span>
+
+                        <span class="alert-inner--text"><strong>Tebrikler!</strong>  {{ message }} </span>
+
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+
+                    </div>
+                {% endfor %}
+            {% endif %}
+            <!-- Manset -->
+            <div class="col-12 col-lg-12 mb-3">
+                <div class="card bg-primary shadow-soft border-light">
+                    <div class="card-body p-5">
+                        <h2 class="card-title mb-3 font-italic">Manşet</h2>
+                        <h3 class="h4 card-title mb-3">{{ latest.title }}</h3>
+                        <span class="card-text small">
+                                <span class="far fa-calendar-alt mr-2"></span>{{ latest.created }}</span>
+                        <p class="card-text mt-4">
+                            {{ latest.text|safe }}
+                        </p>
+                        <div class="d-flex align-items-center">
+                            <a href="{% url "blog:post_detail" latest.category.title|slugify latest.slug latest.pk latest.author latest.author.pk latest.created.date %}"
+                               class="btn btn-primary btn-sm mr-3">Ayrıntılar</a>
+                            <a href="#" class="small"><span
+                                    class="far fa-comments mr-2"></span>{{ latest.comment.count }}</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Body -->
+            <div class="row g-5">
+
+                <!-- Makale Bölümü -->
+                <div class="col-md-8">
+                    {% for object in object_list %}
+                        <div class="col-12 mb-4 mb-lg-5">
+                            <div class="card bg-primary border-light shadow-soft">
+                                <div class="card-header p-3">
+                                    <img src="{{ object.cover.url }}" class="card-img-top rounded"
+                                         alt="{{ object.title }}">
+                                </div>
+                                <div class="card-body pt-2">
+                                    <div class="media d-flex align-items-center justify-content-between">
+                                        <div class="post-group">
+                                            <a href="#" data-toggle="tooltip" data-placement="top"
+                                               title="{{ object.author }}"
+                                               data-original-title="23k followers">
+                                                {% if object.author.profile.avatar %}
+                                                    <img class="avatar avatar-sm rounded-circle"
+                                                         src="{{ object.author.profile.avatar.url }}"
+                                                         alt="{{ object.author.username }}">
+                                                {% else %}
+                                                    <button class="btn btn-xs btn-circle btn-icon-only btn-soft dropdown-toggle mr-2"
+                                                            type="button" aria-haspopup="true" aria-expanded="false"
+                                                            aria-label="dropdown social link"><span
+                                                            class="fa fa-user"></span>
+                                                    </button>
+                                                {% endif %}
+                                                {{ object.author }}
+                                            </a>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                    <span class="small"><span
+                                            class="far fa-calendar-alt mr-2"></span>{{ object.created }}</span>
+                                        </div>
+                                    </div>
+                                    <h3 class="h5 card-title mt-4">{{ object.title }}</h3>
+                                    <p class="card-text">
+                                        {{ object.text|safe|truncatechars_html:150 }}
+                                    </p>
+                                    <a href="{% url "blog:post_detail" object.category.title|slugify object.slug object.pk object.author object.author.pk object.created.date %}"
+                                       class="btn btn-primary btn-sm">Ayrıntılar</a>
+                                    {% if object.author.username == request.user.username %}
+                                        <div class="btn-group float-right">
+                                            <button class="btn btn-link border-0 dropdown-toggle dropdown-toggle-split m-0 p-0"
+                                                    data-toggle="dropdown" aria-haspopup="true"
+                                                    aria-expanded="false">
+                                    <span class="icon icon-sm">
+                                        <span class="fas fa-ellipsis-h icon-secondary"></span>
+                                    </span>
+                                                <span class="sr-only">Toggle Dropdown</span>
+                                            </button>
+                                            <div class="dropdown-menu">
+                                                <a class="dropdown-item"
+                                                   href="{% url "blog:post_update" object.pk object.title %}">
+                                                    <span class="fas fa-edit mr-2"></span>
+                                                    Güncelle
+                                                </a>
+                                                <a class="dropdown-item text-danger"
+                                                   href="{% url "blog:post_delete" object.pk %}"><span
+                                                        class="fa fa-trash mr-2"
+                                                        aria-hidden="true"></span>
+                                                    Gönderiyi Sil
+                                                </a>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                    <!-- Pagination -->
+                    <div class="col-md-6">
+                        <div class="mt-5">
+                            <nav aria-label="Blog page navigation">
+                                <ul class="pagination">
+                                    {% if page_obj.has_previous %}
+                                        <li class="page-item">
+                                            <a class="page-link" aria-label="ilk sayfa" title="ilk sayfa"
+                                               href="?page=1">
+                                                <span class="fas fa-angle-double-left"></span>
+                                            </a>
+                                        </li>
+
+                                        <li class="page-item">
+                                            <a class="page-link rounded" aria-label="önceki sayfa"
+                                               title="önceki sayfa"
+                                               href="?page={{ page_obj.previous_page_number }}">
+                                                <span class="fas fa-angle-left"></span>
+                                            </a>
+                                        </li>
+
+                                    {% endif %}
+                                    {% for number in page_obj.paginator.page_range %}
+                                        {% if page_obj.number == number %}
+                                            <li class="page-item active">
+                                                <a class="page-link" href="#">{{ number }}</a>
+                                            </li>
+                                        {% else %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?page={{ number }}">{{ number }}</a>
+                                            </li>
+                                        {% endif %}
+                                    {% endfor %}
+                                    {% if page_obj.has_next %}
+                                        <li class="page-item">
+                                            <a class="page-link rounded" aria-label="first link"
+                                               title="sonraki sayfa"
+                                               href="?page={{ page_obj.next_page_number }}">
+                                                <span class="fas fa-angle-right"></span>
+                                            </a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" aria-label="first link" title="son sayfa"
+                                               href="?page={{ page_obj.paginator.num_pages }}">
+                                                <span class="fas fa-angle-double-right"></span>
+                                            </a>
+                                        </li>
+
+                                    {% else %}
+                                        <li class="page-item">
+                                            <a class="page-link" aria-label="first link"
+                                               href="#">
+                                                <span class="fas fa-angle-double-right"></span>
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kenar -->
+                <div class="col-md-4">
+                    <div class="position-sticky" style="top: 2rem;">
+                        <!-- En çok okunan -->
+                        <div class="p-4">
+                            <h4 class="fst-italic">En çok okunan</h4>
+                            <ol class="list-unstyled mb-0">
+                                {% for post in popular_posts %}
+                                    <li>
+                                        <a href="{% url "blog:post_detail" post.category.title|slugify post.slug post.pk post.author post.author.pk post.created.date %}">{{ post.title }}</a>
+                                    </li>
+                                {% endfor %}
+                            </ol>
+                        </div>
+                        <!-- Arşiv -->
+                        <div class="p-4">
+                            <h4 class="fst-italic">Aylık Arşiv</h4>
+                            <ol class="list-unstyled mb-0">
+                                {% for foo in archive %}
+                                    <li>
+                                        <a href="{% url "archive" foo.year foo.month %}">
+                                            {{ foo|date:'F' }}, {{ foo.year }}</a>
+                                    </li>
+                                {% endfor %}
+                            </ol>
+                        </div>
+                        <!-- Sosyal Medya -->
+                        <div class="p-4">
+                            <h4 class="fst-italic">Paylaş</h4>
+                            <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}">
+                                <button class="btn btn-icon-only btn-pill btn-facebook mr-2" type="button"
+                                        aria-label="facebook button" title="facebookda paylaş">
+                                    <span aria-hidden="true" class="fab fa-facebook"></span>
+                                </button>
+                            </a>
+
+                            <a href="https://twitter.com/intent/tweet?text={{ request.build_absolute_uri }}">
+                                <button class="btn btn-icon-only btn-pill btn-twitter mr-2" type="button"
+                                        aria-label="twitter button" title="twitterda paylaş">
+                                    <span aria-hidden="true" class="fab fa-twitter"></span>
+                                </button>
+                            </a>
+                            <a href="https://api.whatsapp.com/send?text={{ request.build_absolute_uri }}">
+                                <button class="btn btn-icon-only btn-pill btn-instagram text-success mr-2" type="button"
+                                        aria-label="whatsapp button" title="whatsappda paylaş">
+                                    <span aria-hidden="true" class="fab fa-whatsapp"></span>
+                                </button>
+                            </a>
+                            <a href="https://www.linkedin.com/cws/share/?url={{ request.build_absolute_uri }}">
+                                <button class="btn btn-icon-only btn-pill btn-instagram text-info" type="button"
+                                        aria-label="linkedin button" title="linkedinda paylaş">
+                                    <span aria-hidden="true" class="fab fa-linkedin-in"></span>
+                                </button>
+                            </a>
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </main>
+    {% else %}
+        <main class="container mt-8">
+            <!-- Manşet -->
+            <div class="col-lg-12 mb-5">
+                <div class="card bg-primary shadow-soft border-light flex-lg-row align-items-center no-gutters p-4">
+                    <a href="./blog-post.html" class="col-12 col-lg-6">
+                        <img src="/static/assets/img/blog/blog-article-1.jpg"
+                             alt="themesberg office"
+                             class="card-img-top rounded">
+                    </a>
+                    <div class="card-body d-flex flex-column justify-content-between col-auto py-4 p-lg-3 p-xl-5">
+                        <a href="./blog-post.html">
+                            <h2>Designing a dashboard that increases business value</h2>
+                        </a>
+                        <p>Today we are overwhelmed by content, and inspiration can strike
+                            anywhere. The point is to
+                            collect it and share it in a structured way to inspire your
+                            team, client, and users. In
+                            this article, I will show you how to design a dashboard.
+                        </p>
+                        <div class="d-flex align-items-center mt-3">
+                            <img class="avatar avatar-sm rounded-circle"
+                                 src="/static/assets/img/team/profile-picture-1.jpg"
+                                 alt="Richard avatar">
+                            <h3 class="h6 small ml-2 mb-0">Richard Thomas</h3>
+                            <span class="h6 text-muted small font-weight-normal mb-0 ml-auto">
+                                    <time datetime="2019-04-25">21 February, 2019</time>
+                                </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Dikkatinizi Çekecek Yazılar -->
+            <div class="row mb-2 mx-auto">
+                <div class="col-12 col-md-6 col-lg-4 mb-4 mb-lg-5">
+                    <div class="card bg-primary shadow-soft border-light p-4 rounded">
+
+                        <a href="./blog-post.html">
+                            <img src="/static/assets/img/blog/blog-article-1.jpg"
+                                 class="card-img-top rounded" alt="white laptop">
+                        </a>
+
+                        <div class="card-body p-0 pt-4">
+                            <a href="./blog-post.html" class="h4">Apple Details Reveal
+                                Remarkable MacBook</a>
+                            <div class="d-flex align-items-center my-4">
+                                <img class="avatar avatar-sm rounded-circle"
+                                     src="/static/assets/img/team/profile-picture-5.jpg"
+                                     alt="Bonnie avatar">
+                                <h3 class="h6 small ml-2 mb-0">Bonnie Green</h3>
+                            </div>
+
+                            <p class="mb-0">Following the release of the 16-inch MacBook Pro
+                                in late 2019, Apple was
+                                praised for the larger screen, the increased performance,
+                                premium materials and the
+                                improved keyboard.
+                            </p>
+
+                        </div>
+
+                    </div>
+                </div>
+                <div class="col-12 col-md-6 col-lg-4 mb-4 mb-lg-5">
+                    <div class="card bg-primary shadow-soft border-light p-4 rounded">
+
+                        <a href="./blog-post.html">
+                            <img src="/static/assets/img/blog/blog-article-1.jpg"
+                                 class="card-img-top rounded" alt="white laptop">
+                        </a>
+
+                        <div class="card-body p-0 pt-4">
+                            <a href="./blog-post.html" class="h4">Apple Details Reveal
+                                Remarkable MacBook</a>
+                            <div class="d-flex align-items-center my-4">
+                                <img class="avatar avatar-sm rounded-circle"
+                                     src="/static/assets/img/team/profile-picture-5.jpg"
+                                     alt="Bonnie avatar">
+                                <h3 class="h6 small ml-2 mb-0">Bonnie Green</h3>
+                            </div>
+
+                            <p class="mb-0">Following the release of the 16-inch MacBook Pro
+                                in late 2019, Apple was
+                                praised for the larger screen, the increased performance,
+                                premium materials and the
+                                improved keyboard.
+                            </p>
+
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6 col-lg-4 mb-4 mb-lg-5">
+                    <div class="card bg-primary shadow-soft border-light p-4 rounded">
+
+                        <a href="./blog-post.html">
+                            <img src="/static/assets/img/blog/blog-article-1.jpg"
+                                 class="card-img-top rounded" alt="white laptop">
+                        </a>
+
+                        <div class="card-body p-0 pt-4">
+                            <a href="./blog-post.html" class="h4">Apple Details Reveal
+                                Remarkable MacBook</a>
+                            <div class="d-flex align-items-center my-4">
+                                <img class="avatar avatar-sm rounded-circle"
+                                     src="/static/assets/img/team/profile-picture-5.jpg"
+                                     alt="Bonnie avatar">
+                                <h3 class="h6 small ml-2 mb-0">Bonnie Green</h3>
+                            </div>
+
+                            <p class="mb-0">Following the release of the 16-inch MacBook Pro
+                                in late 2019, Apple was
+                                praised for the larger screen, the increased performance,
+                                premium materials and the
+                                improved keyboard.
+                            </p>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Body -->
+            <div class="row g-5">
+                <!-- Makale Bölümü -->
+                <div class="col-md-8">
+                    <div class="col-12 mb-4 mb-lg-5">
+
+                        <div class="card bg-primary border-light shadow-soft">
+
+                            <div class="card-header p-3">
+
+                                <img src="/static/assets/img/blog/blog-article-2.jpg"
+                                     class="card-img-top rounded"
+                                     alt="Designer desk">
+                            </div>
+                            <div class="card-body pt-2">
+                                <div class="media d-flex align-items-center justify-content-between">
+                                    <div class="post-group">
+                                        <a href="#" data-toggle="tooltip"
+                                           data-placement="top" title=""
+                                           data-original-title="23k followers">
+                                            <img class="avatar-sm mr-2 img-fluid rounded-circle"
+                                                 src="/static/assets/img/team/profile-picture-2.jpg"
+                                                 alt="Jo portrait">
+                                            Jo
+                                            J.
+                                            Moore
+                                        </a>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                    <span class="small"><span
+                                            class="far fa-calendar-alt mr-2"></span>15 March 2020</span>
+                                    </div>
+                                </div>
+                                <h3 class="h5 card-title mt-4">We partnered up with
+                                    Google</h3>
+                                <p class="card-text">Some quick example text to build on the
+                                    card title and make up the
+                                    bulk
+                                    of the card's content.</p>
+                                <a href="#" class="btn btn-primary btn-sm">Learn More</a>
+                                <div class="btn-group float-right">
+                                    <button class="btn btn-link border-0 dropdown-toggle dropdown-toggle-split m-0 p-0"
+                                            data-toggle="dropdown" aria-haspopup="true"
+                                            aria-expanded="false">
+                                    <span class="icon icon-sm">
+                                        <span class="fas fa-ellipsis-h icon-secondary"></span>
+                                    </span>
+                                        <span class="sr-only">Toggle Dropdown</span>
+                                    </button>
+                                    <div class="dropdown-menu">
+                                        <a class="dropdown-item" href="#"><span
+                                                class="fas fa-edit mr-2"></span>
+                                            Edit post</a>
+                                        <a class="dropdown-item text-danger" href="#"><span
+                                                class="fa fa-trash mr-2"
+                                                aria-hidden="true"></span>
+                                            Delete post</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mt-5">
+                            <nav aria-label="Blog page navigation">
+                                <ul class="pagination">
+                                    <li class="page-item">
+                                        <a class="page-link" aria-label="first link"
+                                           href="#"><span
+                                                class="fas fa-angle-double-left"></span></a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="#">1</a>
+                                    </li>
+                                    <li class="page-item active">
+                                        <a class="page-link" href="#">2</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="#">3</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="#">4</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="#">5</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" aria-label="first link"
+                                           href="#"><span
+                                                class="fas fa-angle-double-right"></span></a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+                <!-- Kenar -->
+                <div class="col-md-4">
+                    <div class="position-sticky" style="top: 2rem;">
+                        <!-- En çok okunan -->
+                        <div class="p-4">
+                            <h4 class="fst-italic">En Çok Okunan</h4>
+                            <ol class="list-unstyled mb-0">
+                                <li>
+                                    <a href="#">Deneme Yazısı</a>
+                                </li>
+                            </ol>
+                        </div>
+                        <!-- Arşiv -->
+                        <div class="p-4">
+                            <h4 class="fst-italic">Arşiv</h4>
+                            <ol class="list-unstyled mb-0">
+                                <li><a href="#">March 2021</a></li>
+                                <li><a href="#">February 2021</a></li>
+                                <li><a href="#">January 2021</a></li>
+                                <li><a href="#">December 2020</a></li>
+                                <li><a href="#">November 2020</a></li>
+                                <li><a href="#">October 2020</a></li>
+                                <li><a href="#">September 2020</a></li>
+                                <li><a href="#">August 2020</a></li>
+                                <li><a href="#">July 2020</a></li>
+                                <li><a href="#">June 2020</a></li>
+                                <li><a href="#">May 2020</a></li>
+                                <li><a href="#">April 2020</a></li>
+                            </ol>
+                        </div>
+                        <!-- Sosyal Medya -->
+                        <div class="p-4">
+                            <h4 class="fst-italic">Paylaş</h4>
+                            <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}">
+                                <button class="btn btn-icon-only btn-pill btn-facebook mr-2" type="button"
+                                        aria-label="facebook button" title="facebookda paylaş">
+                                    <span aria-hidden="true" class="fab fa-facebook"></span>
+                                </button>
+                            </a>
+
+                            <a href="https://twitter.com/intent/tweet?text={{ request.build_absolute_uri }}">
+                                <button class="btn btn-icon-only btn-pill btn-twitter mr-2" type="button"
+                                        aria-label="twitter button" title="twitterda paylaş">
+                                    <span aria-hidden="true" class="fab fa-twitter"></span>
+                                </button>
+                            </a>
+                            <a href="https://api.whatsapp.com/send?text={{ request.build_absolute_uri }}">
+                                <button class="btn btn-icon-only btn-pill btn-instagram text-success mr-2" type="button"
+                                        aria-label="whatsapp button" title="whatsappda paylaş">
+                                    <span aria-hidden="true" class="fab fa-whatsapp"></span>
+                                </button>
+                            </a>
+                            <a href="https://www.linkedin.com/cws/share/?url={{ request.build_absolute_uri }}">
+                                <button class="btn btn-icon-only btn-pill btn-instagram text-info" type="button"
+                                        aria-label="linkedin button" title="linkedinda paylaş">
+                                    <span aria-hidden="true" class="fab fa-linkedin-in"></span>
+                                </button>
+                            </a>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    {% endif %}
+{% endblock %}
+
+{% block javascripts %}{% endblock %}

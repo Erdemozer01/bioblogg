@@ -1,0 +1,159 @@
+{% extends "dashboard/layouts/base.html" %}
+{% load django_bootstrap5 %}
+{% block title %} Dashboard {% endblock %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}{% endblock %}
+
+{% block content %}
+
+    {% if "update-post" in request.build_absolute_uri %}
+        <div class="row">
+            <div class="col-12 col-xl-12 mt-4">
+                <div class="card card-body border-0 shadow mb-4">
+                    <h2 class="h5 mb-4">Gönderi Düzenle</h2>
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-success alert-dismissible shadow-soft fade show" role="alert">
+
+                        <span class="alert-inner--icon">
+                            <span class="far fa-thumbs-up"></span>
+                        </span>
+
+                                <span class="alert-inner--text"><strong>Tebrikler!</strong>  {{ message }} </span>
+
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <div class="custom-file mt-3">
+                            <label>{{ form.cover.label }}</label>
+                            {{ form.cover }}
+                        </div>
+
+                        <div class="form-group mt-3">
+                            <label> {{ form.title.label }}</label>
+                            {{ form.title }}
+                        </div>
+
+                        <div class="form-group mt-3">
+                            <label> {{ form.category.label }}</label>
+                            {{ form.category }}
+                        </div>
+
+                        <div class="form-group m-2">
+                            <a href="{% url "blog:category_create" %}" class="mt-3">
+                                <i class="fas fa-plus-circle text-success mr-3 "></i>
+                                <span class="text-dark">Kategori Ekleyin</span>
+                            </a>
+                            <a href="{% url "blog:categories" %}">
+                                <i class="fas fa-minus text-success" style="margin-left: 5px"></i>
+                                <span class="text-dark">Kategori Düzenle</span>
+                            </a>
+                        </div>
+
+                        <label class="mt-3"> İçerik</label>
+                        <div class="form-group mt-1">
+                            {{ form.text }}
+                            {{ form.media }}
+                        </div>
+
+                        <div class="accordion col-12 col-sm-12 col-lg-12 mt-3 mx-auto" id="accordionExample">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingOne">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                                            data-bs-target="#collapseOne" aria-expanded="true"
+                                            aria-controls="collapseOne">
+                                        Extra gönderi fotoğrafları
+                                    </button>
+                                </h2>
+                                <div id="collapseOne" class="accordion-collapse collapse show"
+                                     aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+                                    <div class="accordion-body">
+                                        <div class="form-group mt-3">
+                                            {{ form.extra_image1 }}
+                                        </div>
+
+                                        <div class="form-group mt-3">
+                                            {{ form.extra_image2 }}
+                                        </div>
+
+                                        <div class="form-group mt-3">
+                                            {{ form.extra_image3 }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="form-group mt-3">
+                            <label> {{ form.status.label }}</label>
+                            {{ form.status }}
+                        </div>
+
+                        <!-- End of Form -->
+                        <div class="mt-3">
+                            <button class="btn btn-gray-800 mt-2 animate-up-2 float-end" type="submit">Kaydet</button>
+                        </div>
+
+                        <div class="mt-3">
+                            <a href="{% url "blog:anasayfa" %}">
+                                <button class="btn btn-danger mt-2 animate-up-2 mr-3" type="submit">İptal</button>
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% elif "update-category" in request.build_absolute_uri %}
+        <div class="row">
+            <div class="col-12 col-xl-12 mt-4">
+                <div class="card card-body border-0 shadow mb-4">
+                    <h2 class="h5 mb-4">Kategori Düzenle</h2>
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-success alert-dismissible shadow-soft fade show" role="alert">
+
+                        <span class="alert-inner--icon">
+                            <span class="far fa-thumbs-up"></span>
+                        </span>
+
+                                <span class="alert-inner--text"><strong>Tebrikler!</strong>  {{ message }} </span>
+
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        {% bootstrap_form form %}
+
+
+                        <!-- End of Form -->
+                        <div class="mt-3">
+                            <button class="btn btn-gray-800 mt-2 animate-up-2 float-end" type="submit">Kaydet</button>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <p class="alert-danger">Yetkili Değilsiniz!</p>
+    {% endif %}
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}{% endblock %}

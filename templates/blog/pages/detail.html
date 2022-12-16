@@ -1,0 +1,403 @@
+{% extends "blog/layouts/base.html" %}
+{% load static %}
+{% load hitcount_tags %}
+
+{% block title %} Blog | {{ object.title|title }} {% endblock %}
+
+{% block stylesheets %}
+    <!-- Custom styles for this template -->
+    <link href="https://fonts.googleapis.com/css?family=Playfair&#43;Display:700,900&amp;display=swap" rel="stylesheet">
+    <!-- Custom styles for this template -->
+    <link href="{% static "blog/assets/css/blog.css" %}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+    {% if object %}
+        <main class="container mt-6">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-success alert-dismissible shadow-soft fade show" role="alert">
+
+                        <span class="alert-inner--icon">
+                            <span class="far fa-thumbs-up"></span>
+                        </span>
+
+                        <span class="alert-inner--text"><strong>Tebrikler!</strong>  {{ message }} </span>
+
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+
+                    </div>
+                {% endfor %}
+            {% endif %}
+            <!-- Body -->
+            <div class="row g-5">
+                <div class="col-md-8">
+                    <!-- Makale Bölümü -->
+                    <article class="blog-post">
+                        <h2 class="blog-post-title mb-1">{{ object.title.title }}</h2>
+                        {% if object.author.username == request.user.username %}
+                            <div class="btn-group float-right">
+                                <button class="btn btn-link border-0 dropdown-toggle dropdown-toggle-split m-0 p-0"
+                                        data-toggle="dropdown" aria-haspopup="true"
+                                        aria-expanded="false">
+                                    <span class="icon icon-sm">
+                                        <span class="fas fa-ellipsis-h icon-secondary"></span>
+                                    </span>
+                                    <span class="sr-only">Toggle Dropdown</span>
+                                </button>
+                                <div class="dropdown-menu">
+                                    <a class="dropdown-item"
+                                       href="{% url "blog:post_update" object.pk object.title %}">
+                                        <span class="fas fa-edit mr-2"></span>
+                                        Güncelle
+                                    </a>
+                                    <a class="dropdown-item text-danger"
+                                       href="{% url "blog:post_delete" object.pk %}"><span
+                                            class="fa fa-trash mr-2"
+                                            aria-hidden="true"></span>
+                                        Gönderiyi Sil
+                                    </a>
+                                </div>
+                            </div>
+                        {% endif %}
+                        <p class="blog-post-meta" style="font-size: small">
+                            <a href="#">{{ object.author|title }}</a> - {{ object.created|date }}
+                            , <span>{% get_hit_count for posts %} defa okundu.</span>
+                        </p>
+                        <img src="{{ object.cover.url }}" alt="">
+                        <p class="blog-post">{{ object.text|safe }}</p>
+                        {% if posts.extra_image1 or posts.extra_image2 or posts.extra_image3 %}
+                            <h2>{{ object.title }} Fotoğraf Albümü</h2>
+                            <div id="Carousel2" class="carousel slide shadow-soft border border-light p-4 rounded"
+                                 data-ride="carousel">
+                                <div class="carousel-inner rounded">
+                                    {% if posts.extra_image1 %}
+                                        <div class="carousel-item active">
+                                            <img class="d-block w-100" src="{{ posts.extra_image1.url }}"
+                                                 alt="First slide">
+                                        </div>
+                                    {% endif %}
+                                    {% if posts.extra_image2 %}
+                                        <div class="carousel-item">
+                                            <img class="d-block w-100" src="{{ posts.extra_image2.url }}"
+                                                 alt="Second slide">
+                                        </div>
+                                    {% endif %}
+                                    {% if posts.extra_image3 %}
+                                        <div class="carousel-item">
+                                            <img class="d-block w-100" src="{{ posts.extra_image3.url }}"
+                                                 alt="Second slide">
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <a class="carousel-control-prev" href="#Carousel2" role="button" data-slide="prev">
+                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                    <span class="sr-only">Previous</span>
+                                </a>
+                                <a class="carousel-control-next" href="#Carousel2" role="button" data-slide="next">
+                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                    <span class="sr-only">Next</span>
+                                </a>
+                            </div>
+                        {% endif %}
+                    </article>
+                    <hr>
+
+                    <h5 class="fst-italic mb-4">Yazar Hakkında</h5>
+                    <!-- Profile Card -->
+                    <div class="profile-card mb-5 col-12 mx-auto">
+
+                        <div class="card bg-primary shadow-inset border-light text-center mt-6">
+                            <div class="card-header">
+                                <div class="profile-image bg-primary shadow-inset border border-light rounded mx-auto p-3 mt-n6">
+                                    <img src="/static/assets/img/team/profile-picture-4.jpg"
+                                         class="card-img-top rounded" alt="{{ object.author }}">
+                                </div>
+                            </div>
+                            <div class="card-body pb-5">
+                                <h3 class="h5 mb-2">{{ object.author }}</h3>
+                                <p class="h6 font-weight-normal text-gray mb-3">Web Designer</p>
+                                <ul class="list-unstyled d-flex justify-content-center mt-3 mb-4">
+                                    <li>
+                                        <a href="#" target="_blank" aria-label="facebook social link"
+                                           class="icon icon-xs icon-facebook mr-3">
+                                            <span class="fab fa-facebook-f"></span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="#" target="_blank" aria-label="twitter social link"
+                                           class="icon icon-xs icon-twitter mr-3">
+                                            <span class="fab fa-twitter"></span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="#" target="_blank" aria-label="slack social link"
+                                           class="icon icon-xs icon-slack mr-3">
+                                            <span class="fab fa-slack-hash"></span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="#" target="_blank" aria-label="dribbble social link"
+                                           class="icon icon-xs icon-dribbble mr-3">
+                                            <span class="fab fa-dribbble"></span>
+                                        </a>
+                                    </li>
+                                </ul>
+                                <a class="btn btn-sm btn-primary mr-3" href="#">
+                                    <span class="fas fa-user mr-1"></span> Profil
+                                </a>
+                                <a class="btn btn-sm btn-primary" href="#">
+                                    <span class="fas fa-mail-bulk mr-1"></span>
+                                    Mesaj
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- End of Profile Card -->
+
+                    <!-- Yorum -->
+                    <div class="section section-md bg-primary text-black pt-0 line-bottom-light">
+                        <div class="container">
+                            <div class="row justify-content-center">
+                                <div class="col-12 col-lg-12">
+                                    <div>
+                                        {% if request.user.is_authenticated %}
+                                            <form method="post">
+                                                {% csrf_token %}
+                                                {{ form.comment }}
+                                                <div class="d-flex justify-content-between mt-3">
+                                                    <small class="font-weight-light text-dark">
+                                                        <span id="charactersRemaining"></span></small>
+                                                    <button class="btn btn-primary" type="submit">Yorum Yap</button>
+                                                </div>
+                                            </form>
+                                        {% else %}
+                                            <p>Yorum yapmak için <a href="{% url "login" %}"
+                                                                    class="text-underline font-weight-bolder">Giriş</a>
+                                                yapın</p>
+                                        {% endif %}
+
+                                        <div class="mt-5">
+                                            <label class="h5 mb-4" for="exampleFormControlTextarea1">
+                                                <span class="badge badge-md badge-dark text-uppercase mr-2">{{ comments.count }}</span>
+                                                Yorumlar
+                                            </label>
+                                            {% if comments %}
+                                                {% for comment in comments %}
+
+                                                    <div class="card bg-primary shadow-soft border-light rounded p-4 mb-4">
+                                                        <div class="d-flex justify-content-between mb-4">
+                                                            <!-- avatar -->
+                                                            <span class="font-small">
+                                                            {% if comment.commentator.profile.avatar %}
+
+                                                                <a href="#">
+                                                                        <img class="avatar-sm img-fluid rounded-circle mr-2"
+                                                                             src="{{ comment.commentator.profile.avatar.url }}"
+                                                                             alt="avatar">
+                                                                        <span class="font-weight-bold">{{ comment.commentator.username }}</span>
+                                                                    </a>
+                                                                <div>
+
+                                                            </div>
+
+                                                            {% else %}
+
+                                                                <span class="fa fa-user btn btn-xs btn-circle btn-icon-only btn-soft mr-2"></span>
+
+                                                                <span class="font-weight-bold">{{ comment.commentator.username }}</span>
+
+                                                                <span class="ml-2">{{ comment.created|timesince }} önce yazdı</span>
+
+                                                            {% endif %}
+
+
+
+                                                        </span>
+
+
+                                                            {% if comment.commentator.username == request.user.username %}
+
+                                                                <button class="btn btn-primary text-danger btn-icon-only btn-soft btn-xs btn-circle"
+                                                                        title="Yorumu Sil"
+                                                                        data-original-title="Delete comment"
+                                                                        data-toggle="modal"
+                                                                        data-target="#modal-notification">
+                                                                    <span class="far fa-trash-alt"></span>
+                                                                </button>
+
+                                                                <div class="modal fade" id="modal-notification"
+                                                                     tabindex="-1" role="dialog"
+                                                                     aria-labelledby="modal-notification"
+                                                                     aria-hidden="true">
+                                                                    <div class="modal-dialog modal-dialog-centered"
+                                                                         role="document">
+                                                                        <div class="modal-content bg-primary">
+                                                                            <div class="modal-header"><p
+                                                                                    class="modal-title"
+                                                                                    id="modal-title-notification"></p>
+                                                                                <button type="button" class="close"
+                                                                                        data-dismiss="modal"
+                                                                                        aria-label="Close"><span
+                                                                                        aria-hidden="true">×</span>
+                                                                                </button>
+                                                                            </div>
+                                                                            <div class="modal-body">
+                                                                                <div class="py-3 text-center">
+                                                                                        <span class="modal-icon display-1-lg">
+                                                                                            <span class="far fa-envelope-open"></span>
+                                                                                        </span>
+                                                                                    <h2 class="h4 my-3">Yorumunuz
+                                                                                        Silinecektir!</h2>
+                                                                                    <p>Onaylıyormusunuz?.</p></div>
+                                                                            </div>
+                                                                            <div class="modal-footer">
+                                                                                <a href="{% url "blog:delete_comment" comment.pk %}">
+                                                                                    <button type="button"
+                                                                                            class="btn btn-sm btn-primary">
+                                                                                        Sil
+                                                                                    </button>
+                                                                                </a>
+                                                                                <button type="button"
+                                                                                        class="btn btn-primary text-danger ml-auto"
+                                                                                        data-dismiss="modal">Vazgeç
+                                                                                </button>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            {% endif %}
+
+                                                        </div>
+                                                        <!-- Yorum -->
+                                                        <p class="m-3">
+                                                            {{ comment.comment }}
+                                                        </p>
+                                                        {% if request.user.is_anonymous %}
+                                                            <p class="ml-2">Geribildirim için <a href="{% url "login" %}" class="text-dark font-weight-bold">Giriş</a> yapınız</p>
+                                                        {% else %}
+                                                            <div class="mt-4 mb-3 d-flex justify-content-between">
+                                                                <div>
+                                                                    <form method="post"
+                                                                          action="{% url "blog:comment_like" comment.id %}">
+                                                                        {% csrf_token %}
+                                                                        <button class="btn animate-up-3 far fa-thumbs-up text-success mr-1 btn-circle btn-primary rounded-circle btn-xs btn-soft btn-success"
+                                                                                title="Beğendim" type="submit"
+                                                                                value="{{ comment.id }}">
+                                                                            <span class="font-small font-weight-light">{{ comment.likes.count }}</span>
+                                                                        </button>
+                                                                    </form>
+                                                                    <span class="d-flex justify-content-between mt-3">
+                                                                <form method="post"
+                                                                      action="{% url "blog:comment_dislike" comment.id %}">
+                                                                    {% csrf_token %}
+                                                                    <button class="btn animate-down-3 far fa-thumbs-down text-danger mr-1 btn-circle btn-primary rounded-circle btn-xs btn-soft btn-success"
+                                                                            title="Beğenmedim" type="submit"
+                                                                            value="{{ comment.id }}">
+                                                                        <span class="font-small font-weight-light">{{ comment.dislike.count }}</span>
+                                                                    </button>
+                                                                </form>
+                                                            </span>
+                                                                </div>
+
+                                                                <form action="{% url "blog:report_comment" comment.id %}"
+                                                                      method="post">
+                                                                    {% csrf_token %}
+
+                                                                    <button class="btn btn-primary text-danger"
+                                                                            aria-label="report button"
+                                                                            data-toggle="tooltip" data-placement="top"
+                                                                            title="Kötüye Kullanım Bildir"
+                                                                            data-original-title="Kötüye Kullanım Bildir"
+                                                                            value="{{ comment.id }}" type="submit">
+                                                                        <span class="far fa-flag"></span>
+                                                                    </button>
+
+                                                                </form>
+
+
+                                                            </div>
+                                                        {% endif %}
+
+                                                    </div>
+                                                {% endfor %}
+                                            {% else %}
+                                                <p>İlk Yorum yapan siz olun</p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kenar -->
+                <div class="col-md-4 mt-4">
+                    <div class="position-sticky" style="top: 2rem;">
+                        <div>
+
+                            <!-- En çok okunan -->
+                            <div class="p-4">
+                                <h5 class="fst-italic">En çok okunan</h5>
+                                <ol class="list-unstyled mb-0">
+                                    {% for post in popular_posts %}
+                                        <li>
+                                            <a href="{% url "blog:post_detail" post.category.title|slugify post.slug post.pk post.author post.author.pk post.created.date %}">{{ post.title }}</a>
+                                        </li>
+                                    {% endfor %}
+                                </ol>
+                            </div>
+                            <!-- Arşiv -->
+                            <div class="p-4">
+                                <h5 class="fst-italic">Arşiv</h5>
+                                <ol class="list-unstyled mb-0">
+                                    {% for foo in archive %}
+                                        <li>
+                                            <a href="{% url "archive" foo.year foo.month %}">
+                                                {{ foo|date:"F" }}, {{ foo.year }}</a>
+                                        </li>
+                                    {% endfor %}
+                                </ol>
+                            </div>
+
+                            <!-- Sosyal Medya -->
+                            <div class="p-4">
+                                <h5 class="fst-italic">Paylaş</h5>
+                                <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}">
+                                    <button class="btn btn-icon-only btn-pill btn-facebook mr-2" type="button"
+                                            aria-label="facebook button" title="facebookda paylaş">
+                                        <span aria-hidden="true" class="fab fa-facebook"></span>
+                                    </button>
+                                </a>
+
+                                <a href="https://twitter.com/intent/tweet?text={{ request.build_absolute_uri }}">
+                                    <button class="btn btn-icon-only btn-pill btn-twitter mr-2" type="button"
+                                            aria-label="twitter button" title="twitterda paylaş">
+                                        <span aria-hidden="true" class="fab fa-twitter"></span>
+                                    </button>
+                                </a>
+                                <a href="https://api.whatsapp.com/send?text={{ request.build_absolute_uri }}">
+                                    <button class="btn btn-icon-only btn-pill btn-instagram text-success mr-2"
+                                            type="button"
+                                            aria-label="whatsapp button" title="whatsappda paylaş">
+                                        <span aria-hidden="true" class="fab fa-whatsapp"></span>
+                                    </button>
+                                </a>
+                                <a href="https://www.linkedin.com/cws/share/?url={{ request.build_absolute_uri }}">
+                                    <button class="btn btn-icon-only btn-pill btn-instagram text-info" type="button"
+                                            aria-label="linkedin button" title="linkedinda paylaş">
+                                        <span aria-hidden="true" class="fab fa-linkedin-in"></span>
+                                    </button>
+                                </a>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+        </main>
+    {% endif %}
+
+{% endblock %}
