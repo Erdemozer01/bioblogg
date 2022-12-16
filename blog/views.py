@@ -159,8 +159,17 @@ class CategoryUpdateView(generic.UpdateView):
 
 
 class PostDeleteView(generic.DeleteView):
-    template_name = "blog/pages/posts.html"
+    template_name = "dashboard/pages/delete.html"
     model = Posts
+
+    def get_success_url(self):
+        messages.success(self.request, "Gönderi başarılı bir şekilde silindi")
+        return reverse('blog:anasayfa')
+
+
+class CategoryDeleteView(generic.DeleteView):
+    template_name = "dashboard/pages/delete.html"
+    model = Category
 
     def get_success_url(self):
         messages.success(self.request, "Gönderi başarılı bir şekilde silindi")

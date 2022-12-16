@@ -276,7 +276,10 @@
                                                             {{ comment.comment }}
                                                         </p>
                                                         {% if request.user.is_anonymous %}
-                                                            <p class="ml-2">Geribildirim için <a href="{% url "login" %}" class="text-dark font-weight-bold">Giriş</a> yapınız</p>
+                                                            <p class="ml-2">Geribildirim için <a
+                                                                    href="{% url "login" %}"
+                                                                    class="text-dark font-weight-bold">Giriş</a> yapınız
+                                                            </p>
                                                         {% else %}
                                                             <div class="mt-4 mb-3 d-flex justify-content-between">
                                                                 <div>
@@ -397,6 +400,20 @@
                         </div>
                     </div>
                 </div>
+
+
+        </main>
+    {% else %}
+        <main class="container mt-6">
+            <!-- Body -->
+            <div class="row g-5">
+                <div class="col-md-8">
+                    <!-- Makale Bölümü -->
+                    <article class="blog-post">
+                        <p>Gönderi Bulunamadı</p>
+                    </article>
+                </div>
+            </div>
         </main>
     {% endif %}
 
