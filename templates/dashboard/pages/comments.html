@@ -19,7 +19,7 @@
                             <span class="card-text small">
                                 <span class="far fa-calendar-alt mr-2">
                                 </span>{{ object.created }}</span>
-                            <p class="card-text mt-4">{{ object.comment }}</p>
+                            <p class="card-text mt-4">{{ object.comment|safe }}</p>
                             <div class="d-flex align-items-center">
                                 <a href="{% url "blog:comment_read" object.id %}" class="btn btn-primary btn-sm mr-3">Okundu</a>
                                 <span class="far fa-thumbs-up mr-2">{{ object.likes.count }}</span>
