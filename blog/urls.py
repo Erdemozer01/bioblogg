@@ -38,6 +38,6 @@ urlpatterns = [
     path('like/<id>/', comment_like, name="comment_like"),
     path('dislike/<id>/', comment_dislike, name="comment_dislike"),
     path('report/<id>/', report_comment, name="report_comment"),
-    path('read/<pk>/', comment_read, name="comment_read"),
+    path('okundu/<pk>/', comment_read, name="comment_read"),
     path('mark_as_all_read/', mark_as_all_read, name="mark_as_all_read"),
 ]

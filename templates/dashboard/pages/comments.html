@@ -14,16 +14,25 @@
                 <div class="col-12 col-md-8 col-lg-6 justify-content-center">
                     <div class="card bg-primary shadow-inset border-light">
                         <div class="card-body p-5">
-                            <h3 class="h4 card-title mb-3 font-weight-bold">{{ object.post.title }} Başlıklı Gönderi</h3>
-                            <p class=" card-title mb-3 font-weight-bold">{{ object.commentator|title }} isimli kullanıcının yorumu </p>
+                            <h3 class="h4 card-title mb-3 font-weight-bold">{{ object.post.title }} Başlıklı
+                                Gönderi</h3>
+                            <p class=" card-title mb-3 font-weight-bold">{{ object.commentator|title }} isimli
+                                kullanıcının yorumu </p>
                             <span class="card-text small">
                                 <span class="far fa-calendar-alt mr-2">
                                 </span>{{ object.created }}</span>
                             <p class="card-text mt-4">{{ object.comment|safe }}</p>
                             <div class="d-flex align-items-center">
-                                <a href="{% url "blog:comment_read" object.id %}" class="btn btn-primary btn-sm mr-3">Okundu</a>
                                 <span class="far fa-thumbs-up mr-2">{{ object.likes.count }}</span>
-                                <span class="far fa-thumbs-down text-danger mr-2">{{ object.dislike.count }}</span>
+                                <span class="far fa-thumbs-down text-danger mr-5">{{ object.dislike.count }}</span>
+                                <div>
+                                    <a href="{% url "blog:comment_read" object.id %}"
+                                       class="btn btn-primary btn-sm mr-2">Okundu olarak işaretle</a>
+                                    <a href="{% url "blog:comment_read" object.id %}"
+                                       class="btn btn-primary btn-sm mr-2">Yanıtla</a>
+                                    <a href="{% url "dashboard:anasayfa" request.user %}"
+                                       class="btn btn-primary btn-sm">Geri</a>
+                                </div>
                             </div>
                         </div>
                     </div>
