@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from django.shortcuts import redirect
 from django.urls import reverse_lazy
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -134,5 +135,26 @@ CKEDITOR_CONFIGS = {
         'toolbar': 'full',
         'height': 'auto',
         'width': 'auto',
+    },
+    'blog': {
+        'skin': 'moono',
+        'height': 'auto',
+        'width': 'auto',
+        'toolbar_Basic': [
+            ['Source', '-', 'Bold', 'Italic']
+        ],
+        'toolbar_BlogToolbarConfig': [
+
+            {'name': 'basicstyles',
+             'items': ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'RemoveFormat']},
+            {'name': 'paragraph', 'items': ['JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock', '-']},
+            {'name': 'insert', 'items': ['Flash', 'Table', 'Smiley', 'SpecialChar']},
+            {'name': 'colors', 'items': ['TextColor']},
+            {'name': 'yourcustomtools', 'items': ['Maximize']},
+            {'name': 'styles', 'items': ['Format', 'Font', 'FontSize', '-']},
+            {'name': 'links', 'items': ['Link', 'Unlink']},
+        ],
+        'toolbar': 'BlogToolbarConfig',
+        'tabSpaces': 6,
     },
 }

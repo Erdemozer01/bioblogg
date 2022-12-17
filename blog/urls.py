@@ -13,7 +13,10 @@ from .views import (
     comment_like,
     comment_dislike,
     report_comment,
-    CategoryDeleteView
+    CategoryDeleteView,
+    CommentDetailView,
+    comment_read,
+    mark_as_all_read
 )
 
 app_name = "blog"
@@ -30,8 +33,11 @@ urlpatterns = [
     path('post_delete/<pk>/', PostDeleteView.as_view(), name="post_delete"),
     path('category_delete/<pk>/', CategoryDeleteView.as_view(), name="category_delete"),
     path('create-category/', CreateCategoryView.as_view(), name="category_create"),
+    path('comment/<pk>/', CommentDetailView.as_view(), name="comment_detail"),
     path('delete/<pk>/', comment_delete, name="delete_comment"),
     path('like/<id>/', comment_like, name="comment_like"),
     path('dislike/<id>/', comment_dislike, name="comment_dislike"),
     path('report/<id>/', report_comment, name="report_comment"),
+    path('read/<pk>/', comment_read, name="comment_read"),
+    path('mark_as_all_read/', mark_as_all_read, name="mark_as_all_read"),
 ]

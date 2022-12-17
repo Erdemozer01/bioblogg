@@ -22,16 +22,11 @@
     <!-- Custom styles for this template -->
     <link href="{% static "blog/assets/css/blog.css" %}" rel="stylesheet">
 
-    <script src=
-                    "https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.js">
-    </script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.js"></script>
 
-    <script src=
-                    "https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.js">
-    </script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.js"></script>
 
-    <link href=
-                  "http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/themes/ui-lightness/jquery-ui.css"
+    <link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/themes/ui-lightness/jquery-ui.css"
           rel="stylesheet" type="text/css"/>
 
 {% endblock %}
@@ -188,7 +183,7 @@
                                 </span>
                         </div>
 
-                        <input class="form-control" id="tags" placeholder="Kategori adı"
+                        <input class="form-control" id="kategori_id" placeholder="Kategori adı"
                                type="text" name="search" value="{{ request.GET.search }}">
 
                         <script>
@@ -198,7 +193,7 @@
                                         "{{ category.title }}",
                                     {% endfor %}
                                 ];
-                                $("#tags").autocomplete({
+                                $("#kategori_id").autocomplete({
                                     source: availableTags
                                 });
                             });

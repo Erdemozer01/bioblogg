@@ -176,11 +176,23 @@ class CategoryDeleteView(generic.DeleteView):
         return reverse('blog:anasayfa')
 
 
-def category_delete(request, pk):
-    category = get_object_or_404(Category, pk=pk)
-    category.delete()
-    messages.success(request, "Kategori başarılı bir şekilde silindi")
-    return HttpResponseRedirect(reverse("blog:anasayfa"))
+class CommentDetailView(generic.DetailView):
+    template_name = "dashboard/pages/comments.html"
+    model = Comments
+
+
+def comment_read(request, pk):
+    comment = get_object_or_404(Comments, pk=pk)
+    comment.status = "okundu"
+    comment.save()
+    return HttpResponseRedirect(reverse("dashboard:anasayfa", args=[request.user.username]))
+
+
+def mark_as_all_read(request):
+    comments = Comments.objects.all().filter(post__author=request.user, status="okunmadı")
+    comments.update(status="okundu")
+
+    return HttpResponseRedirect(reverse("dashboard:anasayfa", args=[request.user.username]))
 
 
 def comment_delete(request, pk):

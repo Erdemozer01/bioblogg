@@ -104,11 +104,9 @@
                         {% endif %}
                     </article>
                     <hr>
-
                     <h5 class="fst-italic mb-4">Yazar Hakkında</h5>
                     <!-- Profile Card -->
                     <div class="profile-card mb-5 col-12 mx-auto">
-
                         <div class="card bg-primary shadow-inset border-light text-center mt-6">
                             <div class="card-header">
                                 <div class="profile-image bg-primary shadow-inset border border-light rounded mx-auto p-3 mt-n6">
@@ -156,7 +154,6 @@
                         </div>
                     </div>
                     <!-- End of Profile Card -->
-
                     <!-- Yorum -->
                     <div class="section section-md bg-primary text-black pt-0 line-bottom-light">
                         <div class="container">
@@ -167,6 +164,7 @@
                                             <form method="post">
                                                 {% csrf_token %}
                                                 {{ form.comment }}
+                                                {{ form.media }}
                                                 <div class="d-flex justify-content-between mt-3">
                                                     <small class="font-weight-light text-dark">
                                                         <span id="charactersRemaining"></span></small>
@@ -174,9 +172,10 @@
                                                 </div>
                                             </form>
                                         {% else %}
-                                            <p>Yorum yapmak için <a href="{% url "login" %}"
-                                                                    class="text-underline font-weight-bolder">Giriş</a>
-                                                yapın</p>
+                                            <p>Yorum yapmak için
+                                                <a href="{% url "login" %}" class="text-underline font-weight-bolder">
+                                                    Giriş
+                                                </a>yapın</p>
                                         {% endif %}
 
                                         <div class="mt-5">
@@ -186,7 +185,6 @@
                                             </label>
                                             {% if comments %}
                                                 {% for comment in comments %}
-
                                                     <div class="card bg-primary shadow-soft border-light rounded p-4 mb-4">
                                                         <div class="d-flex justify-content-between mb-4">
                                                             <!-- avatar -->
@@ -213,10 +211,7 @@
 
                                                             {% endif %}
 
-
-
                                                         </span>
-
 
                                                             {% if comment.commentator.username == request.user.username %}
 
@@ -273,7 +268,7 @@
                                                         </div>
                                                         <!-- Yorum -->
                                                         <p class="m-3">
-                                                            {{ comment.comment }}
+                                                            {{ comment.comment|safe }}
                                                         </p>
                                                         {% if request.user.is_anonymous %}
                                                             <p class="ml-2">Geribildirim için <a
@@ -341,7 +336,6 @@
                 <div class="col-md-4 mt-4">
                     <div class="position-sticky" style="top: 2rem;">
                         <div>
-
                             <!-- En çok okunan -->
                             <div class="p-4">
                                 <h5 class="fst-italic">En çok okunan</h5>
@@ -365,7 +359,6 @@
                                     {% endfor %}
                                 </ol>
                             </div>
-
                             <!-- Sosyal Medya -->
                             <div class="p-4">
                                 <h5 class="fst-italic">Paylaş</h5>
@@ -400,8 +393,6 @@
                         </div>
                     </div>
                 </div>
-
-
         </main>
     {% else %}
         <main class="container mt-6">

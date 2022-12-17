@@ -3,6 +3,7 @@ from accounts.models import Profile
 from django.contrib import messages
 from django.shortcuts import redirect
 from django.conf import settings
+from blog.models import Comments
 
 
 class DashboardView(generic.ListView):
@@ -10,7 +11,12 @@ class DashboardView(generic.ListView):
     model = Profile
 
     def get(self, request, *args, **kwargs):
-        if request.user.is_anonymous:
-            messages.error(request, "Lütfen Giriş Yapınız")
-            return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
+        if not request.user.is_staff:
+            messages.error(request, "Yetkili girişi yapınız!")
+            return redirect('%s?next=/blog/' % (settings.LOGIN_URL))
         return super().get(request, *args, **kwargs)
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['comments'] = Comments.objects.filter(post__author=self.request.user).order_by('-id')[:10]
+        return context

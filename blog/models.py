@@ -102,21 +102,37 @@ class Posts(models.Model):
         verbose_name = 'Gönderi'
 
 
+class ReadManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset() \
+            .filter(status=Comments.Status.UNREAD)
+
+
 class Comments(models.Model):
+    class Status(models.TextChoices):
+        READ = 'okundu', 'Okundu'
+        UNREAD = 'okunmadı', 'okunmadı'
+
     commentator = models.ForeignKey('auth.User', on_delete=models.CASCADE, verbose_name='Yazan:', related_name="post")
     post = models.ForeignKey(Posts, on_delete=models.CASCADE, verbose_name='Gönderi:', related_name="comment")
     comment = models.TextField(verbose_name='Yorum Yap:')
 
-    report = models.ManyToManyField('auth.User', related_name='comment_report', verbose_name="Kötüye Kullanım")
-    likes = models.ManyToManyField('auth.User', related_name='comment_likes', verbose_name="Beğendim")
-    dislike = models.ManyToManyField('auth.User', related_name='comment_dislike', verbose_name="Beğenmedim")
+    report = models.ManyToManyField('auth.User', related_name='comment_report', verbose_name="Kötüye Kullanım",
+                                    blank=True)
+    likes = models.ManyToManyField('auth.User', related_name='comment_likes', verbose_name="Beğendim", blank=True)
+    dislike = models.ManyToManyField('auth.User', related_name='comment_dislike', verbose_name="Beğenmedim", blank=True)
+    status = models.CharField(max_length=30, choices=Status.choices, default=Status.UNREAD,
+                              verbose_name='Okunma Durumu')
 
     publish = models.DateTimeField(default=timezone.now, verbose_name='Yayınlama Tarihi')
     created = models.DateTimeField(auto_now_add=True, verbose_name='Oluşturulma Tarihi')
     updated = models.DateTimeField(auto_now=True, verbose_name='Güncellenme Tarihi')
 
+    objects = models.Manager()  # The default manager.
+    published = ReadManager()  # Our custom manager.
+
     def __str__(self):
-        return str(self.commentator) + ', ' + self.post.title[:40]
+        return str(self.commentator) + ',' + self.post.title
 
     class Meta:
         db_table = 'comments'
