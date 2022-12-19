@@ -2,7 +2,8 @@ from django.views import generic
 from .models import Posts, Category, Comments
 from hitcount.views import HitCountDetailView
 from django.views.generic.dates import MonthArchiveView
-from django.shortcuts import get_object_or_404, reverse
+from django.shortcuts import get_object_or_404, reverse, redirect
+from django.conf import settings
 from django.db.models import Q
 from .forms.comment import AddCommentForm
 from .forms.post import CreatePostModelForm, CreateCategoryModelForm
@@ -121,6 +122,12 @@ class CreateCategoryView(generic.CreateView):
     model = Category
     form_class = CreateCategoryModelForm
 
+    def get(self, request, *args, **kwargs):
+        if not request.user.is_staff:
+            messages.error(request, "Yetkili girişi yapınız!")
+            return redirect('%s?next=/blog/' % (settings.LOGIN_URL))
+        return super().get(request, *args, **kwargs)
+
     def get_success_url(self, *args, **kwargs):
         messages.success(self.request, "Kategori başarılı bir şekilde eklendi..")
         return HttpResponseRedirect(reverse("blog:post_create")).url
@@ -130,6 +137,12 @@ class PostUpdateView(generic.UpdateView):
     template_name = "dashboard/pages/update.html"
     model = Posts
     form_class = CreatePostModelForm
+
+    def get(self, request, *args, **kwargs):
+        if not request.user.is_staff:
+            messages.error(request, "Yetkili girişi yapınız!")
+            return redirect('%s?next=/blog/' % (settings.LOGIN_URL))
+        return super().get(request, *args, **kwargs)
 
     def form_valid(self, form):
         instance = form.save(commit=False)
@@ -147,6 +160,12 @@ class CategoryUpdateView(generic.UpdateView):
     model = Category
     form_class = CreateCategoryModelForm
 
+    def get(self, request, *args, **kwargs):
+        if not request.user.is_staff:
+            messages.error(request, "Yetkili girişi yapınız!")
+            return redirect('%s?next=/blog/' % (settings.LOGIN_URL))
+        return super().get(request, *args, **kwargs)
+
     def form_valid(self, form):
         instance = form.save(commit=False)
         instance.author = self.request.user
@@ -162,6 +181,12 @@ class PostDeleteView(generic.DeleteView):
     template_name = "dashboard/pages/delete.html"
     model = Posts
 
+    def get(self, request, *args, **kwargs):
+        if not request.user.is_staff:
+            messages.error(request, "Yetkili girişi yapınız!")
+            return redirect('%s?next=/blog/' % (settings.LOGIN_URL))
+        return super().get(request, *args, **kwargs)
+
     def get_success_url(self):
         messages.success(self.request, "Gönderi başarılı bir şekilde silindi")
         return reverse('blog:anasayfa')
@@ -170,6 +195,12 @@ class PostDeleteView(generic.DeleteView):
 class CategoryDeleteView(generic.DeleteView):
     template_name = "dashboard/pages/delete.html"
     model = Category
+
+    def get(self, request, *args, **kwargs):
+        if not request.user.is_staff:
+            messages.error(request, "Yetkili girişi yapınız!")
+            return redirect('%s?next=/blog/' % (settings.LOGIN_URL))
+        return super().get(request, *args, **kwargs)
 
     def get_success_url(self):
         messages.success(self.request, "Gönderi başarılı bir şekilde silindi")
@@ -180,8 +211,17 @@ class CommentDetailView(generic.DetailView):
     template_name = "dashboard/pages/comments.html"
     model = Comments
 
+    def get(self, request, *args, **kwargs):
+        if not request.user.is_staff:
+            messages.error(request, "Yetkili girişi yapınız!")
+            return redirect('%s?next=/blog/' % (settings.LOGIN_URL))
+        return super().get(request, *args, **kwargs)
+
 
 def comment_read(request, pk):
+    if not request.user.is_staff:
+        messages.error(request, "Yetkili girişi yapınız!")
+        return redirect('%s?next=/blog/' % (settings.LOGIN_URL))
     comment = get_object_or_404(Comments, pk=pk)
     comment.status = "okundu"
     comment.save()
@@ -189,6 +229,9 @@ def comment_read(request, pk):
 
 
 def mark_as_all_read(request):
+    if not request.user.is_staff:
+        messages.error(request, "Yetkili girişi yapınız!")
+        return redirect('%s?next=/blog/' % (settings.LOGIN_URL))
     comments = Comments.objects.all().filter(post__author=request.user, status="okunmadı")
     comments.update(status="okundu")
 
@@ -197,6 +240,9 @@ def mark_as_all_read(request):
 
 def comment_delete(request, pk):
     comment = get_object_or_404(Comments, pk=pk)
+    if not request.user == comment.commentator.username:
+        messages.error(request, "Yetkisiz kullanıcı")
+        return redirect('%s?next=/blog/' % (settings.LOGIN_URL))
     comment.delete()
     messages.success(request, "Yorumunuz başarılı bir şekilde silindi")
     return HttpResponseRedirect(reverse("blog:post_detail", args=(

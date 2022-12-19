@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     'blog.apps.BlogConfig',
     'accounts.apps.AccountsConfig',
     'dashboard.apps.DashboardConfig',
+    'django_plotly_dash.apps.DjangoPlotlyDashConfig',
     'django_bootstrap5',
     'django_cleanup',
     'hitcount',
@@ -123,12 +124,11 @@ LOGIN_REDIRECT_URL = reverse_lazy('blog:anasayfa')
 
 LOGOUT_REDIRECT_URL = reverse_lazy('blog:anasayfa')
 
-# Default primary key field type
-# https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CKEDITOR_UPLOAD_PATH = "uploads/"
+
+X_FRAME_OPTIONS = 'SAMEORIGIN'
 
 CKEDITOR_CONFIGS = {
     'default': {
@@ -147,13 +147,15 @@ CKEDITOR_CONFIGS = {
             {'name': 'basicstyles',
              'items': ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'RemoveFormat', '-',
                        'TextColor']},
-            {'name': 'paragraph', 'items': ['JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock', '-']},
+            {'name': 'paragraph',
+             'items': ['JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock', '-', 'NumberedList',
+                       'BulletedList', 'ExportPdf']},
             {'name': 'insert', 'items': ['Flash', 'Table', 'Smiley', 'SpecialChar']},
             {'name': 'yourcustomtools', 'items': ['Undo', 'Redo']},
             {'name': 'styles', 'items': ['Format', 'Font', 'FontSize']},
             {'name': 'links', 'items': ['Link', 'Unlink', 'Maximize']},
         ],
         'toolbar': 'BlogToolbarConfig',
-        'tabSpaces': 6,
+        'tabSpaces': 4,
     },
 }

@@ -41,7 +41,7 @@
                         <span class="card-text small">
                                 <span class="far fa-calendar-alt mr-2"></span>{{ latest.created }}</span>
                         <p class="card-text mt-4">
-                            {{ latest.text|safe }}
+                            {{ latest.text|safe|truncatechars_html:200 }}
                         </p>
                         <div class="d-flex align-items-center">
                             <a href="{% url "blog:post_detail" latest.category.title|slugify latest.slug latest.pk latest.author latest.author.pk latest.created.date %}"
