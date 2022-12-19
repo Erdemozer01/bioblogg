@@ -106,6 +106,12 @@ class CreatePost(generic.CreateView):
     model = Posts
     form_class = CreatePostModelForm
 
+    def get(self, request, *args, **kwargs):
+        if not self.request.user.is_staff:
+            messages.error(request, "Yetkili girişi yapınız!")
+            return redirect('%s?next=/blog/' % (settings.LOGIN_URL))
+        return super().get(request, *args, **kwargs)
+
     def form_valid(self, form):
         instance = form.save(commit=False)
         instance.author = self.request.user
@@ -123,7 +129,7 @@ class CreateCategoryView(generic.CreateView):
     form_class = CreateCategoryModelForm
 
     def get(self, request, *args, **kwargs):
-        if not request.user.is_staff:
+        if not self.request.user.is_staff:
             messages.error(request, "Yetkili girişi yapınız!")
             return redirect('%s?next=/blog/' % (settings.LOGIN_URL))
         return super().get(request, *args, **kwargs)
@@ -139,7 +145,7 @@ class PostUpdateView(generic.UpdateView):
     form_class = CreatePostModelForm
 
     def get(self, request, *args, **kwargs):
-        if not request.user.is_staff:
+        if not self.request.user.is_staff:
             messages.error(request, "Yetkili girişi yapınız!")
             return redirect('%s?next=/blog/' % (settings.LOGIN_URL))
         return super().get(request, *args, **kwargs)
@@ -161,7 +167,7 @@ class CategoryUpdateView(generic.UpdateView):
     form_class = CreateCategoryModelForm
 
     def get(self, request, *args, **kwargs):
-        if not request.user.is_staff:
+        if not self.request.user.is_staff:
             messages.error(request, "Yetkili girişi yapınız!")
             return redirect('%s?next=/blog/' % (settings.LOGIN_URL))
         return super().get(request, *args, **kwargs)
@@ -182,7 +188,7 @@ class PostDeleteView(generic.DeleteView):
     model = Posts
 
     def get(self, request, *args, **kwargs):
-        if not request.user.is_staff:
+        if not self.request.user.is_staff:
             messages.error(request, "Yetkili girişi yapınız!")
             return redirect('%s?next=/blog/' % (settings.LOGIN_URL))
         return super().get(request, *args, **kwargs)
