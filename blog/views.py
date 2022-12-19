@@ -246,7 +246,7 @@ def mark_as_all_read(request):
 
 def comment_delete(request, pk):
     comment = get_object_or_404(Comments, pk=pk)
-    if not request.user == comment.commentator.username:
+    if not request.user.username == comment.commentator.username:
         messages.error(request, "Yetkisiz kullanıcı")
         return redirect('%s?next=/blog/' % (settings.LOGIN_URL))
     comment.delete()
@@ -260,6 +260,7 @@ def comment_delete(request, pk):
 def comment_like(request, id):
     comment = get_object_or_404(Comments, id=id)
     comment.likes.add(request.user)
+    messages.success(request, f"{comment.commentator.username} isimli kullanıcının yorumunu beğendiniz")
     return HttpResponseRedirect(reverse("blog:post_detail", args=(
         comment.post.category.title, comment.post.slug, comment.post.pk, comment.post.author, comment.post.author.pk,
         comment.post.created.date()
