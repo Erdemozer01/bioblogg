@@ -320,4 +320,4 @@ class CommentUpdate(generic.UpdateView):
         messages.success(self.request, "Yorumunuz başarılı bir şekilde güncellendi..")
         return HttpResponseRedirect(
             self.request.build_absolute_uri()
-        )
+        ).url
