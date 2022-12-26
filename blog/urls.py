@@ -18,6 +18,7 @@ from .views import (
     comment_read,
     like_post,
     dislike_post,
+    CommentUpdate
 )
 
 app_name = "blog"
@@ -42,5 +43,6 @@ urlpatterns = [
     path('okundu/<pk>/', comment_read, name="comment_read"),
     path('begendim/<pk>/<slug>/', like_post, name="like_post"),
     path('begenmedim/<pk>/<title>/', dislike_post, name="dislike_post"),
+    path('comment-update/<pk>/<commentator>/', CommentUpdate.as_view(), name="comment_update"),
 
 ]
