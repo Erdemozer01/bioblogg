@@ -317,7 +317,7 @@ class CommentUpdate(generic.UpdateView):
     form_class = AddCommentForm
 
     def get(self, request, *args, **kwargs):
-        if not self.request.user.username == self.model.commentator.username:
+        if not self.request.user == self.model.commentator:
             messages.error(request, "Yetkili girişi yapınız!")
             return redirect('%s?next=/blog/' % (settings.LOGIN_URL))
         return super().get(request, *args, **kwargs)
