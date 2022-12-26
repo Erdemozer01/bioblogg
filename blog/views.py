@@ -316,16 +316,6 @@ class CommentUpdate(generic.UpdateView):
     model = Comments
     fields = ['comment']
 
-    def form_valid(self, form):
-        form.instance.commentator = self.request.user
-        return super().form_valid(form)
-
-    def test_func(self):
-        comment = self.get_object()
-        if self.request.user == comment.commentator:
-            return True
-        return False
-
     def get_success_url(self):
         messages.success(self.request, "Yorumunuz başarılı bir şekilde güncellendi..")
         return HttpResponseRedirect(
