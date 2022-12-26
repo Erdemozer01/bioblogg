@@ -51,33 +51,35 @@
 
                         <p class="blog-post-meta" style="font-size: small">
                             <a href="#">{{ object.author|title }}</a> - {{ object.created|date }}
-                            , <span>{% get_hit_count for posts %} defa okundu.</span>
-                        </p>
-                        {% if object.author.username == request.user.username %}
-                            <div class="btn-group">
-                                <button class="btn btn-link border-0 dropdown-toggle dropdown-toggle-split m-0 p-0"
-                                        data-toggle="dropdown" aria-haspopup="true"
-                                        aria-expanded="false">
+                            , <span>{% get_hit_count for posts %} defa okundu.
+                            {% if object.author.username == request.user.username %}
+                                <div class="btn-group">
+                                    <button class="btn btn-link border-0 dropdown-toggle dropdown-toggle-split m-0 p-0"
+                                            data-toggle="dropdown" aria-haspopup="true"
+                                            aria-expanded="false">
                                     <span class="icon icon-sm">
                                         <span class="fas fa-ellipsis-h icon-secondary"></span>
                                     </span>
-                                    <span class="sr-only">Toggle Dropdown</span>
-                                </button>
+                                        <span class="sr-only">Toggle Dropdown</span>
+                                    </button>
 
-                                <div class="dropdown-menu">
-                                    <a class="dropdown-item"
-                                       href="{% url "blog:post_update" object.pk object.title %}">
-                                        <span class="fas fa-edit mr-2"> Güncelle</span>
-                                    </a>
+                                    <div class="dropdown-menu">
+                                        <a class="dropdown-item"
+                                           href="{% url "blog:post_update" object.pk object.title %}">
+                                            <span class="fas fa-edit mr-2"> Güncelle</span>
+                                        </a>
 
-                                    <a class="dropdown-item text-danger"
-                                       href="{% url "blog:post_delete" object.pk %}">
-                                        <span class="fa fa-trash mr-2"> Sil </span>
-                                    </a>
+                                        <a class="dropdown-item text-danger"
+                                           href="{% url "blog:post_delete" object.pk %}">
+                                            <span class="fa fa-trash mr-2"> Sil </span>
+                                        </a>
 
+                                    </div>
                                 </div>
-                            </div>
-                        {% endif %}
+                            {% endif %}
+                        </span>
+                        </p>
+
                         <img src="{{ object.cover.url }}" alt="{{ object.author|title }}" class="shadow-soft rounded">
                         <p class="blog-post">{{ object.text|safe }}</p>
                         {% if posts.extra_image1 or posts.extra_image2 or posts.extra_image3 %}
