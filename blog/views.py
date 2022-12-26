@@ -327,5 +327,9 @@ class CommentUpdate(generic.UpdateView):
         return False
 
     def get_success_url(self):
+        comment = self.get_object()
         messages.success(self.request, "Yorumunuz başarılı bir şekilde güncellendi..")
-        return HttpResponseRedirect(self.request.META.get('HTTP_REFERER'))
+        return HttpResponseRedirect(reverse('blog:post_detail', args=(
+            comment.post.category.title, comment.post.slug, comment.post.pk, comment.post.author, comment.post.author.id,
+            comment.post.created.date()
+        )))
