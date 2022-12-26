@@ -1,0 +1,76 @@
+{% extends "blog/layouts/base-fullscreen.html" %}
+{% load django_bootstrap5 %}
+{% block title %} {{ comments.commentator.username }} {% endblock %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}{% endblock %}
+
+{% block content %}
+
+    <!-- Section -->
+    <section class="min-vh-100 d-flex bg-primary align-items-center">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-12 col-md-8 col-lg-6 justify-content-center">
+                    {% if messages %}
+                        {% for message in messages %}
+                            {% if message.tags == 'error' %}
+                                <div class="alert alert-danger alert-dismissible shadow-soft fade show" role="alert">
+                            {% else %}
+                                <div class="alert alert-{{ message.tags }} alert-dismissible shadow-soft fade show" role="alert">
+                            {% endif %}
+
+                            <span class="alert-inner--icon">
+                                    {% if message.tags == 'error' %}
+                                        <span class="far fa-thumbs-down"></span>
+                                    {% elif message.tags == 'success' %}
+                                        <span class="far fa-thumbs-up"></span>
+                                    {% else %}
+
+                                    {% endif %}
+                                </span>
+
+                            <span class="alert-inner--text"><strong>{{ message }}</strong> </span>
+
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                    <div class="card bg-primary shadow-inset border-light">
+
+                        <div class="card-body p-5">
+                            <h3 class="h4 card-title mb-3 font-weight-bold">{{ object.post.title }} Başlıklı
+                                Gönderi</h3>
+                            <p class=" card-title mb-3 font-weight-bold">{{ object.commentator|title }} {{ object.created }} </p>
+                            <span class="card-text small">
+                                <span class="far fa-calendar-alt mr-2">
+                                </span>{{ object.created }}</span>
+                            <form action="{% url "blog:post_detail" object.post.category.title.lower|slugify object.post.slug object.post.pk object.post.author object.post.author.id object.post.created.date %}" method="post">
+                                {% csrf_token %}
+                                {% bootstrap_form form %}
+                                <div class="d-flex align-items-center">
+                                <a href="{% url "blog:comment_like" object.id %}">
+                                    <span class="far fa-thumbs-up mr-2">{{ object.likes.count }}</span>
+                                </a>
+
+                                <span class="far fa-thumbs-down text-danger mr-5">{{ object.dislike.count }}</span>
+                                <div>
+                                    <button class="btn btn-primary btn-sm mr-2" type="submit">Güncelle</button>
+
+                                    <a href="{% url "dashboard:anasayfa" request.user %}"
+                                       class="btn btn-primary btn-sm">Geri</a>
+                                </div>
+                            </div>
+                            </form>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+            </div>
+    </section>
+
+{% endblock %}
+
+{% block javascripts %}{% endblock %}

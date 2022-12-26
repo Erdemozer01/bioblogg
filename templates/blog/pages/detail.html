@@ -194,15 +194,33 @@
                                                             </div>
 
                                                             {% if comment.commentator.username == request.user.username %}
-
-                                                                <button class="btn btn-primary text-danger btn-icon-only btn-soft btn-xs btn-circle"
-                                                                        title="Yorumu Sil"
-                                                                        data-original-title="Delete comment"
-                                                                        data-toggle="modal"
-                                                                        data-target="#modal-notification">
-                                                                    <span class="far fa-trash-alt"></span>
-                                                                </button>
-
+                                                                <div class="btn-group float-right">
+                                                                    <button class="btn btn-link border-0 dropdown-toggle dropdown-toggle-split m-0 p-0"
+                                                                            data-toggle="dropdown" aria-haspopup="true"
+                                                                            aria-expanded="false">
+                                                                            <span class="icon icon-sm">
+                                                                                <span class="fas fa-ellipsis-h icon-secondary"></span>
+                                                                            </span>
+                                                                        <span class="sr-only">Toggle Dropdown</span>
+                                                                    </button>
+                                                                    <div class="dropdown-menu">
+                                                                        <a class="dropdown-item"
+                                                                           href="{% url "blog:post_update" object.pk object.title|slugify %}">
+                                                                            <span class="fas fa-edit mr-2"></span>
+                                                                            Düzenle
+                                                                        </a>
+                                                                        <a class="dropdown-item text-danger">
+                                                                            <button class="btn btn-primary text-danger btn-icon-only btn-soft btn-xs btn-circle"
+                                                                                    title="Yorumu Sil"
+                                                                                    data-original-title="Delete comment"
+                                                                                    data-toggle="modal"
+                                                                                    data-target="#modal-notification">
+                                                                                <span class="far fa-trash-alt"></span>
+                                                                                Sil
+                                                                            </button>
+                                                                        </a>
+                                                                    </div>
+                                                                </div>
                                                                 <div class="modal fade" id="modal-notification"
                                                                      tabindex="-1" role="dialog"
                                                                      aria-labelledby="modal-notification"

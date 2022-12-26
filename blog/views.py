@@ -309,3 +309,19 @@ def dislike_post(request, pk, title):
     post.dislike.add(request.user)
     messages.error(request, f"{post.title} başlıklı gönderiyi beğenmediniz")
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+
+class CommentUpdate(generic.UpdateView):
+    template_name = "blog/pages/update.html"
+    model = Comments
+    form_class = AddCommentForm
+
+    def get(self, request, *args, **kwargs):
+        if not self.request.user.is_staff:
+            messages.error(request, "Yetkili girişi yapınız!")
+            return redirect('%s?next=/blog/' % (settings.LOGIN_URL))
+        return super().get(request, *args, **kwargs)
+
+    def get_success_url(self):
+        messages.success(self.request, "Yorumunuz başarılı bir şekilde güncellendi..")
+        return HttpResponseRedirect(self.request.META.get('HTTP_REFERER'))
