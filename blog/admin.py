@@ -4,7 +4,7 @@ from .models import Category, Posts, Comments
 
 @admin.register(Comments)
 class CommentsAdmin(admin.ModelAdmin):
-    list_display = ['commentator', 'post', 'rapor', 'created']
+    list_display = ['commentator', 'post', 'status', 'rapor', 'created']
     list_filter = ['commentator']
     search_fields = ['commentator', 'post', 'report', 'created']
 

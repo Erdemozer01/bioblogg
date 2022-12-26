@@ -78,9 +78,6 @@ DATABASES = {
     }
 }
 
-# Password validation
-# https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -137,25 +134,24 @@ CKEDITOR_CONFIGS = {
         'width': 'auto',
     },
     'blog': {
-        'skin': 'moono',
         'height': 'auto',
         'width': 'auto',
         'toolbar_Basic': [
             ['Source', '-', 'Bold', 'Italic']
         ],
         'toolbar_BlogToolbarConfig': [
+            {'name': 'styles', 'items': ['Format', 'Font', 'FontSize']},
             {'name': 'basicstyles',
-             'items': ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'RemoveFormat', '-',
-                       'TextColor']},
+             'items': ['JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock', '-', 'Bold', 'Italic',
+                       'Underline', 'Strike', 'Subscript', 'Superscript', 'RemoveFormat', 'TextColor', 'Maximize']},
             {'name': 'paragraph',
-             'items': ['JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock', '-', 'NumberedList',
-                       'BulletedList', 'ExportPdf']},
+             'items': ['Blockquote', '-', 'NumberedList', 'BulletedList', 'ExportPdf', ]},
             {'name': 'insert', 'items': ['Flash', 'Table', 'Smiley', 'SpecialChar']},
             {'name': 'yourcustomtools', 'items': ['Undo', 'Redo']},
-            {'name': 'styles', 'items': ['Format', 'Font', 'FontSize']},
-            {'name': 'links', 'items': ['Link', 'Unlink', 'Maximize']},
+            {'name': 'links', 'items': ['Link', 'Unlink', '-', ]},
         ],
         'toolbar': 'BlogToolbarConfig',
         'tabSpaces': 4,
+        'mathJaxLib': '//cdnjs.cloudflare.com/ajax/libs/mathjax/3.0.0/es5/latest?tex-mml-chtml.js',
     },
 }

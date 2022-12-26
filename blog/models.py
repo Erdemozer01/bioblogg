@@ -2,6 +2,7 @@ import time
 from django.db import models
 from django.utils import timezone
 from ckeditor_uploader.fields import RichTextUploadingField
+from ckeditor.fields import RichTextField
 from autoslug.fields import AutoSlugField
 from hitcount.models import HitCount, Hit
 from django.contrib.contenttypes.fields import GenericRelation
@@ -38,7 +39,7 @@ def extra_img_upload_to(instance, filename):
 class Category(models.Model):
     image = models.ImageField(upload_to='blog/category/', verbose_name='Kategori Fotosu:')
     title = models.CharField(max_length=100, verbose_name='Kategori:')
-    explain = models.TextField(verbose_name='Kategori Tanımı:')
+    explain = RichTextField(verbose_name='Kategori Tanımı:', config_name="blog")
     slug = AutoSlugField(populate_from='title', unique=True)
 
     publish = models.DateTimeField(default=timezone.now, verbose_name='Yayınlama Tarihi')
@@ -65,14 +66,17 @@ class Posts(models.Model):
         DRAFT = 'DF', 'Taslak'
         PUBLISHED = 'PB', 'Yayınla'
 
+    category = models.ForeignKey(Category, verbose_name="Kategori", related_name='post', on_delete=models.CASCADE)
     cover = models.ImageField(upload_to=cover_upload_to, verbose_name="Gönderi Fotosu:")
     title = models.CharField(max_length=250, verbose_name="Başlık:", blank=False)
     text = RichTextUploadingField(verbose_name='İçerik', blank=False)
     slug = AutoSlugField(populate_from="title", unique=True)
     author = models.ForeignKey('auth.User', on_delete=models.CASCADE, verbose_name='Yazar')
-    category = models.ForeignKey(Category, verbose_name="Kategori", related_name='post', on_delete=models.CASCADE)
+
     tags = models.CharField(max_length=255, blank=True, verbose_name="Etiketler")
     hit_count = GenericRelation(HitCount, object_id_field='object_pk', related_query_name='hit_count_generic_relation')
+    likes = models.ManyToManyField('auth.User', related_name='post_like', verbose_name="Beğendim", blank=True)
+    dislike = models.ManyToManyField('auth.User', related_name='post_dislike', verbose_name="Beğenmedim", blank=True)
 
     extra_image1 = models.ImageField(upload_to=extra_img_upload_to, verbose_name="Gönderiye Foto Ekleme",
                                      blank=True)
@@ -138,3 +142,5 @@ class Comments(models.Model):
         db_table = 'comments'
         verbose_name = 'Yorum'
         verbose_name_plural = 'Yorumlar'
+
+

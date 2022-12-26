@@ -89,7 +89,8 @@
                 <div class="multi-level collapse  " role="list" id="submenu-dashboard" aria-expanded="false">
                     <ul class="flex-column nav">
                         <li class="nav-item ">
-                            <a href="/dashboard-traffic-sources.html" class="nav-link">
+                            <a href="{% url "dashboard:my_blog_dashboard" request.user.pk request.user.username %}"
+                               class="nav-link">
                                 <span class="sidebar-text-contracted">BLG</span>
                                 <span class="sidebar-text">Blog</span>
                             </a>
@@ -162,6 +163,7 @@
                             clip-rule="evenodd"></path></svg>
                     </span>
                     <span class="sidebar-text">Task List</span>
+
                 </a>
             </li>
 
@@ -183,11 +185,13 @@
                     <span>
                     <span class="sidebar-icon">
                         <svg class="icon icon-xs me-2" fill="currentColor" viewBox="0 0 20 20"
-                             xmlns="http://www.w3.org/2000/svg"><path
-                                d="M8.707 7.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l2-2a1 1 0 00-1.414-1.414L11 7.586V3a1 1 0 10-2 0v4.586l-.293-.293z"></path><path
-                                d="M3 5a2 2 0 012-2h1a1 1 0 010 2H5v7h2l1 2h4l1-2h2V5h-1a1 1 0 110-2h1a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V5z"></path></svg>
+                             xmlns="http://www.w3.org/2000/svg">
+                            <path d="M8.707 7.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l2-2a1 1 0 00-1.414-1.414L11 7.586V3a1 1 0 10-2 0v4.586l-.293-.293z"></path>
+                            <path d="M3 5a2 2 0 012-2h1a1 1 0 010 2H5v7h2l1 2h4l1-2h2V5h-1a1 1 0 110-2h1a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V5z"></path>
+                        </svg>
                     </span>
                     <span class="sidebar-text">Messages</span>
+                        <span class="badge badge-sm bg-danger badge-pill notification-count">4</span>
                     </span>
 
                 </a>

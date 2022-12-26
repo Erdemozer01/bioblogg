@@ -289,7 +289,7 @@
                     <div class="navbar-collapse-header">
                         <div class="row">
                             <div class="col-6 collapse-brand">
-                                <a href="/index.html"
+                                <a href="{% url "blog:anasayfa" %}"
                                    class="navbar-brand shadow-soft py-2 px-3 rounded border border-light">
                                     Blog
                                 </a>
@@ -310,7 +310,7 @@
                     <ul class="navbar-nav navbar-nav-hover align-items-lg-center">
 
                         <li class="nav-item">
-                            <a href="{% url "anasayfa" %}" class="nav-link">
+                            <a href="#" class="nav-link">
                                 <span class="nav-link-inner-text">Laboratuvar</span>
                             </a>
                         </li>
@@ -518,9 +518,9 @@
                             </a>
 
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="/page-about.html">Hakkımızda</a></li>
-                                <li><a class="dropdown-item" href="/page-pricing.html">İletişim</a></li>
-                                <li><a class="dropdown-item" href="/page-sign-in.html">Gizlilik</a></li>
+                                <li><a class="dropdown-item" href="#">Hakkımızda</a></li>
+                                <li><a class="dropdown-item" href="#">İletişim</a></li>
+                                <li><a class="dropdown-item" href="#">Gizlilik</a></li>
                             </ul>
                         </li>
 
@@ -545,10 +545,6 @@
                             <a class="dropdown-item" href="{% url "dashboard:anasayfa" request.user.username %}">Dashboard</a>
                             {% if request.user.is_superuser %}
                                 <a class="dropdown-item" href="{% url "admin:index" %}">Yönetici Paneli</a>
-                            {% endif %}
-
-                            {% if request.user.is_staff %}
-                                <a class="dropdown-item" href="{% url "blog:post_create" %}">Gönderi Ekle</a>
                             {% endif %}
 
                             <a class="dropdown-item" href="#">Ayarlar</a>

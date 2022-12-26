@@ -1,17 +1,22 @@
 <footer class="bg-white rounded shadow p-5 mb-4 mt-4">
     <div class="row">
         <div class="col-12 col-md-4 col-xl-6 mb-4 mb-md-0">
-            <p class="mb-0 text-center text-lg-start">
-                &copy; <a class="text-primary fw-normal" href="{% url "blog:anasayfa" %}" target="_blank">BioBlog</a>
-                <a href="{% url "blog:anasayfa" %}" target="_blank">{% now "Y" %}</a>.
-            </p>
+            <p class="mb-0 text-center text-lg-start">© 2022-<span class="current-year"></span> <a class="text-primary fw-normal" href="{% url "blog:anasayfa" %}" target="_blank">BioBlog</a></p>
         </div>
         <div class="col-12 col-md-8 col-xl-6 text-center text-lg-start">
             <!-- List -->
             <ul class="list-inline list-group-flush list-group-borderless text-md-end mb-0">
                 <li class="list-inline-item px-0 px-sm-2">
-                    <a target="_blank" 
-                       href="{% url "dashboard:anasayfa" request.user %}"> Dashboard</a>
+                    <a href="{% url "anasayfa" %}">Anasayfa</a>
+                </li>
+                <li class="list-inline-item px-0 px-sm-2">
+                    <a href="#">Laboratuvar</a>
+                </li>
+                <li class="list-inline-item px-0 px-sm-2">
+                    <a href="{% url "blog:anasayfa" %}">Blog</a>
+                </li>
+                <li class="list-inline-item px-0 px-sm-2">
+                    <a href="#">İletişim</a>
                 </li>
             </ul>
         </div>

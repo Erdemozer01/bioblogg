@@ -31,10 +31,7 @@ class Profile(models.Model):
     phone = models.CharField(max_length=13, verbose_name='Telefon', blank=True, unique=True, null=True)
     birth_day = models.DateField(blank=True, null=True, verbose_name='Doğum Tarihi:')
     skils = models.CharField(max_length=200, editable=True, verbose_name='Yetenekler', blank=True)
-
-    facebook = models.URLField(verbose_name='Facebook', blank=True)
-    twitter = models.URLField(verbose_name='Twitter', blank=True)
-    instagram = models.URLField(verbose_name='İnstagram', blank=True)
+    language = models.CharField(max_length=200, editable=True, verbose_name='Bildiğiniz Diller', blank=True, help_text="ingilizce")
 
     created = models.DateTimeField(auto_now=True, verbose_name='Katılma Tarihi', blank=True)
 
@@ -45,3 +42,54 @@ class Profile(models.Model):
         db_table = 'profile'
         verbose_name = 'Profil'
         verbose_name_plural = 'Profil'
+
+
+class Education(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Kullanıcı Adı', related_name='user_edu')
+    school = models.CharField(verbose_name="Okul Türü", max_length=100, help_text="Üniversite")
+    school_name = models.CharField(verbose_name="Okul", max_length=100, help_text="Akdeniz Üniversitesi")
+    start = models.CharField(verbose_name="Başlangıç yılı", max_length=100, help_text="2010")
+    finish = models.CharField(verbose_name="Bitiş yılı:", max_length=100, help_text="2014")
+    explain = models.TextField(verbose_name='Açıklama:', blank=True)
+    created = models.DateTimeField(auto_now_add=True, verbose_name='Oluşturulma Tarihi', blank=True)
+
+    def __str__(self):
+        return self.school + "|" + self.school_name
+
+    class Meta:
+        db_table = 'education'
+        verbose_name = 'Eğitim Bilgileri'
+        verbose_name_plural = 'Eğitim Bilgileri'
+
+
+class Job(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Kullanıcı Adı', related_name='user_job')
+    job = models.CharField(verbose_name="Meslek", max_length=100, help_text="Mühendis")
+    department = models.CharField(verbose_name="Pozisyon", max_length=100, help_text="Gıda Mühendisi")
+    location = models.CharField(verbose_name="İş yeri adı", max_length=100, help_text="Sabancı Holding")
+    start = models.CharField(verbose_name="Başlangıç yılı", max_length=100, help_text="2010")
+    explain = models.TextField(verbose_name='Açıklama:', blank=True)
+    created = models.DateTimeField(auto_now_add=True, verbose_name='Oluşturulma Tarihi', blank=True)
+
+    def __str__(self):
+        return self.job + "|" + self.department
+
+    class Meta:
+        db_table = 'job'
+        verbose_name = 'İş Bilgileri'
+        verbose_name_plural = 'İş Bilgileri'
+
+
+class SocialMedia(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Kullanıcı Adı', related_name='user_social')
+    social = models.CharField(verbose_name="Sosyal Medya Adı", max_length=100, help_text="Facebook", unique=True)
+    url = models.URLField(verbose_name="Sosyal Medya Url Adresi", max_length=100)
+    created = models.DateTimeField(auto_now_add=True, verbose_name='Oluşturulma Tarihi', blank=True)
+
+    def __str__(self):
+        return self.social
+
+    class Meta:
+        db_table = 'profile_social'
+        verbose_name = 'Sosyal Medya Bilgileri'
+        verbose_name_plural = 'Sosyal Medya Bilgileri'

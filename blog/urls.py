@@ -16,7 +16,8 @@ from .views import (
     CategoryDeleteView,
     CommentDetailView,
     comment_read,
-    mark_as_all_read
+    like_post,
+    dislike_post,
 )
 
 app_name = "blog"
@@ -25,7 +26,7 @@ urlpatterns = [
     path('', BlogHomeView.as_view(), name="anasayfa"),
     path('categories/', CategoriesView.as_view(), name="categories"),
     path('category/<slug:slug>/', CategoryView.as_view(), name="category"),
-    path('<slug:category>/<slug:slug>/<int:pk>/<slug:author>-<int:id>/<created>/',
+    path('<slug:category>/<slug:slug>/<int:pk>/<slug:author>-<int:author_id>/<created>/',
          PostDetailView.as_view(), name="post_detail"),
     path('create-post/', CreatePost.as_view(), name="post_create"),
     path('update-post/<pk>/<title>/', PostUpdateView.as_view(), name="post_update"),
@@ -39,5 +40,7 @@ urlpatterns = [
     path('dislike/<id>/', comment_dislike, name="comment_dislike"),
     path('report/<id>/', report_comment, name="report_comment"),
     path('okundu/<pk>/', comment_read, name="comment_read"),
-    path('mark_as_all_read/', mark_as_all_read, name="mark_as_all_read"),
+    path('begendim/<pk>/<title>/', like_post, name="like_post"),
+    path('begenmedim/<pk>/<title>/', dislike_post, name="dislike_post"),
+
 ]

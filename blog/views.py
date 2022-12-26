@@ -54,8 +54,9 @@ class BlogHomeView(generic.ListView):
         context = super().get_context_data(**kwargs)
         if Posts.objects.exists():
             context['latest'] = Posts.objects.all().latest('created')
-        context['popular_posts'] = Posts.objects.order_by('-hit_count__hits')[:3]
-        context['archive'] = Posts.objects.dates('created', 'month', 'DESC')
+        context['popular_posts'] = Posts.objects.order_by('-hit_count__hits')[:2]
+        context['popular_post_side'] = Posts.objects.order_by('-hit_count__hits')[2:10]
+        context['archives'] = Posts.objects.dates('created', 'month', 'DESC')
         return context
 
 
@@ -67,8 +68,8 @@ class PostDetailView(HitCountDetailView, generic.DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['popular_posts'] = Posts.objects.order_by('-hit_count__hits')[:3]
-        context['archive'] = Posts.objects.dates('created', 'month', 'DESC')
+        context['popular_posts'] = Posts.objects.order_by('-hit_count__hits')[2:10]
+        context['archives'] = Posts.objects.dates('created', 'month', 'DESC')
         posts = get_object_or_404(Posts, slug=self.kwargs['slug'])
         context['comments'] = posts.comment.all().order_by('-id')
 
@@ -91,8 +92,11 @@ class ArchiveView(MonthArchiveView):
     model = Posts
     date_field = "created"
     allow_future = True
-    paginate_by = 30
+    paginate_by = 10
     month_format = "%m"
+
+    def get_queryset(self):
+        return Posts.objects.order_by('-id')
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -234,16 +238,6 @@ def comment_read(request, pk):
     return HttpResponseRedirect(reverse("dashboard:anasayfa", args=[request.user.username]))
 
 
-def mark_as_all_read(request):
-    if not request.user.is_staff:
-        messages.error(request, "Yetkili girişi yapınız!")
-        return redirect('%s?next=/blog/' % (settings.LOGIN_URL))
-    comments = Comments.objects.all().filter(post__author=request.user, status="okunmadı")
-    comments.update(status="okundu")
-
-    return HttpResponseRedirect(reverse("dashboard:anasayfa", args=[request.user.username]))
-
-
 def comment_delete(request, pk):
     comment = get_object_or_404(Comments, pk=pk)
     if not request.user.username == comment.commentator.username:
@@ -259,17 +253,20 @@ def comment_delete(request, pk):
 
 def comment_like(request, id):
     comment = get_object_or_404(Comments, id=id)
+    if comment.commentator.username == request.user.username:
+        messages.info(request, "Kendini beğenmiş birisin :) ")
+    else:
+        messages.success(request, f"{comment.commentator.username} isimli kullanıcının yorumunu beğendiniz")
+
     comment.likes.add(request.user)
-    messages.success(request, f"{comment.commentator.username} isimli kullanıcının yorumunu beğendiniz")
-    return HttpResponseRedirect(reverse("blog:post_detail", args=(
-        comment.post.category.title, comment.post.slug, comment.post.pk, comment.post.author, comment.post.author.pk,
-        comment.post.created.date()
-    )))
+
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 
 def comment_dislike(request, id):
     comment = get_object_or_404(Comments, id=id)
     comment.dislike.add(request.user)
+    messages.error(request, f"{comment.commentator.username} isimli kullanıcının yorumunu beğenmediniz")
     return HttpResponseRedirect(reverse("blog:post_detail", args=(
         comment.post.category.title, comment.post.slug, comment.post.pk, comment.post.author, comment.post.author.pk,
         comment.post.created.date()
@@ -285,4 +282,24 @@ def report_comment(request, id):
     return HttpResponseRedirect(reverse("blog:post_detail", args=(
         comment.post.category.title, comment.post.slug, comment.post.pk, comment.post.author, comment.post.author.pk,
         comment.post.created.date()
+    )))
+
+
+def like_post(request, pk, title):
+    post = get_object_or_404(Posts, pk=pk, title=title)
+    post.likes.add(request.user)
+    messages.success(request, f"{post.title} başlıklı gönderiyi beğendiniz")
+    return HttpResponseRedirect(reverse("blog:post_detail", args=(
+        post.category.title, post.slug, post.pk, post.author, post.author.pk,
+        post.created.date()
+    )))
+
+
+def dislike_post(request, pk, title):
+    post = get_object_or_404(Posts, pk=pk, title=title)
+    post.dislike.add(request.user)
+    messages.error(request, f"{post.title} başlıklı gönderiyi beğenmediniz")
+    return HttpResponseRedirect(reverse("blog:post_detail", args=(
+        post.category.title, post.slug, post.pk, post.author, post.author.pk,
+        post.created.date()
     )))

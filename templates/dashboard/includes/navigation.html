@@ -1,12 +1,8 @@
 {% load static %}
-{% load comments %}
-{% comments as comments %}
 <nav class="navbar navbar-top navbar-expand navbar-dashboard navbar-dark ps-0 pe-2 pb-0">
     <div class="container-fluid px-0">
         <div class="d-flex justify-content-between w-100" id="navbarSupportedContent">
-
             <div class="d-flex align-items-center">
-
                 <button id="sidebar-toggle"
                         class="sidebar-toggle me-3 btn btn-icon-only d-none d-lg-inline-block align-items-center justify-content-center">
                     <svg class="toggle-icon" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
@@ -16,14 +12,11 @@
                         </path>
                     </svg>
                 </button>
-
             </div>
-
             <!-- Navbar links -->
             <ul class="navbar-nav align-items-center">
                 <!-- Bildirimler -->
                 <li class="nav-item dropdown">
-                    <!-- Bildirimler -->
                     {% if comments %}
                         <a class="nav-link text-dark notification-bell unread dropdown-toggle"
                            data-unread-notifications="true" href="#" role="button" data-bs-toggle="dropdown"
@@ -35,7 +28,7 @@
                         </a>
                     {% else %}
                         <a class="nav-link text-dark notification-bell dropdown-toggle"
-                           data-unread-notifications="true" href="#" role="button" data-bs-toggle="dropdown"
+                           data-read-notifications="true" href="#" role="button" data-bs-toggle="dropdown"
                            data-bs-display="static" aria-expanded="false">
                             <svg class="icon icon-sm text-gray-900" fill="currentColor" viewBox="0 0 20 20"
                                  xmlns="http://www.w3.org/2000/svg">
@@ -45,58 +38,40 @@
                     {% endif %}
                     <div class="dropdown-menu dropdown-menu-lg dropdown-menu-center mt-2 py-0">
                         <div class="list-group list-group-flush">
-                            <p class="text-center text-primary fw-bold border-bottom border-light py-3">Bildirim
-                                Merkezi</p>
+                            <p class="text-center text-primary fw-bold border-bottom border-light py-3">Bildirim Merkezi</p>
                             {% if comments %}
                                 {% for comment in comments %}
-                                    {% if comment.post.author == request.user %}
-                                        {% if comment.status == "okunmadı" %}
-                                            <a href="{% url "blog:comment_detail" comment.pk %}"
-                                               class="list-group-item list-group-item-action border-bottom">
-                                                <div class="row align-items-center">
-                                                    <div class="col-auto">
-                                                        <!-- Avatar -->
-                                                        <img alt="Image placeholder"
-                                                             src="https://appsrv1-147a1.kxcdn.com/volt-dashboard-pro-django-v1.0.10/images/user.png"
-                                                             class="avatar-md rounded">
-                                                    </div>
-                                                    <div class="col ps-0 ms-2">
-                                                        <div class="d-flex justify-content-between align-items-center">
-                                                            <div>
-                                                                <small class="mb-0 text-small">{{ comment }} gönderiye
-                                                                    yorum yaptı
-                                                                    <small class="text-danger float-left">{{ comment.created|timesince }}
-                                                                        önce </small>
-                                                                </small>
-                                                            </div>
-
+                                    {% if comment.commentator.username == request.user.username %}
+                                        <a href="{% url "blog:comment_detail" comment.pk %}"
+                                           class="list-group-item list-group-item-action border-bottom">
+                                            <div class="row align-items-center">
+                                                <div class="col-auto">
+                                                    <!-- Avatar -->
+                                                    <img alt="Image placeholder"
+                                                         src="https://appsrv1-147a1.kxcdn.com/volt-dashboard-pro-django-v1.0.10/images/user.png"
+                                                         class="avatar-md rounded">
+                                                </div>
+                                                <div class="col ps-0 ms-2">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <div>
+                                                            <small class="mb-0 text-small">{{ comment }} gönderiye
+                                                                yorum yaptı
+                                                                <small class="text-danger float-left">{{ comment.created|timesince }}
+                                                                    önce </small>
+                                                            </small>
                                                         </div>
-
                                                     </div>
                                                 </div>
-                                            </a>
-                                        {% endif %}
+                                            </div>
+                                        </a>
                                     {% endif %}
                                 {% endfor %}
-                                <a href="{% url "blog:mark_as_all_read" %}"
-                                   class="dropdown-item text-center fw-bold rounded-bottom py-3">
-                                    <svg class="icon icon-xxs text-gray-400 me-1" fill="currentColor"
-                                         viewBox="0 0 20 20"
-                                         xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"></path>
-                                        <path fill-rule="evenodd"
-                                              d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
-                                              clip-rule="evenodd"></path>
-                                    </svg>
-                                    Tümünü okundu olarak işaretle
-                                </a>
                             {% else %}
-                                <small class="text-center mb-3">Okunmamış Bildiriminiz yoktur</small>
                             {% endif %}
                         </div>
                     </div>
                 </li>
-                <!-- Avatar-user -->
+                <!-- Avatar-User -->
                 <li class="nav-item dropdown ms-lg-3">
                     <a class="nav-link dropdown-toggle pt-1 px-0" href="#" role="button" data-bs-toggle="dropdown"
                        aria-expanded="false">
@@ -173,6 +148,7 @@
                         </svg>
                     </a>
                 </li>
+
                 <li class="breadcrumb-item"><a href="{% url "dashboard:anasayfa" request.user %}">DashBoard</a></li>
                 {% if "update-post" in request.build_absolute_uri %}
                     <li class="breadcrumb-item active" aria-current="page">Gönderi Güncelle</li>
@@ -182,6 +158,10 @@
                     <li class="breadcrumb-item active" aria-current="page">Kategori Oluştur</li>
                 {% elif "create-post" in request.build_absolute_uri %}
                     <li class="breadcrumb-item active" aria-current="page">Gönderi Oluştur</li>
+                {% elif "my-blog-dashboard" in request.build_absolute_uri %}
+                    <li class="breadcrumb-item active" aria-current="page">{{ request.user|title }} Kullanıcısı Blog
+                        Dashboard
+                    </li>
                 {% endif %}
             </ol>
         </nav>

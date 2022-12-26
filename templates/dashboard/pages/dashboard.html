@@ -1,9 +1,11 @@
 {% extends "dashboard/layouts/base.html" %}
 {% load django_bootstrap5 %}
 {% load plotly_dash %}
-{% block title %} Dashboard {% endblock %}
+{% block title %} Dashboard | {{ request.user|title }} {% endblock %}
 
-{% block stylesheets %}{% endblock %}
+{% block stylesheets %}
+    <link rel="stylesheet" href="/static/dashboard/assets/css/dataTables.bootstrap5.min.css">
+{% endblock %}
 
 {% block content %}
 
@@ -38,25 +40,16 @@
         </div>
     </div>
 
-    <!-- Grafik -->
-    <div class="row">
-        <div class="col-12 mb-4">
-            {% plotly_app name="UsersTable" ratio=0.3 %}
-            {% plotly_app name="DateUser" ratio=0.5 %}
-        </div>
-    </div>
+    {% if request.user.is_superuser %}
+        {% plotly_app name="Hits" ratio=0.3 %}
+    {% endif %}
 
-    <!-- Table -->
-    <div class="row">
+    {% plotly_app name="UserGraph" ratio=0.5 %}
+    {% plotly_app name="UserTable" ratio=0.5 %}
+    {% plotly_app name="post_table" ratio=0.5 %}
+    {% plotly_app name="post_graph_bar" ratio=0.5 %}
+    {% plotly_app name="hits_table_son" ratio=0.6 %}
 
-        <div class="col-12 col-xl-12">
-            <div class="row">
-                {% plotly_app name="Hits" ratio=0.2 %}
-            </div>
-        </div>
 
-    </div>
 
 {% endblock %}
-
-{% block javascripts %}{% endblock %}

@@ -1,5 +1,4 @@
-from django.urls import path, include
-from .views import UserRegister
+from django.urls import path
 from accounts.views import UserRegister
 
 app_name = "accounts"

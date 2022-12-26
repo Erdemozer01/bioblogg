@@ -45,5 +45,5 @@ class UserProfileEditForm(forms.ModelForm):
 class ProfileEditForm(forms.ModelForm):
     class Meta:
         model = Profile
-        fields = ['cover', 'avatar', 'phone', 'location', 'job', 'about', 'facebook', 'twitter', 'instagram']
+        fields = ['cover', 'avatar', 'phone', 'location', 'job', 'about']
 

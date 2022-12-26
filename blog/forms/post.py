@@ -8,12 +8,12 @@ class CreatePostModelForm(forms.ModelForm):
         exclude = ('author',)
 
         widgets = {
+            'category': forms.Select(attrs={'class': 'form-control'}),
             'cover': forms.ClearableFileInput(attrs={'class': 'form-control', 'type': 'file'}),
             'extra_image1': forms.ClearableFileInput(attrs={'class': 'form-control', 'type': 'file'}),
             'extra_image2': forms.ClearableFileInput(attrs={'class': 'form-control', 'type': 'file'}),
             'extra_image3': forms.ClearableFileInput(attrs={'class': 'form-control', 'type': 'file'}),
             'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Gönderi Başlığı'}),
-            'category': forms.Select(attrs={'class': 'form-control'}),
             'status': forms.Select(attrs={'class': 'form-control'}),
         }
 
