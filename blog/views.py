@@ -328,4 +328,6 @@ class CommentUpdate(generic.UpdateView):
 
     def get_success_url(self):
         messages.success(self.request, "Yorumunuz başarılı bir şekilde güncellendi..")
-        return HttpResponseRedirect(self.request.META.get('HTTP_REFERER'))
+        return HttpResponseRedirect(
+            self.request.build_absolute_uri()
+        )
