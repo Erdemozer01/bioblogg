@@ -286,7 +286,7 @@ def report_comment(request, id):
 
 
 def like_post(request, pk, title):
-    if not request.user.is_anonymous:
+    if request.user.is_anonymous:
         messages.error(request, "Gönderiyi beğenmek için giriş yapınız!")
         return redirect('%s?next=/blog/' % (settings.LOGIN_URL))
     post = get_object_or_404(Posts, pk=pk, title=title)
