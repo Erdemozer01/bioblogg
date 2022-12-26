@@ -229,6 +229,9 @@ class CommentDetailView(generic.DetailView):
 
 
 def comment_read(request, pk):
+    if request.user.is_anonymous:
+        messages.error(request, "Gönderiyi beğenmek için giriş yapınız!")
+        return redirect('%s?next=/blog/' % (settings.LOGIN_URL))
     if not request.user.is_staff:
         messages.error(request, "Yetkili girişi yapınız!")
         return redirect('%s?next=/blog/' % (settings.LOGIN_URL))
@@ -239,6 +242,9 @@ def comment_read(request, pk):
 
 
 def comment_delete(request, pk):
+    if request.user.is_anonymous:
+        messages.error(request, "Gönderiyi beğenmek için giriş yapınız!")
+        return redirect('%s?next=/blog/' % (settings.LOGIN_URL))
     comment = get_object_or_404(Comments, pk=pk)
     if not request.user.username == comment.commentator.username:
         messages.error(request, "Yetkisiz kullanıcı")
@@ -252,6 +258,9 @@ def comment_delete(request, pk):
 
 
 def comment_like(request, id):
+    if request.user.is_anonymous:
+        messages.error(request, "Gönderiyi beğenmek için giriş yapınız!")
+        return redirect('%s?next=/blog/' % (settings.LOGIN_URL))
     comment = get_object_or_404(Comments, id=id)
     if comment.commentator.username == request.user.username:
         messages.info(request, "Kendini beğenmiş birisin :) ")
@@ -264,6 +273,9 @@ def comment_like(request, id):
 
 
 def comment_dislike(request, id):
+    if request.user.is_anonymous:
+        messages.error(request, "Gönderiyi beğenmek için giriş yapınız!")
+        return redirect('%s?next=/blog/' % (settings.LOGIN_URL))
     comment = get_object_or_404(Comments, id=id)
     comment.dislike.add(request.user)
     messages.error(request, f"{comment.commentator.username} isimli kullanıcının yorumunu beğenmediniz")
@@ -271,6 +283,9 @@ def comment_dislike(request, id):
 
 
 def report_comment(request, id):
+    if request.user.is_anonymous:
+        messages.error(request, "Gönderiyi beğenmek için giriş yapınız!")
+        return redirect('%s?next=/blog/' % (settings.LOGIN_URL))
     comment = get_object_or_404(Comments, id=id)
     comment.report.add(request.user)
     if comment.report.count() > 5:
@@ -290,6 +305,9 @@ def like_post(request, pk, slug):
 
 
 def dislike_post(request, pk, title):
+    if request.user.is_anonymous:
+        messages.error(request, "Gönderiyi beğenmek için giriş yapınız!")
+        return redirect('%s?next=/blog/' % (settings.LOGIN_URL))
     post = get_object_or_404(Posts, pk=pk, title=title)
     post.dislike.add(request.user)
     messages.error(request, f"{post.title} başlıklı gönderiyi beğenmediniz")
