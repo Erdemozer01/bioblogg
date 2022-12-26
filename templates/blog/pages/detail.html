@@ -113,7 +113,7 @@
                         {% endif %}
                     </article>
 
-                    <a href="{% url "blog:like_post" object.pk object.title|slugify %}">
+                    <a href="{% url "blog:like_post" object.pk object.slug|slugify %}">
                         <button class="btn btn-icon-only btn-pill btn-soft animate-up-3" type="submit"
                                 title="Gönderiyi Beğendim">
                             <i class="fa fa-thumbs-up text-success"></i>

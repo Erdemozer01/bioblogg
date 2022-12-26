@@ -40,7 +40,7 @@ urlpatterns = [
     path('dislike/<id>/', comment_dislike, name="comment_dislike"),
     path('report/<id>/', report_comment, name="report_comment"),
     path('okundu/<pk>/', comment_read, name="comment_read"),
-    path('begendim/<pk>/<title>/', like_post, name="like_post"),
+    path('begendim/<pk>/<slug>/', like_post, name="like_post"),
     path('begenmedim/<pk>/<title>/', dislike_post, name="dislike_post"),
 
 ]
