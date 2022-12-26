@@ -314,7 +314,7 @@ def dislike_post(request, pk, title):
 class CommentUpdate(generic.UpdateView):
     template_name = "blog/pages/update.html"
     model = Comments
-    fields = ['comment']
+    form_class = AddCommentForm
 
     def get_success_url(self):
         messages.success(self.request, "Yorumunuz başarılı bir şekilde güncellendi..")
