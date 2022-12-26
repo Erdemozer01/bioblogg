@@ -251,10 +251,7 @@ def comment_delete(request, pk):
         return redirect('%s?next=/blog/' % (settings.LOGIN_URL))
     comment.delete()
     messages.success(request, "Yorumunuz başarılı bir şekilde silindi")
-    return HttpResponseRedirect(reverse("blog:post_detail", args=(
-        comment.post.category.title, comment.post.slug, comment.post.pk, comment.post.author, comment.post.author.pk,
-        comment.post.created.date()
-    )))
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 
 def comment_like(request, id):
