@@ -267,10 +267,7 @@ def comment_dislike(request, id):
     comment = get_object_or_404(Comments, id=id)
     comment.dislike.add(request.user)
     messages.error(request, f"{comment.commentator.username} isimli kullanıcının yorumunu beğenmediniz")
-    return HttpResponseRedirect(reverse("blog:post_detail", args=(
-        comment.post.category.title, comment.post.slug, comment.post.pk, comment.post.author, comment.post.author.pk,
-        comment.post.created.date()
-    )))
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 
 def report_comment(request, id):
@@ -279,10 +276,7 @@ def report_comment(request, id):
     if comment.report.count() > 5:
         comment.delete()
     messages.success(request, "Geri bildiriminiz iletilmiştir")
-    return HttpResponseRedirect(reverse("blog:post_detail", args=(
-        comment.post.category.title, comment.post.slug, comment.post.pk, comment.post.author, comment.post.author.pk,
-        comment.post.created.date()
-    )))
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 
 def like_post(request, pk, slug):
@@ -292,17 +286,11 @@ def like_post(request, pk, slug):
     post = get_object_or_404(Posts, pk=pk, slug=slug)
     post.likes.add(request.user)
     messages.success(request, f"{post.title} başlıklı gönderiyi beğendiniz")
-    return HttpResponseRedirect(reverse("blog:post_detail", args=(
-        post.category.title, post.slug, post.pk, post.author, post.author.id,
-        post.created.date()
-    )))
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 
 def dislike_post(request, pk, title):
     post = get_object_or_404(Posts, pk=pk, title=title)
     post.dislike.add(request.user)
     messages.error(request, f"{post.title} başlıklı gönderiyi beğenmediniz")
-    return HttpResponseRedirect(reverse("blog:post_detail", args=(
-        post.category.title, post.slug, post.pk, post.author, post.author.id,
-        post.created.date()
-    )))
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
