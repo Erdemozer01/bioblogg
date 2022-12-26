@@ -293,7 +293,7 @@ def like_post(request, pk, title):
     post.likes.add(request.user)
     messages.success(request, f"{post.title} başlıklı gönderiyi beğendiniz")
     return HttpResponseRedirect(reverse("blog:post_detail", args=(
-        post.category.title, post.slug, post.pk, post.author, post.author.pk,
+        post.category.title, post.slug, post.pk, post.author, post.author.id,
         post.created.date()
     )))
 
@@ -303,6 +303,6 @@ def dislike_post(request, pk, title):
     post.dislike.add(request.user)
     messages.error(request, f"{post.title} başlıklı gönderiyi beğenmediniz")
     return HttpResponseRedirect(reverse("blog:post_detail", args=(
-        post.category.title, post.slug, post.pk, post.author, post.author.pk,
+        post.category.title, post.slug, post.pk, post.author, post.author.id,
         post.created.date()
     )))
