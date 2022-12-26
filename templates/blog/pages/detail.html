@@ -47,7 +47,7 @@
                 <div class="col-md-8">
                     <!-- Makale Bölümü -->
                     <article class="blog-post">
-                        <h2 class="blog-post-title mb-1">{{ object.title.title }}
+                        <h2 class="blog-post-title mb-1">{{ object.title.title }}</h2>
                         <span>
                             {% if object.author.username == request.user.username %}
                                 <div class="btn-group float-left">
@@ -75,10 +75,6 @@
                                 </div>
                             {% endif %}
                         </span>
-
-                        </h2>
-
-
                         <p class="blog-post-meta" style="font-size: small">
                             <a href="#">{{ object.author|title }}</a> - {{ object.created|date }}
                             , <span>{% get_hit_count for posts %} defa okundu.</span>
