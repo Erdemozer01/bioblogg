@@ -314,7 +314,6 @@ def dislike_post(request, pk, title):
 class CommentUpdate(generic.UpdateView):
     template_name = "blog/pages/update.html"
     model = Comments
-    form_class = AddCommentForm
 
     def get(self, request, *args, **kwargs):
         if not self.request.user.is_staff:
