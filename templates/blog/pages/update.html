@@ -47,7 +47,7 @@
                             <span class="card-text small">
                                 <span class="far fa-calendar-alt mr-2">
                                 </span>{{ object.created }}</span>
-                            <form method="post">
+                            <form action="{% url "blog:post_detail" object.post.category.title.lower|slugify object.post.slug object.post.pk object.post.author object.post.author.id object.post.created.date %}" method="post">
                                 {% csrf_token %}
                                 {% bootstrap_form form %}
                                 <div class="d-flex align-items-center">

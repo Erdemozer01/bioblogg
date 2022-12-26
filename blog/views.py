@@ -322,7 +322,7 @@ class CommentUpdate(generic.UpdateView):
 
     def test_func(self):
         comment = self.get_object()
-        if self.request.user == comment.user:
+        if self.request.user == comment.commentator:
             return True
         return False
 
