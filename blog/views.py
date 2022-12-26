@@ -314,7 +314,17 @@ def dislike_post(request, pk, title):
 class CommentUpdate(generic.UpdateView):
     template_name = "blog/pages/update.html"
     model = Comments
-    form_class = AddCommentForm
+    fields = ['comment']
+
+    def form_valid(self, form):
+        form.instance.commentator = self.request.user
+        return super().form_valid(form)
+
+    def test_func(self):
+        comment = self.get_object()
+        if self.request.user == comment.user:
+            return True
+        return False
 
     def get_success_url(self):
         messages.success(self.request, "Yorumunuz başarılı bir şekilde güncellendi..")
