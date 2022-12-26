@@ -314,12 +314,17 @@ def dislike_post(request, pk, title):
 class CommentUpdate(generic.UpdateView):
     template_name = "blog/pages/update.html"
     model = Comments
+    form_class = AddCommentForm
 
     def get(self, request, *args, **kwargs):
         if not self.request.user.username == self.model.commentator.username:
             messages.error(request, "Yetkili girişi yapınız!")
             return redirect('%s?next=/blog/' % (settings.LOGIN_URL))
         return super().get(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        form.save()
+        return super().form_valid(form)
 
     def get_success_url(self):
         messages.success(self.request, "Yorumunuz başarılı bir şekilde güncellendi..")
