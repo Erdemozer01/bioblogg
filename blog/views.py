@@ -289,12 +289,7 @@ def like_post(request, pk, title):
     post = get_object_or_404(Posts, pk=pk, title=title)
     if not request.user.is_anonymous:
         messages.error(request, "Gönderiyi beğenmek için giriş yapınız!")
-        return redirect('%s?next=%s' % (settings.LOGIN_URL,
-                                        HttpResponseRedirect(reverse("blog:post_detail", args=(
-                                            post.category.title, post.slug, post.pk, post.author, post.author.pk,
-                                            post.created.date()
-                                        )))
-                                        ))
+        return redirect('%s?next=/blog/' % (settings.LOGIN_URL))
 
     post.likes.add(request.user)
     messages.success(request, f"{post.title} başlıklı gönderiyi beğendiniz")
