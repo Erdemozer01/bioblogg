@@ -15,7 +15,7 @@ SECRET_KEY = 'django-insecure-_*6$iz2emf&x(*^w5#)^j7o7cyx^@d%z+2_@%e0(#(qh786$*_
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['http://bioblog.pythonanywhere.com/', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['bioblog.pythonanywhere.com', 'localhost', '127.0.0.1']
 
 # Application definition
 
