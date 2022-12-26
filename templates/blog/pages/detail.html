@@ -48,6 +48,7 @@
                     <!-- Makale Bölümü -->
                     <article class="blog-post">
                         <h2 class="blog-post-title mb-1">{{ object.title.title }}
+                        <span>
                             {% if object.author.username == request.user.username %}
                                 <div class="btn-group float-right">
                                     <button class="btn btn-link border-0 dropdown-toggle dropdown-toggle-split m-0 p-0"
@@ -73,6 +74,8 @@
                                     </div>
                                 </div>
                             {% endif %}
+                        </span>
+
                         </h2>
 
 
