@@ -1,0 +1,79 @@
+{% extends "blog/layouts/base-fullscreen.html" %}
+{% load django_bootstrap5 %}
+{% block title %} Delete {% endblock %}
+
+{% block content %}
+    {% if request.user.is_staff %}
+        {% if "post_delete" in request.build_absolute_uri %}
+            <section class="min-vh-100 d-flex bg-primary align-items-center">
+                <div class="container">
+                    <div class="row justify-content-center">
+                        <div class="col-12 col-md-6 col-lg-8 justify-content-center">
+                            <div class="card bg-primary shadow-soft border-light p-4">
+                                <div class="card-header text-center pb-0">
+                                    <h2 class="h4 text-danger">{{ object.title }} başlıklı gönderi silinecektir</h2>
+                                </div>
+                                <div class="form-group">
+                                    <form class="mt-4" method="post" enctype="multipart/form-data">
+                                        {% csrf_token %}
+                                        <p class="text-center">Silme İşlemini Onaylıyormusunuz ? </p>
+                                        <!-- End of Form -->
+                                        <button type="submit" class="btn btn-block btn-primary mt-5">Evet</button>
+                                    </form>
+                                    <a href="{% url "blog:post_detail" object.category.title.lower|slugify object.slug object.pk object.author object.author.id object.created.date %}">
+                                        <button class="btn btn-block btn-primary mt-3">Vazgeç</button>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        {% elif "category_delete" in request.build_absolute_uri %}
+            <section class="min-vh-100 d-flex bg-primary align-items-center">
+                <div class="container">
+                    <div class="row justify-content-center">
+                        <div class="col-12 col-md-6 col-lg-8 justify-content-center">
+                            <div class="card bg-primary shadow-soft border-light p-4">
+                                <div class="card-header text-center pb-0">
+                                    <h2 class="h4 text-danger">{{ category.title }} başlıklı kategori silinecektir</h2>
+                                </div>
+                                <div class="form-group">
+                                    <form class="mt-4" method="post" enctype="multipart/form-data">
+                                        {% csrf_token %}
+                                        <p class="text-center">Silme İşlemini Onaylıyormusunuz ? </p>
+                                        <!-- End of Form -->
+                                        <button type="submit" class="btn btn-block btn-primary mt-5">Evet</button>
+                                    </form>
+                                    <a href="{% url "blog:anasayfa" %}">
+                                        <button class="btn btn-block btn-primary mt-3">Vazgeç</button>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        {% endif %}
+    {% else %}
+        <section class="min-vh-100 d-flex bg-primary align-items-center">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-12 col-md-6 col-lg-8 justify-content-center">
+                        <div class="card bg-primary shadow-soft border-light p-4">
+                            <div class="card-header text-center pb-0">
+                                <h2 class="h4 text-danger">Yetkili Değilsiniz!</h2>
+                            </div>
+                            <div class="form-group">
+                                <a href="{% url "login" %}">
+                                    <button class="btn btn-block btn-primary mt-3">Oturum Aç</button>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    {% endif %}
+{% endblock %}
+
