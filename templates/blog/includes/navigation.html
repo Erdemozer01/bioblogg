@@ -542,8 +542,7 @@
                         <div class="dropdown-menu dropdown-menu-md" aria-labelledby="dropdownMenuButton">
                             <h2 class="h6 dropdown-header">Merhaba, {{ request.user }}</h2>
                             <a class="dropdown-item" href="#">Profilim</a>
-                            <a class="dropdown-item" href="{% url "dashboard:anasayfa" request.user.username %}">Dashboard</a>
-                            {% if request.user.is_superuser %}
+                            {% if request.user.is_superuser or request.user.is_staff %}
                                 <a class="dropdown-item" href="{% url "admin:index" %}">Yönetici Paneli</a>
                             {% endif %}
 

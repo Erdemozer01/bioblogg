@@ -13,7 +13,6 @@ urlpatterns = [
                   path('ckeditor/', include('ckeditor_uploader.urls')),
                   path('blog/', include("blog.urls", namespace="blog")),
                   path('accounts/', include("accounts.urls", namespace="accounts")),
-                  path('dashboard/', include("dashboard.urls", namespace="dashboard")),
                   path('archive/<int:year>/<int:month>/', ArchiveView.as_view(), name="archive"),
                   path('', generic.TemplateView.as_view(template_name="cover.html"), name="anasayfa"),
               ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

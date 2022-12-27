@@ -50,7 +50,7 @@
                         <h2 class="blog-post-title mb-1">
                             {{ object.title.title }}
                             <span class="ml-2">
-                                {% if object.author.username == request.user.username %}
+                                {% if object.author.username == request.user.username and request.user.is_staff %}
                                     <div class="btn-group align-content-between">
                                     <button class="btn btn-link border-0 dropdown-toggle dropdown-toggle-split m-0 p-0"
                                             data-toggle="dropdown" aria-haspopup="true"
@@ -63,7 +63,7 @@
 
                                     <div class="dropdown-menu">
                                         <a class="dropdown-item"
-                                           href="{% url "blog:post_update" object.pk object.title %}">
+                                           href="{% url "admin:index" %}blog/posts/{{ object.pk }}/change/">
                                             <span class="fas fa-edit mr-2"> Güncelle</span>
                                         </a>
 

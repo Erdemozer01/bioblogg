@@ -28,7 +28,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'blog.apps.BlogConfig',
     'accounts.apps.AccountsConfig',
-    'dashboard.apps.DashboardConfig',
     'django_plotly_dash.apps.DjangoPlotlyDashConfig',
     'django_bootstrap5',
     'django_cleanup',

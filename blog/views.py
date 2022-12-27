@@ -188,7 +188,7 @@ class CategoryUpdateView(generic.UpdateView):
 
 
 class PostDeleteView(generic.DeleteView):
-    template_name = "dashboard/pages/delete.html"
+    template_name = "blog/pages/delete.html"
     model = Posts
 
     def get(self, request, *args, **kwargs):
