@@ -78,7 +78,7 @@
                         </h2>
 
                         <p class="blog-post-meta" style="font-size: small">
-                            <a href="#">{{ object.author|title }}</a> - {{ object.created|date }}
+                            <a href="{% url 'blog:profile' object.author object.author.pk %}">{{ object.author|title }}</a> - {{ object.created|date }}
                             , <span>{% get_hit_count for posts %} defa okundu.</span>
                         </p>
 

@@ -24,3 +24,18 @@ class PostAdmin(admin.ModelAdmin):
     list_filter = ['author', 'category', 'created']
     search_fields = ['title', 'author']
     search_help_text = "Başlık ve yazara göre arama"
+
+    fieldsets = (
+        (None, {
+            'fields': (
+                'category', 'cover', 'author', 'title', 'text', 'status', 'tags')
+        }),
+        ('Slayt', {
+            'classes': ('collapse ', 'extrapretty'),
+            'fields': ('extra_image1', 'extra_image2', 'extra_image3'),
+        }),
+        ('Likes-Dislikes', {
+            'classes': ('collapse ', 'extrapretty'),
+            'fields': ('likes', 'dislike'),
+        }),
+    )

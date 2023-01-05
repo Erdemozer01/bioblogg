@@ -35,3 +35,6 @@ class CreateCategoryModelForm(forms.ModelForm):
             'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Kategori Adı'}),
             'explain': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Kategori Açıklaması'}),
         }
+
+
+

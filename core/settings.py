@@ -29,7 +29,9 @@ INSTALLED_APPS = [
     'blog.apps.BlogConfig',
     'accounts.apps.AccountsConfig',
     'django_plotly_dash.apps.DjangoPlotlyDashConfig',
+    'dashboard.apps.DashboardConfig',
     'django_bootstrap5',
+    'bootstrap4',
     'django_cleanup',
     'hitcount',
     'ckeditor',
@@ -73,7 +75,7 @@ WSGI_APPLICATION = 'core.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3'
     }
 }
 

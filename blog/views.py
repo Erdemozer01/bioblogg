@@ -5,10 +5,10 @@ from django.views.generic.dates import MonthArchiveView
 from django.shortcuts import get_object_or_404, reverse, redirect
 from django.conf import settings
 from django.db.models import Q
-from .forms.comment import AddCommentForm
-from .forms.post import CreatePostModelForm, CreateCategoryModelForm
+from .forms import AddCommentForm, ContactForm, ProfileModelForm
 from django.http import HttpResponseRedirect
 from django.contrib import messages
+from accounts.models import Profile, ContactModel
 
 
 class CategoriesView(generic.ListView):
@@ -105,88 +105,6 @@ class ArchiveView(MonthArchiveView):
         return context
 
 
-class CreatePost(generic.CreateView):
-    template_name = "dashboard/pages/create.html"
-    model = Posts
-    form_class = CreatePostModelForm
-
-    def get(self, request, *args, **kwargs):
-        if not self.request.user.is_staff:
-            messages.error(request, "Yetkili girişi yapınız!")
-            return redirect('%s?next=/blog/' % (settings.LOGIN_URL))
-        return super().get(request, *args, **kwargs)
-
-    def form_valid(self, form):
-        instance = form.save(commit=False)
-        instance.author = self.request.user
-        instance.save()
-        return super().form_valid(form)
-
-    def get_success_url(self):
-        messages.success(self.request, "Gönderi Başarılı bir şekilde yayınlandı..")
-        return reverse('blog:anasayfa')
-
-
-class CreateCategoryView(generic.CreateView):
-    template_name = "dashboard/pages/create.html"
-    model = Category
-    form_class = CreateCategoryModelForm
-
-    def get(self, request, *args, **kwargs):
-        if not self.request.user.is_staff:
-            messages.error(request, "Yetkili girişi yapınız!")
-            return redirect('%s?next=/blog/' % (settings.LOGIN_URL))
-        return super().get(request, *args, **kwargs)
-
-    def get_success_url(self, *args, **kwargs):
-        messages.success(self.request, "Kategori başarılı bir şekilde eklendi..")
-        return HttpResponseRedirect(reverse("blog:post_create")).url
-
-
-class PostUpdateView(generic.UpdateView):
-    template_name = "dashboard/pages/update.html"
-    model = Posts
-    form_class = CreatePostModelForm
-
-    def get(self, request, *args, **kwargs):
-        if not self.request.user.is_staff:
-            messages.error(request, "Yetkili girişi yapınız!")
-            return redirect('%s?next=/blog/' % (settings.LOGIN_URL))
-        return super().get(request, *args, **kwargs)
-
-    def form_valid(self, form):
-        instance = form.save(commit=False)
-        instance.author = self.request.user
-        instance.save()
-        return super().form_valid(form)
-
-    def get_success_url(self):
-        messages.success(self.request, "Gönderi Başarılı bir şekilde güncellendi..")
-        return reverse('blog:anasayfa')
-
-
-class CategoryUpdateView(generic.UpdateView):
-    template_name = "dashboard/pages/update.html"
-    model = Category
-    form_class = CreateCategoryModelForm
-
-    def get(self, request, *args, **kwargs):
-        if not self.request.user.is_staff:
-            messages.error(request, "Yetkili girişi yapınız!")
-            return redirect('%s?next=/blog/' % (settings.LOGIN_URL))
-        return super().get(request, *args, **kwargs)
-
-    def form_valid(self, form):
-        instance = form.save(commit=False)
-        instance.author = self.request.user
-        instance.save()
-        return super().form_valid(form)
-
-    def get_success_url(self):
-        messages.success(self.request, "Kategori başarılı bir şekilde güncellendi..")
-        return reverse('blog:categories')
-
-
 class PostDeleteView(generic.DeleteView):
     template_name = "blog/pages/delete.html"
     model = Posts
@@ -203,7 +121,7 @@ class PostDeleteView(generic.DeleteView):
 
 
 class CategoryDeleteView(generic.DeleteView):
-    template_name = "dashboard/pages/delete.html"
+    template_name = "blog/pages/delete.html"
     model = Category
 
     def get(self, request, *args, **kwargs):
@@ -218,7 +136,7 @@ class CategoryDeleteView(generic.DeleteView):
 
 
 class CommentDetailView(generic.DetailView):
-    template_name = "dashboard/pages/comments.html"
+    template_name = "blog/pages/comments.html"
     model = Comments
 
     def get(self, request, *args, **kwargs):
@@ -321,3 +239,44 @@ class CommentUpdate(generic.UpdateView):
         return HttpResponseRedirect(
             self.request.build_absolute_uri()
         ).url
+
+
+class ProfileView(generic.DetailView, generic.CreateView):
+    http_method_names = ['post', 'get']
+    template_name = 'blog/pages/profile.html'
+    model = Profile
+    form_class = ContactForm
+
+    def post(self, request, *args, **kwargs):
+        message = ContactModel(
+            author=self.get_object(),
+            sender=self.request.user,
+            content=self.request.POST.get('content'),
+            contact_email=self.request.POST.get('contact_email')
+        )
+        message.save()
+        messages.success(request, "Mesajınız yazara iletildi")
+        return HttpResponseRedirect(self.request.build_absolute_uri())
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        for profile in Profile.objects.filter(user=self.kwargs['pk']):
+            context['user_social'] = profile.user_social.values()
+        return context
+
+
+class ProfileUpdateViewNonStaff(generic.UpdateView):
+    template_name = 'blog/pages/update.html'
+    model = Profile
+    form_class = ProfileModelForm
+
+    def form_valid(self, form):
+        instance = form.save(commit=False)
+        instance.user = self.request.user
+        instance.save()
+        messages.success(self.request, "Profil güncellendi!")
+        return HttpResponseRedirect(reverse('blog:profile', kwargs={
+            'user': self.request.user, 'pk': self.request.user.pk
+        }))
+
+

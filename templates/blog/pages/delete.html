@@ -4,7 +4,7 @@
 
 {% block content %}
     {% if request.user.is_staff %}
-        {% if "post_delete" in request.build_absolute_uri %}
+        {% if "post-delete" in request.build_absolute_uri %}
             <section class="min-vh-100 d-flex bg-primary align-items-center">
                 <div class="container">
                     <div class="row justify-content-center">
@@ -29,7 +29,7 @@
                     </div>
                 </div>
             </section>
-        {% elif "category_delete" in request.build_absolute_uri %}
+        {% elif "category-delete" in request.build_absolute_uri %}
             <section class="min-vh-100 d-flex bg-primary align-items-center">
                 <div class="container">
                     <div class="row justify-content-center">

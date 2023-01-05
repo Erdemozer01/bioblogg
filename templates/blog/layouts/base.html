@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-{% load django_bootstrap5 %}
+{% load bootstrap4 %}
 {% load i18n %}
 {% load static %}
 {% get_current_language as LANGUAGE_CODE %}
@@ -45,10 +45,12 @@
     <meta name="theme-color" content="#ffffff">
 
     <!-- Fontawesome -->
-    <link type="text/css" href="{% static "blog/assets/vendor/@fortawesome/fontawesome-free/css/all.min.css" %}?{% now "U" %}" rel="stylesheet">
+    <link type="text/css"
+          href="{% static "blog/assets/vendor/@fortawesome/fontawesome-free/css/all.min.css" %}?{% now "U" %}"
+          rel="stylesheet">
 
     <!-- Pixel CSS -->
-    <link type="text/css" href="{% static "blog/assets/css/neumorphism.css" %}" rel="stylesheet">
+    <link type="text/css" href="{% static "blog/assets/css/neumorphism.css" %}?{% now "U" %}" rel="stylesheet">
 
     {% block stylesheets %}{% endblock %}
 

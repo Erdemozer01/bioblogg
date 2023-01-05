@@ -1,0 +1,78 @@
+{% extends "dashboard/layout/base.html" %}
+{% load static %}
+{% load bootstrap4 %}
+{% load plotly_dash %}
+
+{% block title %}
+    {% if 'education' in request.path %}
+        Dashboard | Eğitim Bilgisi Ekle
+    {% elif 'job' in request.path %}
+        Dashboard | İş Bilgisi Ekle
+    {% elif 'social_media' in request.path %}
+        Dashboard | Sosyal Medya Ekle
+    {% endif %}
+{% endblock %}
+
+
+{% block content %}
+
+    {% if 'education' in request.path %}
+        <main class="col-md-9 ms-sm-auto col-lg-10 mt-3 container">
+
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom mt-10">
+                <h1 class="h1 text-success">Eğitim Bilgisi Ekle</h1>
+            </div>
+
+            {% if messages %}
+                {% for message in messages %}
+                    {% if message.tags == 'error' %}
+                        <div class="alert alert-danger alert-dismissible shadow-soft fade show" role="alert">
+                    {% else %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible shadow-soft fade show"
+                             role="alert">
+                    {% endif %}
+
+                <span class="alert-inner--icon">
+                                    {% if message.tags == 'error' %}
+                                        <span class="far fa-thumbs-down"></span>
+                                    {% elif message.tags == 'success' %}
+                                        <span class="far fa-thumbs-up"></span>
+                                    {% else %}
+
+                                    {% endif %}
+                                </span>
+
+                <span class="alert-inner--text"><strong>{{ message }}</strong> </span>
+
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                </div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {% bootstrap_form form %}
+                <button type="submit" class="btn btn-primary mb-5 col-12">Ekle</button>
+            </form>
+
+        </main>
+
+    {% elif 'social_media' in request.path %}
+        <main class="col-md-9 ms-sm-auto col-lg-10 mt-3 container">
+
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom mt-10">
+                <h1 class="h1 text-success">Sosyal Medya Bilgisi Ekle</h1>
+            </div>
+
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {% bootstrap_form form %}
+                <button type="submit" class="btn btn-primary mb-5 col-12">Ekle</button>
+            </form>
+
+        </main>
+    {% endif %}
+
+{% endblock %}

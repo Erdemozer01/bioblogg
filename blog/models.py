@@ -78,11 +78,11 @@ class Posts(models.Model):
     likes = models.ManyToManyField('auth.User', related_name='post_like', verbose_name="Beğendim", blank=True)
     dislike = models.ManyToManyField('auth.User', related_name='post_dislike', verbose_name="Beğenmedim", blank=True)
 
-    extra_image1 = models.ImageField(upload_to=extra_img_upload_to, verbose_name="Gönderiye Foto Ekleme",
+    extra_image1 = models.ImageField(upload_to=extra_img_upload_to, verbose_name="Slayt1",
                                      blank=True)
-    extra_image2 = models.ImageField(upload_to=extra_img_upload_to, verbose_name="Gönderiye Foto Ekleme",
+    extra_image2 = models.ImageField(upload_to=extra_img_upload_to, verbose_name="Slayt2",
                                      blank=True)
-    extra_image3 = models.ImageField(upload_to=extra_img_upload_to, verbose_name="Gönderiye Foto Ekleme",
+    extra_image3 = models.ImageField(upload_to=extra_img_upload_to, verbose_name="Slayt3",
                                      blank=True)
 
     created = models.DateTimeField(auto_now_add=True, verbose_name='Oluşturulma Tarihi')
@@ -90,8 +90,8 @@ class Posts(models.Model):
 
     status = models.CharField(max_length=2, choices=Status.choices, default=Status.DRAFT,
                               verbose_name='Yayınlanma Durumu')
-    objects = models.Manager()  # The default manager.
-    published = PublishedManager()  # Our custom manager.
+    objects = models.Manager()
+    published = PublishedManager()
 
     def __str__(self):
         return self.title
@@ -142,5 +142,6 @@ class Comments(models.Model):
         db_table = 'comments'
         verbose_name = 'Yorum'
         verbose_name_plural = 'Yorumlar'
+
 
 

@@ -73,7 +73,7 @@
 
                                                 {% else %}
                                                     <img class="avatar-sm mr-2 img-fluid rounded-circle"
-                                                         src="{% static "dashboard/assets/img/no_user.png" %}"
+                                                         src="{% static "blog/assets/img/no_user.png" %}"
                                                          alt="{{ object.author }}"> {{ object.author }}
                                                 {% endif %}
 
@@ -102,14 +102,13 @@
                                             </button>
                                             <div class="dropdown-menu">
                                                 <a class="dropdown-item"
-                                                   href="{% url "blog:post_update" object.pk object.title %}">
+                                                   href="{% url "admin:index" %}blog/posts/{{ object.pk }}/change/">
                                                     <span class="fas fa-edit mr-2"></span>
                                                     Güncelle
                                                 </a>
                                                 <a class="dropdown-item text-danger"
-                                                   href="{% url "blog:post_delete" object.pk %}"><span
-                                                        class="fa fa-trash mr-2"
-                                                        aria-hidden="true"></span>
+                                                   href="{% url "blog:post_delete" object.pk %}">
+                                                    <span class="fa fa-trash mr-2" aria-hidden="true"></span>
                                                     Gönderiyi Sil
                                                 </a>
                                             </div>
@@ -347,7 +346,7 @@
                                         </button>
                                         <div class="dropdown-menu mr-3">
                                             <a class="dropdown-item"
-                                               href="{% url "blog:category_update" category_name.pk category_name.title %}">
+                                               href="{% url "admin:index" %}blog/category/{{ category_name.pk }}/change/">
                                                 <span class="fas fa-edit mr-2"></span>
                                                 Güncelle
                                             </a>
@@ -390,7 +389,7 @@
                                                              alt="{{ object.author }}">
                                                     {% else %}
                                                         <img class="avatar-sm mr-2 img-fluid rounded-circle"
-                                                             src="{% static "dashboard/assets/img/no_user.png" %}"
+                                                             src="{% static "blog/assets/img/no_user.png" %}"
                                                              alt="{{ object.author }}">
                                                     {% endif %}
                                                     {{ object.author }}
@@ -419,7 +418,7 @@
                                                 </button>
                                                 <div class="dropdown-menu">
                                                     <a class="dropdown-item"
-                                                       href="{% url "blog:post_update" object.pk object.title %}">
+                                                       href="{% url "admin:index" %}blog/posts/{{ object.pk }}/change/">
                                                         <span class="fas fa-edit mr-2"></span>
                                                         Güncelle
                                                     </a>
@@ -427,7 +426,7 @@
                                                        href="{% url "blog:post_delete" object.pk %}"><span
                                                             class="fa fa-trash mr-2"
                                                             aria-hidden="true"></span>
-                                                        Gönderiyi Sil
+                                                        Sil
                                                     </a>
                                                 </div>
                                             </div>
