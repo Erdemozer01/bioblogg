@@ -1,0 +1,173 @@
+<!-- Sidebar -->
+<div class="sidebar sidebar-style-2" data-background-color="dark2">
+    <div class="sidebar-wrapper scrollbar scrollbar-inner">
+        <div class="sidebar-content">
+
+            {% if request.user.is_staff %}
+                <div class="user">
+
+                    {% if request.user.profile.avatar %}
+                        <div class="avatar-sm float-left mr-2">
+                            <img src="{{ request.user.profile.avatar.url }}" alt="{{ request.user.username }}"
+                                 class="avatar-img rounded-circle">
+                        </div>
+                    {% else %}
+                        <div class="avatar-sm float-left mr-2">
+                            <img src="/static/dashboard/assets/img/no_user.png" alt="{{ request.user.username }}"
+                                 class="avatar-img rounded-circle">
+                        </div>
+                    {% endif %}
+
+                    <div class="info">
+                        <a data-toggle="collapse" href="#collapseExample" aria-expanded="true">
+								<span>
+									{{ request.user.username }}
+									<span class="caret"></span>
+								</span>
+                            <span>
+									{{ request.user.first_name|title }} {{ request.user.last_name|title }}
+									<span class="caret"></span>
+								</span>
+                        </a>
+                        <div class="clearfix"></div>
+
+                        <div class="collapse in" id="collapseExample">
+                            <ul class="nav">
+                                <li>
+                                    <a href="{% url "blog:profile" request.user request.user.pk %}">
+                                        <span class="link-collapse">Profil Sayfam</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'logout' %}">
+                                        <span class="link-collapse">Çıkış</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <ul class="nav nav-primary">
+                    {% if request.user.is_superuser %}
+                        <li class="nav-item {% if 'kullanıcı' in request.path %} active {% endif %}">
+                            <a data-toggle="collapse" href="#dashboard" class="collapsed" aria-expanded="false">
+                                <i class="fas fa-home"></i>
+                                <p>Dashboard</p>
+                                <span class="caret"></span>
+                            </a>
+                            <div class="collapse" id="dashboard">
+                                <ul class="nav nav-collapse">
+                                    <li>
+                                        <a href="{% url "dashboard:anasayfa" request.user %}">
+                                            <span class="sub-item">Dashboard</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+                    {% endif %}
+
+                    <li class="nav-item {% if 'messages' in request.path %} active {% endif %}">
+                        <a href="{% url 'dashboard:messages_list' request.user %}">
+                            <i class="fas fa-desktop"></i>
+                            <p>Mesajlarım</p>
+                            <span class="badge badge-success">{{ messages_count }}</span>
+                        </a>
+                    </li>
+
+
+                    <li class="nav-section">
+							<span class="sidebar-mini-icon">
+								<i class="fa fa-ellipsis-h"></i>
+							</span>
+                        <h4 class="text-section">Blog</h4>
+                    </li>
+
+                    <li class="nav-item {% if 'posts' in request.path %} active {% endif %}">
+
+                        <a data-toggle="collapse" href="#base">
+                            <i class="fas fa-layer-group"></i>
+                            <p>Blog</p>
+                            <span class="caret"></span>
+                        </a>
+
+                        <div class="collapse" id="base">
+                            <ul class="nav nav-collapse">
+                                <li>
+                                    <a href="{% url "dashboard:post_dash" request.user %}">
+                                        <span class="sub-item">Gönderilerim</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{% url "admin:index" %}blog/category/add/">
+                                        <span class="sub-item">Kategori Ekle</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{% url "admin:index" %}blog/posts/add/">
+                                        <span class="sub-item">Gönderi Ekle</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+
+                    <li class="nav-item {% if 'profile_update' in request.path %} active {% endif %}">
+                        <a data-toggle="collapse" href="#profile">
+                            <i class="fas fa-th-list"></i>
+                            <p>Profil</p>
+                            <span class="caret"></span>
+                        </a>
+                        <div class="collapse" id="profile">
+
+                            <ul class="nav nav-collapse">
+                                <li>
+                                    <a href="{% url 'dashboard:profile_dash' request.user %}">
+                                        <span class="sub-item">Dashboard</span>
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a href="{% url 'dashboard:profile_update' request.user request.user.pk %}">
+                                        <span class="sub-item">Profili Düzenle</span>
+                                    </a>
+                                </li>
+
+                            </ul>
+
+                        </div>
+                    </li>
+
+                    <li class="nav-item {% if 'social_media' in request.path %} active {% endif %}">
+                        <a data-toggle="collapse" href="#social">
+                            <i class="fab fa-facebook-f"></i>
+                            <p class="text-sm">Sosyal Medya</p>
+                            <span class="caret"></span>
+                        </a>
+
+                        <div class="collapse" id="social">
+                            <ul class="nav nav-collapse">
+                                <li>
+                                    <a href="{% url 'dashboard:social_dash' request.user %}">
+                                        <span class="sub-item">Dashboard</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'dashboard:social_create' request.user %}">
+                                        <span class="sub-item">Sosyal Medya Ekle</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+
+                </ul>
+            {% else %}
+
+            {% endif %}
+        </div>
+    </div>
+</div>
+<!-- End Sidebar -->
+        

@@ -1,0 +1,38 @@
+{% extends "dashboard/layout/base.html" %}
+{% load static %}
+{% load bootstrap4 %}
+
+{% block title %}Mesajlarım{% endblock %}
+
+
+{% block content %}
+
+    {% if object.author.user.username == request.user.username %}
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 mt-4 container">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h1 text-success">Mesajlarım</h1>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12 col-12 col-sm-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4 class="card-title">{{ object.created }}</h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <p>Gönderen: <a href="{% url 'blog:profile' object.sender object.sender.pk %}">{{ object.sender }}</a></p>
+                                <p>Email: {{ object.contact_email }}</p>
+                                <p>Mesaj: {{ object.content }}</p>
+                            </div>
+                            <a href="{% url 'dashboard:mark_read_message' object.pk %}" class="btn btn-primary col-12">Okundu olarak işaretle</a>
+                            <a href="{% url 'dashboard:message_delete' object.pk %}" class="btn btn-danger col-12 mt-2">Sil</a>
+                            <a href="{% url 'dashboard:report_message' object.pk %}" class="btn btn-warning col-12 mt-2">Rahatsız edici içerik</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    {% endif %}
+
+{% endblock %}
