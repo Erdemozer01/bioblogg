@@ -1,7 +1,9 @@
+import datetime
+
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
-from .models import Profile
+from .models import Profile, ContactModel
 
 
 class UserRegistrationForm(UserCreationForm):
@@ -21,18 +23,6 @@ class UserRegistrationForm(UserCreationForm):
 class UserEditForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ['username', 'first_name', 'last_name', 'email', 'is_superuser', 'is_staff', 'is_active']
-        widgets = {
-            'username': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Kullanıcı Adı'}),
-            'first_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Adı'}),
-            'last_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Soyadı:'}),
-            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Email:'}),
-        }
-
-
-class UserProfileEditForm(forms.ModelForm):
-    class Meta:
-        model = User
         fields = ['username', 'first_name', 'last_name', 'email']
         widgets = {
             'username': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Kullanıcı Adı'}),
@@ -45,5 +35,31 @@ class UserProfileEditForm(forms.ModelForm):
 class ProfileEditForm(forms.ModelForm):
     class Meta:
         model = Profile
-        fields = ['cover', 'avatar', 'phone', 'location', 'job', 'about']
+        exclude = ['user', 'first_name', 'last_name', 'email']
+        widgets = {
+            'birth_day': forms.SelectDateWidget(years=range(1900, datetime.datetime.now().year))
+        }
 
+
+class DeleteAccountForm(forms.Form):
+    confirm = forms.BooleanField(label="HESABIMI SİLME İŞLEMİNİ ONAYLIYORUM")
+
+
+class ContactMessagesReplyForm(forms.ModelForm):
+    class Meta:
+        model = ContactModel
+        fields = ['content']
+
+
+class UserMessagesForm(forms.ModelForm):
+    class Meta:
+        model = ContactModel
+        fields = ['receiver', 'title', 'contact_email', 'content']
+
+        widgets = {
+            'contact_email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Email'}),
+        }
+
+        labels = {
+            'contact_email' : "Email adresiniz"
+        }

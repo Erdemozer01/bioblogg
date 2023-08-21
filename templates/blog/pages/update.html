@@ -1,6 +1,6 @@
 {% extends "blog/layouts/base-fullscreen.html" %}
-{% load django_bootstrap5 %}
-{% block title %} {{ comments.commentator.username }} {% endblock %}
+{% load bootstrap4 %}
+{% block title %} {{ profile.user.username }} {% endblock %}
 
 <!-- Specific Page CSS goes HERE  -->
 {% block stylesheets %}{% endblock %}
@@ -8,49 +8,24 @@
 {% block content %}
     {% if 'profile-update' in request.path %}
         <!-- Section -->
-        <section class="min-vh-100 d-flex bg-primary align-items-center mt-3 mb-3">
+        <section class="d-flex bg-primary align-items-center mt-3 mb-3">
             <div class="container">
                 <div class="row justify-content-center">
-                    <div class="col-12 col-md-8 col-lg-8 justify-content-center">
-                        {% if messages %}
-                            {% for message in messages %}
-                                {% if message.tags == 'error' %}
-                                    <div class="alert alert-danger alert-dismissible shadow-soft fade show"
-                                         role="alert">
-                                {% else %}
-                                    <div class="alert alert-{{ message.tags }} alert-dismissible shadow-soft fade show"
-                                         role="alert">
-                                {% endif %}
+                    <div class="col-12 col-md-10 col-lg-10 justify-content-center">
 
-                            <span class="alert-inner--icon">
-                                    {% if message.tags == 'error' %}
-                                        <span class="far fa-thumbs-down"></span>
-                                    {% elif message.tags == 'success' %}
-                                        <span class="far fa-thumbs-up"></span>
-                                    {% else %}
-
-                                    {% endif %}
-                                </span>
-
-                            <span class="alert-inner--text"><strong>{{ message }}</strong> </span>
-
-                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                            </div>
-                            {% endfor %}
-                        {% endif %}
-                        <div class="card bg-primary shadow-inset border-light">
+                        <div class="card bg-primary shadow-soft ">
 
                             <div class="card-body p-5">
-                                <h3 class="h4 card-title mb-3 font-weight-bold">{{ profile.user.username }} Profili Güncelle</h3>
-                                <span class="card-text small">
+                                <h3 class="h4 card-title mb-3 font-weight-bold">
+                                    {{ profile.user.username }} Profili Güncelle
+                                </h3>
+
                                 <form method="post" enctype="multipart/form-data">
+
                                     {% csrf_token %}
                                     {% bootstrap_form form %}
 
                                     <div class="d-flex align-items-center">
-
                                         <div>
                                             <button class="btn btn-primary btn-sm mr-2" type="submit">Güncelle</button>
 
@@ -58,12 +33,15 @@
                                                class="btn btn-primary btn-sm">Geri</a>
                                         </div>
                                     </div>
+
                                 </form>
+
                             </div>
                         </div>
-                        </div>
+
                     </div>
                 </div>
+            </div>
             </div>
         </section>
     {% else %}

@@ -11,7 +11,6 @@ class ProfileModelForm(forms.ModelForm):
             'first_name': forms.TextInput(attrs={'class': 'form-control'}),
             'avatar': forms.ClearableFileInput(attrs={'class': 'form-control'}),
             'gender': forms.Select(attrs={'class': 'form-control'}),
-
         }
 
 

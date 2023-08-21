@@ -67,9 +67,9 @@
                                 {% if post.author.username == request.user.username %}
                                     <div class="btn-group float-right">
                                         <button class="btn btn-link border-0 dropdown-toggle dropdown-toggle-split m-0 p-0"
-                                            data-toggle="dropdown"
-                                            aria-haspopup="true"
-                                            aria-expanded="false">
+                                                data-toggle="dropdown"
+                                                aria-haspopup="true"
+                                                aria-expanded="false">
                                                                     <span class="icon icon-sm">
                                                                         <span class="fas fa-ellipsis-h icon-secondary"></span>
                                                                     </span>
@@ -129,7 +129,7 @@
                                 <div class="card-body pt-2">
                                     <div class="media d-flex align-items-center justify-content-between">
                                         <div class="post-group">
-                                            <a href="#" data-toggle="tooltip"
+                                            <a href="{% url 'blog:profile' object.author object.author.pk %}" data-toggle="tooltip"
                                                data-placement="top" title="{{ object.author }}">
                                                 <img class="avatar-sm mr-2 img-fluid rounded-circle"
                                                      src="/static/blog/assets/img/no_user.png"

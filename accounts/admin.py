@@ -4,9 +4,9 @@ from .models import Profile, SocialMedia, ContactModel
 
 @admin.register(ContactModel)
 class ContactModelAdmin(admin.ModelAdmin):
-    list_display = ['author', 'sender', 'contact_email', 'created']
-    list_filter = ['author', 'created']
-    search_fields = ['author']
+    list_display = ['sender', 'receiver', 'contact_email', 'is_read', 'created']
+    list_filter = ['sender', 'created']
+    search_fields = ['sender']
 
 
 @admin.register(Profile)

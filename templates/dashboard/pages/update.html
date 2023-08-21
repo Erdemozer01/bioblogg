@@ -8,7 +8,7 @@
     {% if 'education-update' in request.path %}
         {{ request.user|title }} | Eğitim Bilgisi Güncelleme
 
-    {% elif 'profile_update' in request.path %}
+    {% elif 'profile-update' in request.path %}
         {{ request.user|title }} | Profil Bilgisi Güncelleme
 
     {% elif 'job_update' in request.path %}
@@ -24,12 +24,8 @@
 
 {% block content %}
 
-    {% if 'profile_update' in request.path %}
+    {% if 'profile-update' in request.path %}
         <main class="col-md-9 ms-sm-auto col-lg-10 mt-3 container">
-
-            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom mt-1">
-                <h1 class="h1 text-success">Profil Bilgilerini Güncelle</h1>
-            </div>
 
             {% if messages %}
                 {% for message in messages %}
@@ -60,11 +56,64 @@
                 {% endfor %}
             {% endif %}
 
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom mt-1">
+                <h1 class="h1 text-success">Kullanıcı Bilgilerini Güncelle</h1>
+            </div>
+
+
             <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
-                {% bootstrap_form form %}
+                {% bootstrap_form user_edit_form %}
 
                 <button type="submit" class="btn btn-primary mb-5 col-12">Güncelle</button>
+            </form>
+
+        </main>
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 mt-3 container">
+
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom mt-1">
+                <h1 class="h1 text-success">Profil Bilgilerini Güncelle</h1>
+            </div>
+
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {% bootstrap_form profile_edit_form %}
+
+                <button type="submit" class="btn btn-primary mb-5 col-12">Güncelle</button>
+            </form>
+
+        </main>
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 mt-3 container">
+
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom mt-1">
+                <h1 class="h1 text-success">Kullanıcı Şifresi Güncelle</h1>
+            </div>
+
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {% bootstrap_form password_form %}
+
+                <button type="submit" class="btn btn-primary mb-5 col-12">Güncelle</button>
+            </form>
+
+        </main>
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 mt-3 container">
+
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom mt-1">
+                <h1 class="h1 text-success">Kullanıcı hesabını sil</h1>
+            </div>
+
+            <form method="post" enctype="multipart/form-data">
+                <p class="text text-info font-weight-bold" style="font-size: large">Hesabınız silindiğinde gönderilerinizde silinecektir.</p>
+
+                {% csrf_token %}
+
+                {{ delete_account_form.as_p }}
+
+                <button type="submit" class="btn btn-danger mb-5 col-12">SİL</button>
             </form>
 
         </main>

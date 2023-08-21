@@ -4,14 +4,6 @@ from django.dispatch import receiver
 from django.db.models.signals import post_save, post_delete
 
 
-@receiver(post_save, sender=Profile)
-def update_profile(sender, instance, created, **kwargs):
-    if not created:
-        User.objects.update(first_name=instance.user.profile.first_name, last_name=instance.user.profile.last_name,
-                            email=instance.user.profile.email)
-        post_save.connect(update_profile, sender=Profile)
-
-
 @receiver(post_save, sender=User)
 def create_profile(sender, instance, created, **kwargs):
     if created:

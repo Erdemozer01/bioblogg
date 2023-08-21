@@ -186,7 +186,9 @@
                                                                     <span class="fa fa-user btn btn-xs btn-circle btn-icon-only btn-soft mr-2"></span>
 
                                                                 {% endif %}
-                                                                <span class="font-weight-bold">{{ comment.commentator.username }}</span>
+                                                                <a href="{% url 'blog:profile' object.author object.author.pk %}">
+                                                                     <span class="font-weight-bold">{{ comment.commentator.username }}</span>
+                                                                </a>
                                                                 <span class="ml-2">{{ comment.created|timesince }} önce yazdı</span>
                                                             </span>
 

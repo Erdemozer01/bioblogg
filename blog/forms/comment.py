@@ -8,13 +8,12 @@ class AddCommentForm(forms.ModelForm):
         model = Comments
         fields = ['comment']
         widgets = {
-            'comment': CKEditorWidget(
+            'comment': forms.Textarea(
                 attrs={'class': "form-control border border-light",
                        "placeholder": "Yorumunuzu Yazın",
                        "data-bind-characters-target": "#charactersRemaining",
                        "label": "Yorum Yap",
                        "id": "CommentFormControlTextarea"
                        },
-                config_name="blog"
             )
         }

@@ -2,13 +2,15 @@ from django.views import generic
 from .models import Posts, Category, Comments
 from hitcount.views import HitCountDetailView
 from django.views.generic.dates import MonthArchiveView
-from django.shortcuts import get_object_or_404, reverse, redirect
+from django.shortcuts import get_object_or_404, reverse, redirect, render
 from django.conf import settings
 from django.db.models import Q
-from .forms import AddCommentForm, ContactForm, ProfileModelForm
+from .forms import AddCommentForm, ContactForm, ProfileModelForm, ContactProfileForm
 from django.http import HttpResponseRedirect
 from django.contrib import messages
 from accounts.models import Profile, ContactModel
+from django.contrib.auth.models import User
+from django.core.paginator import Paginator
 
 
 class CategoriesView(generic.ListView):
@@ -262,7 +264,41 @@ class ProfileView(generic.DetailView, generic.CreateView):
         context = super().get_context_data(**kwargs)
         for profile in Profile.objects.filter(user=self.kwargs['pk']):
             context['user_social'] = profile.user_social.values()
+            context['posts_lists'] = Posts.objects.filter(author=self.kwargs['pk'])
         return context
+
+
+def profile_view(request, username, pk):
+    global user_social, object
+    post_list = Posts.objects.filter(author=pk)
+    try:
+        object = User.objects.get(username=username, pk=pk)
+    except:
+        return render(request, "exception/page-404.html")
+
+    for profile in Profile.objects.filter(user=pk):
+        user_social = profile.user_social.values()
+    form = ContactProfileForm(request.POST or None)
+
+    paginator = Paginator(post_list, 6)
+
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    if request.method == "POST":
+        if form.is_valid():
+            content = form.cleaned_data['content']
+            contact_email = form.cleaned_data['contact_email']
+            title = form.cleaned_data['title']
+            receiver = User.objects.get(pk=pk)
+            sender = request.user
+            ContactModel.objects.create(sender=sender, receiver=receiver, content=content, contact_email=contact_email,
+                                        title=title)
+            messages.success(request, "Mesajınız başarılı bir şekilde gönderildi")
+            return HttpResponseRedirect(request.build_absolute_uri())
+    return render(request, 'blog/pages/profile.html', {'form': form, 'post_list': post_list,
+                                                       'user_social': user_social, "object": object,
+                                                       "page_obj": page_obj})
 
 
 class ProfileUpdateViewNonStaff(generic.UpdateView):
@@ -276,7 +312,5 @@ class ProfileUpdateViewNonStaff(generic.UpdateView):
         instance.save()
         messages.success(self.request, "Profil güncellendi!")
         return HttpResponseRedirect(reverse('blog:profile', kwargs={
-            'user': self.request.user, 'pk': self.request.user.pk
+            'username': self.request.user, 'pk': self.request.user.pk
         }))
-
-

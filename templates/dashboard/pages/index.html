@@ -1,6 +1,7 @@
 {% extends "dashboard/layout/base.html" %}
 {% load static %}
 {% load plotly_dash %}
+{% load hitcount_tags %}
 
 {% block title %}Dashboard{% endblock %}
 
@@ -36,9 +37,9 @@
             {% endfor %}
         {% endif %}
 
-        {% if 'kullanıcı' in request.path %}
+        {% if 'users-dashboard' in request.path %}
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                <h1 class="h1 text-success">Dashboard</h1>
+                <h1 class="h1 text-success">Dashboard Anasayfa</h1>
             </div>
 
             <label class="text-success">Gönderiler</label>
@@ -46,47 +47,53 @@
 
             {% plotly_app name="PostGraph" ratio=1 %}
 
-        {% elif 'posts' in request.path %}
+            <label class="text-success h4" style="font-size: large;">Kullanıcılar</label>
+            {% plotly_app name="ProfileTable" ratio=1 %}
+
+            {% plotly_app name="ProfileGraph" ratio=1 %}
+
+        {% elif 'messages' in request.path %}
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                <h1 class="h1 text-success">Gönderilerim</h1>
+                <h1 class="h1 text-success">Mesajlarım</h1>
             </div>
 
-            <div class="table-responsive">
-                <table id="add-row" class="display table table-striped table-hover">
+            <div class="table-responsive container">
+                <table id="add-row" class="display table table-responsive ">
                     <thead>
                     <tr>
-                        <th>Tarih</th>
-                        <th>Başlık</th>
-                        <th>Beğeni</th>
-                        <th>Beğenmeme</th>
-                        <th style="width: 10%">Action</th>
+                        <th>GÖNDEREN</th>
+                        <th>EMAİL</th>
+                        <th>TARİH</th>
+                        <th>OKUNMA</th>
                     </tr>
                     </thead>
                     <tbody>
 
-                    {% for post in posts_list %}
-                        {% if request.user.username == post.author.username %}
+                    {% for messages in messages_list %}
+                        {% if request.user.username == messages.receiver.username %}
                             <tr>
-                                <td>{{ post.created }}</td>
-                                <td>{{ post.title }}</td>
-                                <td>{{ post.likes.count }}</td>
-                                <td>{{ post.dislike.count }}</td>
+                                <td>{{ messages.sender }}</td>
+                                <td>{{ messages.contact_email }}</td>
+                                <td>{{ messages.created.date }}</td>
+                                {% if messages.is_read == True %}
+                                    <td>Okundu</td>
+                                {% else %}
+                                    <td>Okunmadı</td>
+                                {% endif %}
                                 <td>
                                     <div class="form-button-action">
-                                        <a href="{% url 'blog:post_detail' post.category.title|slugify post.slug post.pk post.author post.author.id post.created.date %}"
-                                           class="btn btn-link btn-primary" title="Görüntüle">
-                                            <i class="fa fa-eye"></i>
+
+                                        <a href="{% url 'dashboard:message_detail' messages.sender messages.pk %}"
+                                           class="btn btn-link btn-primary " title="Görüntüle">
+                                            <i class="fa fa-eye animate-hover"></i>
                                         </a>
 
-                                        <a href="{% url 'admin:index' %}blog/posts/{{ post.pk }}/change/"
-                                           class="btn btn-link btn-warning" title="Düzenle">
-                                            <i class="fa fa-edit"></i>
-                                        </a>
-
-                                        <a href="{% url 'blog:post_delete' post.pk %}" class="btn btn-link btn-danger"
+                                        <a href="{% url 'dashboard:message_delete' messages.pk %}"
+                                           class="btn btn-link btn-danger"
                                            title="Sil">
-                                            <i class="fa fa-times"></i>
+                                            <i class="fa fa-trash"></i>
                                         </a>
+
                                     </div>
                                 </td>
                             </tr>
@@ -97,47 +104,48 @@
                     </tbody>
                 </table>
             </div>
-
-        {% elif 'messages' in request.path %}
+        {% elif 'user-posts' in request.path %}
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                <h1 class="h1 text-success">Mesajlarım</h1>
+                <h1 class="h1 text-success">Gönderilerim</h1>
             </div>
 
-            <div class="table-responsive">
-                <table id="add-row" class="display table table-striped table-hover">
+            <div class="table-responsive container">
+                <table id="add-row" class="display table table-responsive ">
                     <thead>
                     <tr>
-                        <th>Tarih</th>
-                        <th>Gönderen</th>
-                        <th style="width: 10%">Email</th>
-                        <th>Okunma Durumu</th>
+                        <th>BAŞLIK</th>
+                        <th>TARİH</th>
+                        <th>LİKES</th>
+                        <th>DİSLİKES</th>
+                        <th>Okunma</th>
                     </tr>
                     </thead>
                     <tbody>
 
-                    {% for messages in messages_list %}
-                        {% if request.user.username == messages.author.user.username %}
+                    {% for post in my_posts %}
+                        {% if request.user.username == post.author.username %}
                             <tr>
-                                <td>{{ messages.created }}</td>
-                                <td>{{ messages.sender }}</td>
-                                <td>{{ messages.contact_email }}</td>
-                                {% if messages.is_read == True %}
-                                    <td>Okundu</td>
-                                {% else %}
-                                    <td>Okunmadı</td>
-                                {% endif %}
+
+                                <td><a href="{% url "blog:post_detail" post.category.title.lower|slugify post.slug post.pk post.author post.author.id post.created.date %}">
+                                    {{ post.title|truncatechars:50 }}
+                                </a></td>
+                                <td>{{ post.created.date }}</td>
+                                <td>{{ post.likes.count }}</td>
+                                <td>{{ post.dislike.count }}</td>
+                                <td>{% get_hit_count for post %}</td>
+
                                 <td>
                                     <div class="form-button-action">
 
-                                        <a href="{% url 'dashboard:message_detail' messages.sender messages.pk %}"
-                                           class="btn btn-link btn-primary" title="Görüntüle">
-                                            <i class="fa fa-eye"></i>
+                                        <a href="{% url "blog:post_detail" post.category.title.lower|slugify post.slug post.pk post.author post.author.id post.created.date %}"
+                                           class="btn btn-link btn-primary " title="Görüntüle">
+                                            <i class="fa fa-eye animate-hover"></i>
                                         </a>
 
-                                        <a href="{% url 'dashboard:message_delete' messages.pk %}"
+                                        <a href="{% url 'blog:post_delete' post.pk %}"
                                            class="btn btn-link btn-danger"
                                            title="Sil">
-                                            <i class="fa fa-times"></i>
+                                            <i class="fa fa-trash"></i>
                                         </a>
 
                                     </div>

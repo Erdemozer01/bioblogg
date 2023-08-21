@@ -1,24 +1,5 @@
 from django.urls import path
-from .views import (
-    BlogHomeView,
-    PostDetailView,
-    CategoriesView,
-    CategoryView,
-    PostDeleteView,
-    comment_delete,
-    comment_like,
-    comment_dislike,
-    report_comment,
-    CategoryDeleteView,
-    CommentDetailView,
-    comment_read,
-    like_post,
-    dislike_post,
-    CommentUpdate,
-    ProfileView,
-    ProfileUpdateViewNonStaff
-
-)
+from .views import *
 
 app_name = "blog"
 
@@ -39,6 +20,6 @@ urlpatterns = [
     path('begendim/<int:pk>/<slug:slug>/', like_post, name="like_post"),
     path('begenmedim/<pk>/<title>/', dislike_post, name="dislike_post"),
     path('comment-update/<pk>/<commentator>/', CommentUpdate.as_view(), name="comment_update"),
-    path('profile/<user>/<pk>/', ProfileView.as_view(), name="profile"),
+    path('profile/<username>/<pk>/', profile_view, name="profile"),
     path('profile-update/<user>/<pk>/', ProfileUpdateViewNonStaff.as_view(), name="profile_update"),
 ]

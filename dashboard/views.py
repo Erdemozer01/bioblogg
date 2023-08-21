@@ -1,5 +1,7 @@
+from django.contrib.auth.models import User
 from django.views import generic
 from blog.models import Posts
+from blog.forms import ProfileModelForm, SocialMediaModelForm
 from dash import html, dcc
 from django_plotly_dash import DjangoDash
 import plotly.express as px
@@ -7,12 +9,14 @@ import pandas as pd
 from dash import dash_table
 from collections import OrderedDict
 from django.contrib import messages
-from django.shortcuts import redirect, get_object_or_404, reverse
+from django.shortcuts import redirect, get_object_or_404, reverse, render
 from django.conf import settings
-from accounts.models import Profile,SocialMedia, ContactModel
+from accounts.models import Profile, SocialMedia, ContactModel
+from accounts.forms import UserEditForm, ProfileEditForm, DeleteAccountForm
 from django.http import HttpResponseRedirect
-from blog.forms import ProfileModelForm, SocialMediaModelForm
-from django.db.models import Q
+from django.contrib.auth.forms import PasswordChangeForm
+from accounts.forms import ContactMessagesReplyForm, UserMessagesForm
+
 
 class DashBoardView(generic.ListView):
     template_name = "dashboard/pages/index.html"
@@ -27,11 +31,14 @@ class DashBoardView(generic.ListView):
         post_graph = DjangoDash('PostGraph')
         post_table = DjangoDash('PostTable')
 
+        users_table = DjangoDash('ProfileTable')
+        users_graph = DjangoDash('ProfileGraph')
+
         post_data = OrderedDict(
             [
                 ("#", [post.id for post in Posts.objects.all()]),
                 ("Tarih", [post.created.date() for post in Posts.objects.all()]),
-                ("Başlık", [post.title for post in Posts.objects.all()]),
+                ("Başlık", [post.title[:20] for post in Posts.objects.all()]),
                 ("Yazar", [post.author.username for post in Posts.objects.all()]),
                 ("Kategori", [post.category.title for post in Posts.objects.all()]),
                 ("Likes", [post.likes.count() for post in Posts.objects.all()]),
@@ -81,32 +88,62 @@ class DashBoardView(generic.ListView):
             )
         ])
 
+        user_data = OrderedDict(
+            [
+                ("Kullanıcı adı", [profile.username for profile in User.objects.all()]),
+                ("Ad", [profile.first_name for profile in User.objects.all()]),
+                ("Soyad", [profile.last_name for profile in User.objects.all()]),
+                ("Email", [profile.email for profile in User.objects.all()]),
+                ("Katılma Tarihi", [profile.date_joined.date() for profile in User.objects.all()]),
+                ("Son oturum açma", [profile.last_login for profile in User.objects.all()]),
+            ]
+        )
+
+        user_table_df = pd.DataFrame(
+            OrderedDict([(name, col_data) for (name, col_data) in user_data.items()])
+        )
+
+        users_table.layout = html.Div([
+
+            html.Br(),
+
+            dash_table.DataTable(
+                data=user_table_df.to_dict('records'),
+                columns=[{'id': c, 'name': c} for c in user_table_df.columns],
+                style_table={'height': '300px', 'overflowY': 'auto'},
+                style_cell={'textAlign': 'center'},
+                filter_action="native",
+                filter_options={"placeholder_text": "Ara", 'case': 'insensitive'},
+                sort_action="native",
+                sort_mode="multi",
+                page_action="native",
+                page_current=0,
+                page_size=10,
+                cell_selectable=True
+            )
+        ])
+
+        fig = px.line(
+            user_data,
+            x="Katılma Tarihi",
+            title="Kullanıcı",
+            hover_data=["Kullanıcı adı", "Ad", 'Email'],
+            markers=True
+        )
+
+        users_graph.layout = html.Div(children=[
+            dcc.Graph(
+                id='user-graph',
+                figure=fig
+            )
+        ])
+
         return super().get(request, *args, **kwargs)
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['messages_list'] = ContactModel.objects.filter(author=self.request.user.pk)
-        context['messages_count'] = ContactModel.objects.filter(author=self.request.user.pk).count()
-        return context
-
-
-class ProfilePostListView(generic.ListView):
-    template_name = 'dashboard/pages/index.html'
-    model = Posts
-
-    def get(self, request, *args, **kwargs):
-        if not self.request.user.is_staff:
-            messages.error(request, "Yetkili girişi yapınız!")
-            return redirect('%s?next=/blog/' % (settings.LOGIN_URL))
-        return super().get(request, *args, **kwargs)
-
-    def get_queryset(self):
-        return Posts.objects.filter(author=self.request.user.pk)
-
-    def get_context_data(self, *, object_list=None, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['messages_list'] = ContactModel.objects.filter(author=self.request.user.pk)
-        context['messages_count'] = ContactModel.objects.filter(author=self.request.user.pk).count()
+        context['messages_list'] = ContactModel.objects.filter(receiver=self.request.user.pk)
+        context['messages_count'] = ContactModel.objects.filter(receiver=self.request.user.pk).count()
         return context
 
 
@@ -126,9 +163,58 @@ class ProfileListView(generic.ListView):
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         context['user_post_list'] = Posts.objects.filter(author=self.request.user)
-        context['messages_list'] = ContactModel.objects.filter(author=self.request.user.pk)
-        context['messages_count'] = ContactModel.objects.filter(author=self.request.user.pk).count()
+        context['messages_list'] = ContactModel.objects.filter(receiver=self.request.user.pk)
+        context['messages_count'] = ContactModel.objects.filter(receiver=self.request.user.pk).count()
         return context
+
+
+def profile_update(request, pk, username):
+    if not request.user.username == username:
+        messages.error(request, "Yetkili girişi yapınız!")
+        return redirect('%s?next=/blog/' % (settings.LOGIN_URL))
+
+    user = Profile.objects.get(user=pk)
+    user_edit_form = UserEditForm(request.POST or None, instance=request.user)
+    profile_edit_form = ProfileEditForm(request.POST or None, request.FILES or None, instance=request.user.profile)
+    password_form = PasswordChangeForm(request.user, data=request.POST or None)
+    delete_account_form = DeleteAccountForm(request.POST or None)
+
+    messages_list = ContactModel.objects.filter(receiver=request.user.pk)
+    messages_count = ContactModel.objects.filter(receiver=request.user.pk).count()
+
+    if request.method == "POST":
+
+        if user_edit_form.is_valid():
+            user_edit_form.save()
+            messages.success(request, 'Kullanıcı bilgileriniz başarılı bir şekilde güncellendi')
+            return redirect(request.META['HTTP_REFERER'])
+
+        elif profile_edit_form.is_valid():
+            profile_edit_form.save()
+            messages.success(request, 'Profil bilgileriniz başarılı bir şekilde güncellendi')
+            return redirect(request.META['HTTP_REFERER'])
+
+        elif password_form.is_valid():
+            from django.contrib.auth import update_session_auth_hash
+            update_session_auth_hash(request, password_form.user)
+            password_form.save()
+            messages.success(request, 'Kullanıcı şifreniz başarılı bir şekilde güncellendi')
+            return redirect(request.META['HTTP_REFERER'])
+
+        elif delete_account_form.is_valid():
+            confirm = delete_account_form.cleaned_data['confirm']
+            if confirm is True:
+                user.delete()
+                messages.success(request, 'Profil bilgileriniz başarılı silinmiştir')
+                return redirect('login')
+        else:
+            profile_edit_form = ProfileEditForm(instance=request.user.profile)
+            user_edit_form = UserEditForm(instance=request.user)
+
+    return render(request, 'dashboard/pages/update.html',
+                  {'user_edit_form': user_edit_form, 'profile_edit_form': profile_edit_form,
+                   'password_form': password_form, 'delete_account_form': delete_account_form,
+                   'messages_list': messages_list, 'messages_count': messages_count})
 
 
 class ProfileUpdateView(generic.UpdateView):
@@ -151,8 +237,8 @@ class ProfileUpdateView(generic.UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['messages_list'] = ContactModel.objects.filter(author=self.request.user.pk)
-        context['messages_count'] = ContactModel.objects.filter(author=self.request.user.pk).count()
+        context['messages_list'] = ContactModel.objects.filter(receiver=self.request.user.pk)
+        context['messages_count'] = ContactModel.objects.filter(receiver=self.request.user.pk).count()
         return context
 
 
@@ -162,11 +248,11 @@ class MessagesListView(generic.ListView):
     context_object_name = 'messages_list'
 
     def get_queryset(self):
-        return ContactModel.objects.filter(author=self.request.user.pk)
+        return ContactModel.objects.filter(receiver=self.request.user)
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['messages_count'] = ContactModel.objects.filter(author=self.request.user.pk).count()
+        context['messages_count'] = ContactModel.objects.filter(receiver=self.request.user.pk).count()
         return context
 
 
@@ -174,10 +260,14 @@ class MessagesDetailView(generic.DetailView):
     template_name = 'dashboard/pages/messages.html'
     model = ContactModel
 
+    def get(self, request, *args, **kwargs):
+        ContactModel.objects.update(is_read=True)
+        return super().get(request, *args, **kwargs)
+
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['messages_list'] = ContactModel.objects.filter(author=self.request.user.pk)
-        context['messages_count'] = ContactModel.objects.filter(author=self.request.user.pk).count()
+        context['messages_list'] = ContactModel.objects.filter(receiver=self.request.user.pk)
+        context['messages_count'] = ContactModel.objects.filter(receiver=self.request.user.pk).count()
         return context
 
 
@@ -191,7 +281,7 @@ def mark_read_message(request, pk):
 
 
 def mark_as_read_all(request):
-    for message in ContactModel.objects.filter(author=request.user.pk).all():
+    for message in ContactModel.objects.filter(receiver=request.user.pk).all():
         message.is_read = True
         message.save()
     return HttpResponseRedirect(reverse('dashboard:messages_list', kwargs={
@@ -217,6 +307,7 @@ def message_delete(request, pk):
         'user': request.user.id
     }))
 
+
 class SocialMediaListView(generic.ListView):
     template_name = 'dashboard/pages/index.html'
     model = SocialMedia
@@ -226,8 +317,8 @@ class SocialMediaListView(generic.ListView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['messages_list'] = ContactModel.objects.filter(author=self.request.user.pk)
-        context['messages_count'] = ContactModel.objects.filter(author=self.request.user.pk).count()
+        context['messages_list'] = ContactModel.objects.filter(receiver=self.request.user.pk)
+        context['messages_count'] = ContactModel.objects.filter(receiver=self.request.user.pk).count()
         return context
 
 
@@ -261,8 +352,8 @@ class SocialMediaCreateView(generic.CreateView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['messages_list'] = ContactModel.objects.filter(author=self.request.user.pk)
-        context['messages_count'] = ContactModel.objects.filter(author=self.request.user.pk).count()
+        context['messages_list'] = ContactModel.objects.filter(receiver=self.request.user.pk)
+        context['messages_count'] = ContactModel.objects.filter(receiver=self.request.user.pk).count()
         return context
 
 
@@ -291,6 +382,82 @@ class SocialMediaUpdateView(generic.UpdateView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['messages_list'] = ContactModel.objects.filter(author=self.request.user.pk)
-        context['messages_count'] = ContactModel.objects.filter(author=self.request.user.pk).count()
+        context['messages_list'] = ContactModel.objects.filter(receiver=self.request.user.pk)
+        context['messages_count'] = ContactModel.objects.filter(receiver=self.request.user.pk).count()
+        return context
+
+
+def user_reply_message(request, pk, username, user_pk):
+    form = ContactMessagesReplyForm(request.POST or None)
+    contact_object = ContactModel.objects.get(pk=pk)
+    receiver = User.objects.get(pk=user_pk)
+    messages_list = ContactModel.objects.filter(receiver=request.user.pk)
+    messages_count = ContactModel.objects.filter(receiver=request.user.pk).count()
+
+    if request.method == "POST":
+        if form.is_valid():
+            sender = request.user
+            message = form.cleaned_data['content']
+            ContactModel.objects.create(sender=sender, receiver=receiver, title=contact_object.title, content=message,
+                                        contact_email=receiver.email)
+            messages.success(request, 'Mesajnız gönderilmiştir...')
+
+            return HttpResponseRedirect(reverse('dashboard:messages_list',
+                                                kwargs={'user': request.user.username}))
+        else:
+            form = ContactMessagesReplyForm()
+
+    return render(request, 'dashboard/pages/messages.html', {'form': form, 'contact_object': contact_object,
+                                                             'messages_list': messages_list,
+                                                             'messages_count': messages_count})
+
+
+def user_sent_message(request, pk, username):
+    form = UserMessagesForm(request.POST or None)
+    contact_object = ContactModel.objects.get(pk=pk)
+    messages_list = ContactModel.objects.filter(receiver=request.user.pk)
+    messages_count = ContactModel.objects.filter(receiver=request.user.pk).count()
+    if request.method == "POST":
+        if form.is_valid():
+            title = form.cleaned_data['title']
+            message = form.cleaned_data['content']
+            contact_email = form.cleaned_data['contact_email']
+            sender = request.user
+            receiver = User.objects.get(username=form.cleaned_data['receiver'])
+
+            if str(request.user.username) == str(form.cleaned_data['receiver']):
+                messages.error(request, 'Kendinize mesaj gönderdiniz. Farklı bir kullanıcı seçiniz.')
+                return redirect(request.META['HTTP_REFERER'])
+
+            ContactModel.objects.create(title=title, sender=sender, receiver=receiver, content=message, contact_email=contact_email)
+            messages.success(request, 'Mesajnız gönderilmiştir...')
+            return HttpResponseRedirect(reverse('dashboard:messages_list',
+                                                kwargs={'user': request.user}))
+
+        else:
+            form = UserMessagesForm()
+
+    return render(request, 'dashboard/pages/messages.html', {'form': form,'contact_object': contact_object,
+                                                             'messages_list': messages_list,
+                                                             'messages_count': messages_count})
+
+
+class MyPostList(generic.ListView):
+    template_name = "dashboard/pages/index.html"
+    model = Posts
+    context_object_name = "my_posts"
+
+    def get(self, request, *args, **kwargs):
+        if not self.request.user.is_staff:
+            messages.error(request, "Yetkili girişi yapınız!")
+            return redirect('%s?next=/blog/' % (settings.LOGIN_URL))
+        return super().get(request, *args, **kwargs)
+
+    def get_queryset(self):
+        return Posts.objects.filter(author=self.request.user).order_by('-created')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['messages_list'] = ContactModel.objects.filter(receiver=self.request.user.pk)
+        context['messages_count'] = ContactModel.objects.filter(receiver=self.request.user.pk).count()
         return context

@@ -45,20 +45,21 @@
                 {% endif %}
                 <div class="row my-5 justify-content-center text-center">
                     <div class="col-lg-8">
-                        {% if object.avatar %}
-                            <img src="{{ object.avatar.url }}"
+                        {% if object.profile.avatar %}
+                            <img src="{{ object.profile.avatar.url }}"
                                  class="rounded-circle img-thumbnail image-lg border-light shadow-inset p-3"
-                                 alt="{{ object.first_name|title }} {{ object.last_name|upper }}">
+                                 alt="{{ object.first_name }}">
                         {% else %}
                             <img src="{% static "blog/assets/img/no_user.png" %}"
                                  class="rounded-circle img-thumbnail image-lg border-light shadow-inset p-3"
-                                 alt="{{ object.first_name }} {{ object.last_name|upper }}">
+                                 alt="{{ object.first_name }}">
                         {% endif %}
 
-                        <h1 class="h2 my-4">{{ object.first_name|title }} {{ object.last_name|upper }} </h1>
+                        <h1 class="h2 my-4">{{ object.first_name }} {{ object.last_name }} </h1>
+
                         <h2 class="h5 font-weight-normal text-gray mb-4">
                             <span class="fas fa-map-marker-alt mr-2"></span>
-                            {{ object.location|title }}
+                            {{ object.profile.location|title }}
                         </h2>
                         <ul class="list-unstyled d-flex justify-content-center mt-3 mb-0">
                             {% if user_social %}
@@ -90,7 +91,7 @@
                                     <span class="icon icon-xs mr-3 d-none d-xl-inline lh-200">
                                         <span class="fas fa-globe-europe"></span></span>
                                         <div class="media-body d-block"><span class="h5">Bildiğim Diller:</span>
-                                            <div class="text-gray mt-2">{{ object.language }}</div>
+                                            <div class="text-gray mt-2">{{ object.profile.language }}</div>
                                         </div>
                                     </div>
                                 </li>
@@ -99,7 +100,7 @@
                                             class="fas fa-fill-drip"></span></span>
                                         <div class="media-body d-block"><span class="h5">Yetenekler:</span>
                                             <div class="text-gray mt-2">
-                                                <div>{{ object.skils }}</div>
+                                                <div>{{ object.profile.skills }}</div>
                                             </div>
                                         </div>
                                     </div>
@@ -112,7 +113,7 @@
                                     <div class="media"><span class="icon icon-xs mr-3 d-none d-xl-inline lh-200"><span
                                             class="fas fa-birthday-cake"></span></span>
                                         <div class="media-body d-block"><span class="h5">Doğum Tarihi:</span>
-                                            <div class="text-gray mt-2">{{ object.birth_day }}</div>
+                                            <div class="text-gray mt-2">{{ object.profile.birth_day }}</div>
                                         </div>
                                     </div>
                                 </li>
@@ -123,7 +124,7 @@
                                         <span class="fas fa-globe"></span></span>
                                         <div class="media-body d-block"><span class="h5">Sitem:</span>
                                             <div class="text-gray mt-2">
-                                                <a href="{{ object.online }}" target="_blank">Web Sitem</a>
+                                                <a href="{{ object.profile.online }}" target="_blank">Web Sitem</a>
                                             </div>
                                         </div>
                                     </div>
@@ -137,7 +138,7 @@
                                             class="far fa-paper-plane"></span></span>
                                         <div class="media-body d-block"><span class="h5">Email:</span>
                                             <div class="text-gray mt-2">
-                                                <span class="__cf_email__">{{ object.email }}</span>
+                                                <span class="__cf_email__">{{ object.profile.email }}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -147,7 +148,7 @@
                                     <div class="media"><span class="icon icon-xs mr-3 d-none d-xl-inline lh-200"><span
                                             class="fas fa-map-pin"></span></span>
                                         <div class="media-body d-block"><span class="h5">Yaşadığı Şehir:</span>
-                                            <div class="text-gray mt-2">{{ object.location|title }}</div>
+                                            <div class="text-gray mt-2">{{ object.profile.location|title }}</div>
                                         </div>
                                     </div>
                                 </li>
@@ -156,35 +157,132 @@
                     </div>
                 </div>
             </div>
-            {% if request.user.is_authenticated and not request.user.username in request.path %}
-                <div class="section section-md">
-                    <div class="container">
-                        <div class="row justify-content-center">
-                            <div class="col-12 col-md-10 mb-5 text-center">
-                                <h2>İletişim</h2>
-                            </div>
-                            <div class="col-12 col-lg-8">
-                                <form class="card bg-primary shadow-soft border-light" method="post">
-                                    {% csrf_token %}
-                                    <div class="card-body px-5">
-                                        <label class="font-weight-bold">Email</label>
+        </div>
 
-                                        {{ form.contact_email }}
-                                        <p>Yazar email adresinize en kısa zamanda yanıt vermeye çalışacak</p>
-                                        <label class="font-weight-bold">Mesajınız</label>
-                                        {{ form.content }}
-                                        <p>{{ form.accept }} Kullanıcı Sözleşmesini kabul ediyorum. <a href="#">Kullanım
-                                            şartları</a></p>
-                                    </div>
-                                    <div class="card-footer text-center pt-0 pb-5">
-                                        <button type="submit" class="btn btn-primary rounded">Mesajı Gönder</button>
-                                    </div>
-                                </form>
-                            </div>
+        {% if post_list %}
+            <section class="section-header bg-primary pb-0">
+                <div class="container">
+                    <div class="row justify-content-center">
+                        <div class="col-12 col-md-8 text-center"><h1 class="display-2">Gönderilerim</h1>
                         </div>
                     </div>
+            </section>
+            <section class="section section-lg bg-primary">
+                <div class="container">
+                    <div class="row">
+                        {% for post in post_list %}
+                            <div class="col-12 col-md-6 col-lg-4 mb-4 mb-lg-5">
+                                <div class="card bg-primary shadow-soft border-light p-4 rounded"><a
+                                        href="{% url "blog:post_detail" post.category.title.lower|slugify post.slug post.pk post.author post.author.id post.created.date %}"><img
+                                        src="{{ post.cover.url }}" class="card-img-top rounded"
+                                        alt="our desk"></a>
+                                    <div class="card-body p-0 pt-4"><a
+                                            href="{% url "blog:post_detail" post.category.title.lower|slugify post.slug post.pk post.author post.author.id post.created.date %}"
+                                            class="h4">
+                                        {{ post.title }}
+                                    </a>
+                                        <div class="d-flex align-items-center my-4">
+                                            {% if post.author.profile.avatar %}
+                                                <img
+                                                        class="avatar avatar-sm rounded-circle"
+                                                        src="{{ post.author.profile.avatar.url }}"
+                                                        alt="{{ post.author.username }}">
+                                            {% else %}
+
+                                            {% endif %}
+                                            <h3 class="h6 small ml-2 mb-0">{{ post.author.username }}
+                                                - {{ post.created|timesince }} önce paylaştı.</h3>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+
+                        <div class="d-flex justify-content-center w-100">
+                        <div class="mt-5">
+                            <nav aria-label="Blog page navigation">
+                                <ul class="pagination">
+                                    {% if page_obj.has_previous %}
+                                        <li class="page-item">
+                                            <a class="page-link" aria-label="ilk sayfa" title="ilk sayfa"
+                                               href="?page=1">
+                                                <span class="fas fa-angle-double-left"></span>
+                                            </a>
+                                        </li>
+
+                                        <li class="page-item">
+                                            <a class="page-link rounded" aria-label="önceki sayfa"
+                                               title="önceki sayfa"
+                                               href="?page={{ page_obj.previous_page_number }}">
+                                                <span class="fas fa-angle-left"></span>
+                                            </a>
+                                        </li>
+
+                                    {% endif %}
+                                    {% for number in page_obj.paginator.page_range %}
+                                        {% if page_obj.number == number %}
+                                            <li class="page-item active">
+                                                <a class="page-link" href="#">{{ number }}</a>
+                                            </li>
+                                        {% else %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?page={{ number }}">{{ number }}</a>
+                                            </li>
+                                        {% endif %}
+                                    {% endfor %}
+                                    {% if page_obj.has_next %}
+                                        <li class="page-item">
+                                            <a class="page-link rounded" aria-label="first link"
+                                               title="sonraki sayfa"
+                                               href="?page={{ page_obj.next_page_number }}">
+                                                <span class="fas fa-angle-right"></span>
+                                            </a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" aria-label="first link" title="son sayfa"
+                                               href="?page={{ page_obj.paginator.num_pages }}">
+                                                <span class="fas fa-angle-double-right"></span>
+                                            </a>
+                                        </li>
+
+                                    {% else %}
+                                        <li class="page-item">
+                                            <a class="page-link" aria-label="first link"
+                                               href="#">
+                                                <span class="fas fa-angle-double-right"></span>
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                    </div>
                 </div>
-            {% endif %}
+            </section>
+        {% endif %}
+
+        <div class="section section-md">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-12 col-md-10 mb-5 text-center"><h2>İletişim</h2>
+                    </div>
+                    <div class="col-12 col-lg-8">
+                        <form method="post" class="card bg-primary shadow-soft border-light">
+                            {% csrf_token %}
+                            <div class="card-body px-5">
+                                <div class="form-group">
+                                    {% bootstrap_form form %}
+                                </div>
+
+                            </div>
+                            <div class="card-footer text-center pt-0 pb-5">
+                                <button type="submit" class="btn btn-primary rounded">Gönder</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
 

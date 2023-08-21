@@ -42,7 +42,7 @@
                             <li>
                                 <div class="dropdown-title d-flex justify-content-between align-items-center">
                                     Mesajlar
-                                    <a href="{% url 'dashboard:mark_as_read_all'  %}" class="small">Okundu işaretle</a>
+                                    <a href="{% url 'dashboard:mark_as_read_all'  %}" class="small">Tümünü okundu işaretle</a>
                                 </div>
                             </li>
                             <li>
@@ -80,6 +80,7 @@
                             </li>
                         </ul>
                     </li>
+
                     <li class="nav-item dropdown hidden-caret">
                         <a class="nav-link dropdown-toggle" href="#" id="notifDropdown" role="button"
                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -141,6 +142,7 @@
                             </li>
                         </ul>
                     </li>
+
                     <li class="nav-item dropdown hidden-caret">
                         <a class="nav-link" data-toggle="dropdown" href="#" aria-expanded="false">
                             <i class="fas fa-layer-group"></i>
@@ -170,16 +172,16 @@
                                                 <span class="text">Yeni Gönderi</span>
                                             </div>
                                         </a>
-                                        <a class="col-6 col-md-4 p-0" href="#">
+                                        <a class="col-6 col-md-4 p-0" href="{% url 'dashboard:user_sent_message' request.user.pk request.user %}">
                                             <div class="quick-actions-item">
                                                 <i class="flaticon-interface-1"></i>
-                                                <span class="text">Create New Task</span>
+                                                <span class="text">Mesaj Gönder</span>
                                             </div>
                                         </a>
-                                        <a class="col-6 col-md-4 p-0" href="#">
+                                        <a class="col-6 col-md-4 p-0" href="{% url 'dashboard:profile_update' request.user request.user.pk %}">
                                             <div class="quick-actions-item">
                                                 <i class="flaticon-list"></i>
-                                                <span class="text">Completed Tasks</span>
+                                                <span class="text">Profili düzenle</span>
                                             </div>
                                         </a>
                                         <a class="col-6 col-md-4 p-0" href="#">
@@ -225,6 +227,9 @@
                                             <h4>
                                                 {{ request.user.username }}
                                             </h4>
+                                            <h4>
+                                                {{ request.user.first_name }} {{ request.user.last_name }}
+                                            </h4>
                                             <p class="text-muted">
                                                 {{ request.user.profile.email }}
                                             </p>
@@ -236,7 +241,7 @@
                                     <a class="dropdown-item"
                                        href="{% url "blog:profile" request.user.username request.user.pk %}">Profil
                                         Sayfam</a>
-                                    <a class="dropdown-item" href="#">Mesajlar</a>
+                                    <a class="dropdown-item" href="{% url 'dashboard:messages_list' request.user %}">Mesajlar</a>
                                     <div class="dropdown-divider"></div>
                                     <a class="dropdown-item"
                                        href="{% url "dashboard:profile_update" request.user request.user.pk %}">Profili

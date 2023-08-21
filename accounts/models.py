@@ -21,7 +21,6 @@ class Profile(models.Model):
     first_name = models.CharField(max_length=150, verbose_name="Ad")
     last_name = models.CharField(max_length=150, verbose_name="Soyad")
     email = models.EmailField(verbose_name="Email")
-    cover = models.ImageField(upload_to=cover, blank=True, verbose_name='Kapak Fotosu:')
     avatar = models.ImageField(upload_to=avatar, blank=True, verbose_name='Avatar:')
     gender = models.CharField(max_length=30, choices=Gender, default="", verbose_name='Cinsiyet', blank=True)
     location = models.CharField(max_length=100, verbose_name='Yaşadığı şehir', blank=True)
@@ -29,8 +28,8 @@ class Profile(models.Model):
     job = models.CharField(max_length=100, verbose_name='Meslek', blank=True)
     phone = models.CharField(max_length=130, verbose_name='Telefon', blank=True, unique=True, null=True)
     birth_day = models.DateField(blank=True, null=True, verbose_name='Doğum Tarihi:')
-    skils = models.CharField(max_length=2000, editable=True, verbose_name='Yetenekler', blank=True)
-    online = models.URLField(verbose_name='Web Sitesi', blank=True)
+    skills = models.CharField(max_length=2000, editable=True, verbose_name='Yetenekler', blank=True)
+    web_site = models.URLField(verbose_name='Web Sitesi', blank=True)
     language = models.CharField(max_length=2000, editable=True, verbose_name='Bildiğiniz Diller', blank=True,
                                 help_text="ingilizce")
 
@@ -62,7 +61,9 @@ class SocialMedia(models.Model):
 
 
 class ContactModel(models.Model):
-    author = models.ForeignKey(Profile, on_delete=models.CASCADE, verbose_name='Alıcı', related_name='alıcı')
+    title = models.CharField(max_length=150, verbose_name="Konu:", blank=True)
+    receiver = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Alıcı: ',
+                                 related_name='messages_receiver')
     sender = models.ForeignKey('auth.User', on_delete=models.CASCADE, verbose_name='Gönderen', related_name='gönderen')
     content = models.TextField(verbose_name='Mesaj')
     contact_email = models.EmailField()
@@ -77,3 +78,4 @@ class ContactModel(models.Model):
         db_table = 'contact'
         verbose_name = 'Mesajlar'
         verbose_name_plural = 'Mesajlar'
+        ordering = ['-created']

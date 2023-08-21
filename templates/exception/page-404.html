@@ -1,4 +1,4 @@
-{% extends "layouts/base-fullscreen.html" %}
+{% extends "blog/layouts/base-fullscreen.html" %}
 
 {% block title %} Error 404 {% endblock %} 
 
@@ -19,12 +19,12 @@
                             </h1>
                             <br />
                             <span class="font-weight-normal">
-                                Page not found.
+                                Sayfa Bulnamadı
                             </span>                            
                         </div>
                         
                         <form action="#" class="mt-4">
-                            <a href="/" class="btn btn-block btn-primary">Home</a>
+                            <a href="{% url "blog:anasayfa" %}" class="btn btn-block btn-primary">Anasayfa</a>
                         </form>
                     </div>
                 </div>
