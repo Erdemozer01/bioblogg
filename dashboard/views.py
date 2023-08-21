@@ -436,7 +436,7 @@ def user_sent_message(request, pk, username):
         else:
             form = UserMessagesForm()
 
-    return render(request, 'dashboard/pages/messages.html', {'form': form,'contact_object': contact_object,
+    return render(request, 'dashboard/pages/messages.html', {'form': form,
                                                              'messages_list': messages_list,
                                                              'messages_count': messages_count})
 
