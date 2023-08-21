@@ -103,6 +103,13 @@
 
                         <div class="collapse" id="base">
                             <ul class="nav nav-collapse">
+
+                                <li>
+                                    <a href="{% url "blog:anasayfa" %}">
+                                        <span class="sub-item">Anasayfa</span>
+                                    </a>
+                                </li>
+
                                 <li>
                                     <a href="{% url "dashboard:user_posts" request.user request.user.pk %}">
                                         <span class="sub-item">Gönderilerim</span>

@@ -414,7 +414,6 @@ def user_reply_message(request, pk, username, user_pk):
 
 def user_sent_message(request, pk, username):
     form = UserMessagesForm(request.POST or None)
-    contact_object = ContactModel.objects.get(pk=pk)
     messages_list = ContactModel.objects.filter(receiver=request.user.pk)
     messages_count = ContactModel.objects.filter(receiver=request.user.pk).count()
     if request.method == "POST":
