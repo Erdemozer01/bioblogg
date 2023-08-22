@@ -52,58 +52,7 @@
 
             {% plotly_app name="ProfileGraph" ratio=1 %}
 
-        {% elif 'messages' in request.path %}
-            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                <h1 class="h1 text-success">Mesajlarım</h1>
-            </div>
 
-            <div class="table-responsive container">
-                <table id="add-row" class="display table table-responsive ">
-                    <thead>
-                    <tr>
-                        <th>GÖNDEREN</th>
-                        <th>EMAİL</th>
-                        <th>TARİH</th>
-                        <th>OKUNMA</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-
-                    {% for messages in messages_list %}
-                        {% if request.user.username == messages.receiver.username %}
-                            <tr>
-                                <td>{{ messages.sender }}</td>
-                                <td>{{ messages.contact_email }}</td>
-                                <td>{{ messages.created.date }}</td>
-                                {% if messages.is_read == True %}
-                                    <td>Okundu</td>
-                                {% else %}
-                                    <td>Okunmadı</td>
-                                {% endif %}
-                                <td>
-                                    <div class="form-button-action">
-
-                                        <a href="{% url 'dashboard:message_detail' messages.sender messages.pk %}"
-                                           class="btn btn-link btn-primary " title="Görüntüle">
-                                            <i class="fa fa-eye animate-hover"></i>
-                                        </a>
-
-                                        <a href="{% url 'dashboard:message_delete' messages.pk %}"
-                                           class="btn btn-link btn-danger"
-                                           title="Sil">
-                                            <i class="fa fa-trash"></i>
-                                        </a>
-
-                                    </div>
-                                </td>
-                            </tr>
-                        {% endif %}
-
-                    {% endfor %}
-
-                    </tbody>
-                </table>
-            </div>
         {% elif 'user-posts' in request.path %}
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                 <h1 class="h1 text-success">Gönderilerim</h1>

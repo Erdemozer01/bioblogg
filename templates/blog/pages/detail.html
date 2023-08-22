@@ -16,32 +16,32 @@
     {% if object %}
         <main class="container mt-6">
             {% if messages %}
-                {% for message in messages %}
-                    {% if message.tags == 'error' %}
-                        <div class="alert alert-danger alert-dismissible shadow-soft fade show" role="alert">
-                    {% else %}
-                        <div class="alert alert-{{ message.tags }} alert-dismissible shadow-soft fade show"
-                             role="alert">
-                    {% endif %}
+                    {% for message in messages %}
+                        {% if message.tags == 'error' %}
+                            <div class="alert alert-danger alert-dismissible shadow-soft fade show" role="alert">
+                        {% else %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible shadow-soft fade show"
+                                 role="alert">
+                        {% endif %}
 
-                <span class="alert-inner--icon">
-                      {% if message.tags == 'error' %}
-                          <span class="far fa-thumbs-down"></span>
-                      {% elif message.tags == 'success' %}
-                          <span class="far fa-thumbs-up"></span>
-                      {% else %}
+                    <span class="alert-inner--icon">
+                                    {% if message.tags == 'error' %}
+                                        <span class="far fa-thumbs-down"></span>
+                                    {% elif message.tags == 'success' %}
+                                        <span class="far fa-thumbs-up"></span>
+                                    {% else %}
 
-                      {% endif %}
-                </span>
+                                    {% endif %}
+                                </span>
 
-                <span class="alert-inner--text"><strong>{{ message }}</strong> </span>
+                    <span class="alert-inner--text"><strong>{{ message }}</strong> </span>
 
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-                </div>
-                {% endfor %}
-            {% endif %}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    </div>
+                    {% endfor %}
+                {% endif %}
             <!-- Body -->
             <div class="row g-5">
                 <div class="col-md-8">
@@ -83,7 +83,9 @@
                         </p>
 
                         <img src="{{ object.cover.url }}" alt="{{ object.author|title }}" class="shadow-soft rounded">
+
                         <p class="blog-post">{{ object.text|safe }}</p>
+
                         {% if posts.extra_image1 or posts.extra_image2 or posts.extra_image3 %}
                             <h2>{{ object.title }} Fotoğraf Albümü</h2>
                             <div id="Carousel2" class="carousel slide shadow-soft border border-light p-4 rounded"
@@ -118,6 +120,7 @@
                                 </a>
                             </div>
                         {% endif %}
+
                     </article>
 
                     <a href="{% url "blog:like_post" object.pk object.slug|slugify %}">

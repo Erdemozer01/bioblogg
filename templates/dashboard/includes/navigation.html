@@ -1,4 +1,5 @@
 {% load static %}
+
 <div class="main-header">
 
 
@@ -42,34 +43,40 @@
                             <li>
                                 <div class="dropdown-title d-flex justify-content-between align-items-center">
                                     Mesajlar
-                                    <a href="{% url 'dashboard:mark_as_read_all'  %}" class="small">Tümünü okundu işaretle</a>
+                                    <a href="{% url 'dashboard:mark_as_read_all' %}" class="small">Tümünü okundu
+                                        işaretle</a>
                                 </div>
                             </li>
                             <li>
                                 <div class="message-notif-scroll scrollbar-outer">
                                     <div class="notif-center">
                                         {% for messages in messages_list %}
-                                            <a href="{% url 'dashboard:message_detail' messages.sender messages.pk %}">
-                                                {% if messages.sender.profile.avatar %}
-                                                    <div class="notif-img">
-                                                        <img src="{{ messages.sender.profile.avatar.url }}"
-                                                             alt="Img Profile">
-                                                    </div>
-                                                {% else %}
-                                                    <div class="notif-img">
-                                                        <img src="{% static 'dashboard/assets/img/no_user.png' %}"
-                                                             alt="Img Profile">
-                                                    </div>
-                                                {% endif %}
+                                            {% if messages.is_read is False %}
+                                                <a href="{% url 'dashboard:message_detail' messages.sender messages.pk %}">
+                                                    {% if messages.sender.profile.avatar %}
+                                                        <div class="notif-img">
+                                                            <img src="{{ messages.sender.profile.avatar.url }}"
+                                                                 alt="Img Profile">
+                                                        </div>
+                                                    {% else %}
+                                                        <div class="notif-img">
+                                                            <img src="{% static 'dashboard/assets/img/no_user.png' %}"
+                                                                 alt="Img Profile">
+                                                        </div>
+                                                    {% endif %}
 
-                                                <div class="notif-content">
-                                                    <span class="subject">{{ messages.sender }}</span>
-                                                    <span class="block">
+                                                    <div class="notif-content">
+                                                        <span class="subject">{{ messages.sender }}</span>
+                                                        <span class="block">
 														{{ messages.content|truncatechars_html:10 }}
 													</span>
-                                                    <span class="time">{{ messages.created|timesince }}</span>
-                                                </div>
-                                            </a>
+                                                        <span class="time">{{ messages.created|timesince }}</span>
+                                                    </div>
+                                                </a>
+                                            {% else %}
+                                                <p class="text-sm-center text-center">Okunmamış mesajınız bulunamadı</p>
+                                            {% endif %}
+
                                         {% endfor %}
                                     </div>
                                 </div>
@@ -172,13 +179,15 @@
                                                 <span class="text">Yeni Gönderi</span>
                                             </div>
                                         </a>
-                                        <a class="col-6 col-md-4 p-0" href="{% url 'dashboard:user_sent_message' request.user.pk request.user %}">
+                                        <a class="col-6 col-md-4 p-0"
+                                           href="{% url 'dashboard:user_sent_message' request.user.pk request.user %}">
                                             <div class="quick-actions-item">
                                                 <i class="flaticon-interface-1"></i>
                                                 <span class="text">Mesaj Gönder</span>
                                             </div>
                                         </a>
-                                        <a class="col-6 col-md-4 p-0" href="{% url 'dashboard:profile_update' request.user request.user.pk %}">
+                                        <a class="col-6 col-md-4 p-0"
+                                           href="{% url 'dashboard:profile_update' request.user request.user.pk %}">
                                             <div class="quick-actions-item">
                                                 <i class="flaticon-list"></i>
                                                 <span class="text">Profili düzenle</span>

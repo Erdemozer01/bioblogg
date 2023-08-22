@@ -1,5 +1,5 @@
 from django import forms
-from accounts.models import Profile,SocialMedia
+from accounts.models import Profile, SocialMedia
 
 
 class ProfileModelForm(forms.ModelForm):

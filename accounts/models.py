@@ -79,3 +79,6 @@ class ContactModel(models.Model):
         verbose_name = 'Mesajlar'
         verbose_name_plural = 'Mesajlar'
         ordering = ['-created']
+
+
+

@@ -35,6 +35,33 @@
     {% if "archive" in request.build_absolute_uri %}
         <main class="container mt-8">
             <div class="container">
+                {% if messages %}
+                    {% for message in messages %}
+                        {% if message.tags == 'error' %}
+                            <div class="alert alert-danger alert-dismissible shadow-soft fade show" role="alert">
+                        {% else %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible shadow-soft fade show"
+                                 role="alert">
+                        {% endif %}
+
+                    <span class="alert-inner--icon">
+                                    {% if message.tags == 'error' %}
+                                        <span class="far fa-thumbs-down"></span>
+                                    {% elif message.tags == 'success' %}
+                                        <span class="far fa-thumbs-up"></span>
+                                    {% else %}
+
+                                    {% endif %}
+                                </span>
+
+                    <span class="alert-inner--text"><strong>{{ message }}</strong> </span>
+
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    </div>
+                    {% endfor %}
+                {% endif %}
                 <div class="row justify-content-center">
                     <div class="col-12 col-md-8 text-center">
                         {% if month == 12 %}
@@ -45,219 +72,105 @@
                         <h1 class="display-2 mb-4 text-underline"></h1>
                     </div>
                 </div>
-            </div>
-            <!-- Kartlar -->
-            <div class="row mb-2 mx-auto">
-                {% for object in object_list %}
-                    <!-- Makale Bölümü -->
-                    <div class="col-md-4">
-                        <div class="col-12 mb-4 mb-lg-5">
-                            <div class="card bg-primary border-light shadow-soft">
+                </div>
+                <!-- Kartlar -->
+                <div class="row mb-2 mx-auto">
+                    {% for object in object_list %}
+                        <!-- Makale Bölümü -->
+                        <div class="col-md-4">
+                            <div class="col-12 mb-4 mb-lg-5">
+                                <div class="card bg-primary border-light shadow-soft">
 
-                                <div class="card-header p-3">
+                                    <div class="card-header p-3">
 
-                                    <img src="{{ object.cover.url }}" class="card-img-top rounded"
-                                         alt="{{ object.title }}">
-                                </div>
-                                <div class="card-body pt-2">
-                                    <div class="media d-flex align-items-center justify-content-between">
-                                        <div class="post-group">
-                                            <a href="#" data-toggle="tooltip" data-placement="top"
-                                               title="{{ object.author }}"
-                                               data-original-title="23k followers">
-                                                {% if object.author.profile.avatar %}
+                                        <img src="{{ object.cover.url }}" class="card-img-top rounded"
+                                             alt="{{ object.title }}">
+                                    </div>
+                                    <div class="card-body pt-2">
+                                        <div class="media d-flex align-items-center justify-content-between">
+                                            <div class="post-group">
+                                                {% if request.user.is_staff %}
+                                                    <a href="{% url 'blog:profile' object.author object.author.pk %}"
+                                                       data-toggle="tooltip" data-placement="top"
+                                                       title="{{ object.author }}"
+                                                       data-original-title="23k followers">
+                                                        {% if object.author.profile.avatar %}
 
-                                                    <img class="avatar-sm mr-2 img-fluid rounded-circle"
-                                                         src="{{ object.author.profile.avatar.url }}"
-                                                         alt="{{ object.author }}"> {{ object.author }}
+                                                            <img class="avatar-sm mr-2 img-fluid rounded-circle"
+                                                                 src="{{ object.author.profile.avatar.url }}"
+                                                                 alt="{{ object.author }}"> {{ object.author }}
+
+                                                        {% else %}
+                                                            <img class="avatar-sm mr-2 img-fluid rounded-circle"
+                                                                 src="{% static "blog/assets/img/no_user.png" %}"
+                                                                 alt="{{ object.author }}"> {{ object.author }}
+                                                        {% endif %}
+
+                                                    </a>
 
                                                 {% else %}
-                                                    <img class="avatar-sm mr-2 img-fluid rounded-circle"
-                                                         src="{% static "blog/assets/img/no_user.png" %}"
-                                                         alt="{{ object.author }}"> {{ object.author }}
+                                                    <a href="{% url 'dashboard:profile_dash' object.author %}"
+                                                       data-toggle="tooltip" data-placement="top"
+                                                       title="{{ object.author }}"
+                                                       data-original-title="23k followers">
+                                                        {% if object.author.profile.avatar %}
+
+                                                            <img class="avatar-sm mr-2 img-fluid rounded-circle"
+                                                                 src="{{ object.author.profile.avatar.url }}"
+                                                                 alt="{{ object.author }}"> {{ object.author }}
+
+                                                        {% else %}
+                                                            <img class="avatar-sm mr-2 img-fluid rounded-circle"
+                                                                 src="{% static "blog/assets/img/no_user.png" %}"
+                                                                 alt="{{ object.author }}"> {{ object.author }}
+                                                        {% endif %}
+
+                                                    </a>
                                                 {% endif %}
 
-                                            </a>
-                                        </div>
-                                        <div class="d-flex align-items-center">
+                                            </div>
+
+                                            <div class="d-flex align-items-center">
                                                 <span class="small">
                                                     <span class="far fa-calendar-alt mr-2"></span>
                                                     {{ object.created }}
                                                 </span>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <h3 class="h5 card-title mt-4">{{ object.title }}</h3>
-                                    <p class="card-text">{{ object.text|safe|truncatechars_html:100 }}</p>
-                                    <a href="{% url "blog:post_detail" object.category|slugify object.slug object.pk object.author object.author.pk object.created.date %}"
-                                       class="btn btn-primary btn-sm">Ayrıntılar</a>
-                                    {% if object.author.username == request.user.username %}
-                                        <div class="btn-group float-right">
-                                            <button class="btn btn-link border-0 dropdown-toggle dropdown-toggle-split m-0 p-0"
-                                                    data-toggle="dropdown" aria-haspopup="true"
-                                                    aria-expanded="false">
+                                        <h3 class="h5 card-title mt-4">{{ object.title }}</h3>
+                                        <p class="card-text">{{ object.text|safe|truncatechars_html:100 }}</p>
+                                        <a href="{% url "blog:post_detail" object.category|slugify object.slug object.pk object.author object.author.pk object.created.date %}"
+                                           class="btn btn-primary btn-sm">Ayrıntılar</a>
+                                        {% if object.author.username == request.user.username %}
+                                            <div class="btn-group float-right">
+                                                <button class="btn btn-link border-0 dropdown-toggle dropdown-toggle-split m-0 p-0"
+                                                        data-toggle="dropdown" aria-haspopup="true"
+                                                        aria-expanded="false">
                                     <span class="icon icon-sm">
                                         <span class="fas fa-ellipsis-h icon-secondary"></span>
                                     </span>
-                                                <span class="sr-only">Toggle Dropdown</span>
-                                            </button>
-                                            <div class="dropdown-menu">
-                                                <a class="dropdown-item"
-                                                   href="{% url "admin:index" %}blog/posts/{{ object.pk }}/change/">
-                                                    <span class="fas fa-edit mr-2"></span>
-                                                    Güncelle
-                                                </a>
-                                                <a class="dropdown-item text-danger"
-                                                   href="{% url "blog:post_delete" object.pk %}">
-                                                    <span class="fa fa-trash mr-2" aria-hidden="true"></span>
-                                                    Gönderiyi Sil
-                                                </a>
+                                                    <span class="sr-only">Toggle Dropdown</span>
+                                                </button>
+                                                <div class="dropdown-menu">
+                                                    <a class="dropdown-item"
+                                                       href="{% url "admin:index" %}blog/posts/{{ object.pk }}/change/">
+                                                        <span class="fas fa-edit mr-2"></span>
+                                                        Güncelle
+                                                    </a>
+                                                    <a class="dropdown-item text-danger"
+                                                       href="{% url "blog:post_delete" object.pk %}">
+                                                        <span class="fa fa-trash mr-2" aria-hidden="true"></span>
+                                                        Gönderiyi Sil
+                                                    </a>
+                                                </div>
                                             </div>
-                                        </div>
-                                    {% endif %}
+                                        {% endif %}
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                {% endfor %}
-            </div>
-            <!-- Pagination -->
-            <div class="d-flex justify-content-center w-100">
-                <div class="mt-5">
-                    <nav aria-label="Blog page navigation">
-                        <ul class="pagination">
-                            {% if page_obj.has_previous %}
-                                <li class="page-item">
-                                    <a class="page-link" aria-label="ilk sayfa" title="ilk sayfa"
-                                       href="?page=1">
-                                        <span class="fas fa-angle-double-left"></span>
-                                    </a>
-                                </li>
-
-                                <li class="page-item">
-                                    <a class="page-link rounded" aria-label="önceki sayfa"
-                                       title="önceki sayfa"
-                                       href="?page={{ page_obj.previous_page_number }}">
-                                        <span class="fas fa-angle-left"></span>
-                                    </a>
-                                </li>
-
-                            {% endif %}
-                            {% for number in page_obj.paginator.page_range %}
-                                {% if page_obj.number == number %}
-                                    <li class="page-item active">
-                                        <a class="page-link" href="#">{{ number }}</a>
-                                    </li>
-                                {% else %}
-                                    <li class="page-item">
-                                        <a class="page-link" href="?page={{ number }}">{{ number }}</a>
-                                    </li>
-                                {% endif %}
-                            {% endfor %}
-                            {% if page_obj.has_next %}
-                                <li class="page-item">
-                                    <a class="page-link rounded" aria-label="first link"
-                                       title="sonraki sayfa"
-                                       href="?page={{ page_obj.next_page_number }}">
-                                        <span class="fas fa-angle-right"></span>
-                                    </a>
-                                </li>
-                                <li class="page-item">
-                                    <a class="page-link" aria-label="first link" title="son sayfa"
-                                       href="?page={{ page_obj.paginator.num_pages }}">
-                                        <span class="fas fa-angle-double-right"></span>
-                                    </a>
-                                </li>
-
-                            {% else %}
-                                <li class="page-item">
-                                    <a class="page-link" aria-label="first link"
-                                       href="#">
-                                        <span class="fas fa-angle-double-right"></span>
-                                    </a>
-                                </li>
-                            {% endif %}
-                        </ul>
-                    </nav>
-                </div>
-            </div>
-        </main>
-
-    {% elif "categories" in request.build_absolute_uri %}
-        <main class="container mt-8">
-            <!-- Mesajlar -->
-            <div class="container">
-                {% if messages %}
-                    {% for message in messages %}
-                        <div class="alert alert-success alert-dismissible shadow-soft fade show" role="alert">
-
-                            <span class="alert-inner--icon">
-                                <span class="far fa-thumbs-up"></span>
-                            </span>
-
-                            <span class="alert-inner--text"><strong>Tebrikler!</strong>  {{ message }} </span>
-
-                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-
-                        </div>
-                    {% endfor %}
-                {% endif %}
-                <div class="row justify-content-center">
-                    <div class="col-6 col-md-4 text-center">
-                        <h1 class="display-3 mb-4 text-underline">Tüm Kategoriler</h1>
-                    </div>
-                </div>
-            </div>
-
-            <form method="get">
-                <div class="form-group col-6 mx-auto">
-                    <div class="input-group mb-6">
-                        <div class="input-group-prepend">
-                                <span class="input-group-text">
-                                    <span class="fas fa-search"></span>
-                                </span>
-                        </div>
-
-                        <input class="form-control" id="kategori_id" placeholder="Kategori adı"
-                               type="text" name="search" value="{{ request.GET.search }}">
-
-                        <script>
-                            $(function () {
-                                var availableTags = [
-                                    {% for category in category_list %}
-                                        "{{ category.title }}",
-                                    {% endfor %}
-                                ];
-                                $("#kategori_id").autocomplete({
-                                    source: availableTags
-                                });
-                            });
-                        </script>
-
-                    </div>
-                </div>
-            </form>
-
-            {% if category_list %}
-
-                <!-- Kartlar -->
-                <div class="row mb-2 mx-auto">
-                    {% for category in category_list %}
-                        <div class="col-12 col-md-6 col-lg-4 mb-5">
-                            <a class="card border-light shadow-soft animate-up-5"
-                               href="{% url "blog:category" category.slug %}">
-                                <img src="{{ category.image.url }}"
-                                     class="card-img-top rounded-top" alt="{{ category.title }}">
-                                <div class="card-body">
-                                    <h3 class="h5 card-title mt-3">{{ category.title }} Kategorisi</h3>
-                                    <p class="card-text">{{ category.explain|safe|truncatechars_html:100 }}</p>
-                                </div>
-                            </a>
-                        </div>
                     {% endfor %}
                 </div>
-
                 <!-- Pagination -->
                 <div class="d-flex justify-content-center w-100">
                     <div class="mt-5">
@@ -318,18 +231,192 @@
                         </nav>
                     </div>
                 </div>
-            {% else %}
+        </main>
+
+    {% elif "categories" in request.build_absolute_uri %}
+        <main class="container mt-8">
+            <!-- Mesajlar -->
+            <div class="container">
+                {% if messages %}
+                    {% for message in messages %}
+                        {% if message.tags == 'error' %}
+                            <div class="alert alert-danger alert-dismissible shadow-soft fade show" role="alert">
+                        {% else %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible shadow-soft fade show"
+                                 role="alert">
+                        {% endif %}
+
+                    <span class="alert-inner--icon">
+                                    {% if message.tags == 'error' %}
+                                        <span class="far fa-thumbs-down"></span>
+                                    {% elif message.tags == 'success' %}
+                                        <span class="far fa-thumbs-up"></span>
+                                    {% else %}
+
+                                    {% endif %}
+                                </span>
+
+                    <span class="alert-inner--text"><strong>{{ message }}</strong> </span>
+
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    </div>
+                    {% endfor %}
+                {% endif %}
                 <div class="row justify-content-center">
                     <div class="col-6 col-md-4 text-center">
-                        <h4 class=" mb-4"> Kategori Bulunamadı :( </h4>
+                        <h1 class="display-3 mb-4 text-underline">Tüm Kategoriler</h1>
                     </div>
                 </div>
-            {% endif %}
+                </div>
+
+                <form method="get">
+                    <div class="form-group col-6 mx-auto">
+                        <div class="input-group mb-6">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">
+                                    <span class="fas fa-search"></span>
+                                </span>
+                            </div>
+
+                            <input class="form-control" id="kategori_id" placeholder="Kategori adı"
+                                   type="text" name="search" value="{{ request.GET.search }}">
+
+                            <script>
+                                $(function () {
+                                    var availableTags = [
+                                        {% for category in category_list %}
+                                            "{{ category.title }}",
+                                        {% endfor %}
+                                    ];
+                                    $("#kategori_id").autocomplete({
+                                        source: availableTags
+                                    });
+                                });
+                            </script>
+
+                        </div>
+                    </div>
+                </form>
+
+                {% if category_list %}
+                    <!-- Kartlar -->
+                    <div class="row mb-2 mx-auto">
+                        {% for category in category_list %}
+                            <div class="col-12 col-md-6 col-lg-4 mb-5">
+                                <a class="card border-light shadow-soft animate-up-5"
+                                   href="{% url "blog:category" category.slug %}">
+                                    <img src="{{ category.image.url }}"
+                                         class="card-img-top rounded-top" alt="{{ category.title }}">
+                                    <div class="card-body">
+                                        <h3 class="h5 card-title mt-3">{{ category.title }} Kategorisi</h3>
+                                        <p class="card-text">{{ category.explain|safe|truncatechars_html:100 }}</p>
+                                    </div>
+                                </a>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="d-flex justify-content-center w-100">
+                        <div class="mt-5">
+                            <nav aria-label="Blog page navigation">
+                                <ul class="pagination">
+                                    {% if page_obj.has_previous %}
+                                        <li class="page-item">
+                                            <a class="page-link" aria-label="ilk sayfa" title="ilk sayfa"
+                                               href="?page=1">
+                                                <span class="fas fa-angle-double-left"></span>
+                                            </a>
+                                        </li>
+
+                                        <li class="page-item">
+                                            <a class="page-link rounded" aria-label="önceki sayfa"
+                                               title="önceki sayfa"
+                                               href="?page={{ page_obj.previous_page_number }}">
+                                                <span class="fas fa-angle-left"></span>
+                                            </a>
+                                        </li>
+
+                                    {% endif %}
+                                    {% for number in page_obj.paginator.page_range %}
+                                        {% if page_obj.number == number %}
+                                            <li class="page-item active">
+                                                <a class="page-link" href="#">{{ number }}</a>
+                                            </li>
+                                        {% else %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?page={{ number }}">{{ number }}</a>
+                                            </li>
+                                        {% endif %}
+                                    {% endfor %}
+                                    {% if page_obj.has_next %}
+                                        <li class="page-item">
+                                            <a class="page-link rounded" aria-label="first link"
+                                               title="sonraki sayfa"
+                                               href="?page={{ page_obj.next_page_number }}">
+                                                <span class="fas fa-angle-right"></span>
+                                            </a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" aria-label="first link" title="son sayfa"
+                                               href="?page={{ page_obj.paginator.num_pages }}">
+                                                <span class="fas fa-angle-double-right"></span>
+                                            </a>
+                                        </li>
+
+                                    {% else %}
+                                        <li class="page-item">
+                                            <a class="page-link" aria-label="first link"
+                                               href="#">
+                                                <span class="fas fa-angle-double-right"></span>
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="row justify-content-center">
+                        <div class="col-6 col-md-4 text-center">
+                            <h4 class=" mb-4"> Kategori Bulunamadı :( </h4>
+                        </div>
+                    </div>
+                {% endif %}
         </main>
 
     {% elif "category" in request.build_absolute_uri %}
         <main class="container mt-8">
             <div class="container">
+                {% if messages %}
+                    {% for message in messages %}
+                        {% if message.tags == 'error' %}
+                            <div class="alert alert-danger alert-dismissible shadow-soft fade show" role="alert">
+                        {% else %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible shadow-soft fade show"
+                                 role="alert">
+                        {% endif %}
+
+                    <span class="alert-inner--icon">
+                                    {% if message.tags == 'error' %}
+                                        <span class="far fa-thumbs-down"></span>
+                                    {% elif message.tags == 'success' %}
+                                        <span class="far fa-thumbs-up"></span>
+                                    {% else %}
+
+                                    {% endif %}
+                                </span>
+
+                    <span class="alert-inner--text"><strong>{{ message }}</strong> </span>
+
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    </div>
+                    {% endfor %}
+                {% endif %}
                 <div class="row justify-content-center">
                     <div class="col-12 col-md-8 text-center">
                         <h1 class="font-weight-bolder mb-3">{{ category_name|title }} Kategorisi
@@ -352,7 +439,7 @@
                                             </a>
                                             <a class="dropdown-item"
                                                href="{% url "blog:category_delete" category_name.pk %}">
-                                                <span class="fas fa-trash-alt mr-2"></span>
+                                                <span class="fas fa-trash-alt mr-2 text-danger"></span>
                                                 Sil
                                             </a>
                                         </div>
@@ -363,149 +450,152 @@
                         <p class="mb-5">{{ category_name.explain|safe }}</p>
                     </div>
                 </div>
-            </div>
-            {% if category_post %}
-                <!-- Kartlar -->
-                <div class="row mb-2 mx-auto">
-                    {% for object in category_post %}
-                        <!-- Makale Bölümü -->
-                        <div class="col-md-4">
-                            <div class="col-12 mb-4 mb-lg-5">
+                </div>
+                {% if category_post %}
+                    <!-- Kartlar -->
+                    <div class="row mb-2 mx-auto">
+                        {% for object in category_post %}
+                            <!-- Makale Bölümü -->
+                            <div class="col-md-4">
+                                <div class="col-12 mb-4 mb-lg-5">
 
-                                <div class="card bg-primary border-light shadow-soft">
+                                    <div class="card bg-primary border-light shadow-soft">
 
-                                    <div class="card-header p-3">
-                                        <img src="{{ object.cover.url }}" class="card-img-top rounded"
-                                             alt="{{ object.title }}">
-                                    </div>
-                                    <div class="card-body pt-2">
-                                        <div class="media d-flex align-items-center justify-content-between">
-                                            <div class="post-group">
-                                                <a href="#" data-toggle="tooltip" data-placement="top"
-                                                   title="{{ object.author }}">
-                                                    {% if object.author.profile.avatar %}
-                                                        <img class="avatar-sm mr-2 img-fluid rounded-circle"
-                                                             src="{{ object.author.profile.avatar.url }}"
-                                                             alt="{{ object.author }}">
-                                                    {% else %}
-                                                        <img class="avatar-sm mr-2 img-fluid rounded-circle"
-                                                             src="{% static "blog/assets/img/no_user.png" %}"
-                                                             alt="{{ object.author }}">
-                                                    {% endif %}
-                                                    {{ object.author }}
-                                                </a>
-                                            </div>
-                                            <div class="d-flex align-items-center">
+                                        <div class="card-header p-3">
+                                            <img src="{{ object.cover.url }}" class="card-img-top rounded"
+                                                 alt="{{ object.title }}">
+                                        </div>
+                                        <div class="card-body pt-2">
+                                            <div class="media d-flex align-items-center justify-content-between">
+                                                <div class="post-group">
+                                                    <a href="{% url 'blog:profile' object.author object.author.pk %}"
+                                                       data-toggle="tooltip" data-placement="top"
+                                                       title="{{ object.author }}"
+                                                       data-original-title="23k followers">
+                                                        {% if object.author.profile.avatar %}
+
+                                                            <img class="avatar-sm mr-2 img-fluid rounded-circle"
+                                                                 src="{{ object.author.profile.avatar.url }}"
+                                                                 alt="{{ object.author }}"> {{ object.author }}
+
+                                                        {% else %}
+                                                            <img class="avatar-sm mr-2 img-fluid rounded-circle"
+                                                                 src="{% static "blog/assets/img/no_user.png" %}"
+                                                                 alt="{{ object.author }}"> {{ object.author }}
+                                                        {% endif %}
+
+                                                    </a>
+                                                </div>
+                                                <div class="d-flex align-items-center">
                                             <span class="small">
                                                 <span class="far fa-calendar-alt mr-2"></span>
                                                 {{ object.created }}
                                             </span>
+                                                </div>
                                             </div>
-                                        </div>
-                                        <h3 class="h5 card-title mt-4">{{ object.title }}</h3>
-                                        <p class="card-text">{{ object.text|safe|truncatechars_html:100 }}</p>
-                                        <a href="{% url "blog:post_detail" object.category|slugify object.slug object.pk object.author object.author.pk object.created.date %}"
-                                           class="btn btn-primary btn-sm">Ayrıntılar</a>
-                                        {% if object.author.username == request.user.username %}
-                                            <div class="btn-group float-right">
-                                                <button class="btn btn-link border-0 dropdown-toggle dropdown-toggle-split m-0 p-0"
-                                                        data-toggle="dropdown" aria-haspopup="true"
-                                                        aria-expanded="false">
+                                            <h3 class="h5 card-title mt-4">{{ object.title }}</h3>
+                                            <p class="card-text">{{ object.text|safe|truncatechars_html:100 }}</p>
+                                            <a href="{% url "blog:post_detail" object.category|slugify object.slug object.pk object.author object.author.pk object.created.date %}"
+                                               class="btn btn-primary btn-sm">Ayrıntılar</a>
+                                            {% if object.author.username == request.user.username %}
+                                                <div class="btn-group float-right">
+                                                    <button class="btn btn-link border-0 dropdown-toggle dropdown-toggle-split m-0 p-0"
+                                                            data-toggle="dropdown" aria-haspopup="true"
+                                                            aria-expanded="false">
                                     <span class="icon icon-sm">
                                         <span class="fas fa-ellipsis-h icon-secondary"></span>
                                     </span>
-                                                    <span class="sr-only">Toggle Dropdown</span>
-                                                </button>
-                                                <div class="dropdown-menu">
-                                                    <a class="dropdown-item"
-                                                       href="{% url "admin:index" %}blog/posts/{{ object.pk }}/change/">
-                                                        <span class="fas fa-edit mr-2"></span>
-                                                        Güncelle
-                                                    </a>
-                                                    <a class="dropdown-item text-danger"
-                                                       href="{% url "blog:post_delete" object.pk %}"><span
-                                                            class="fa fa-trash mr-2"
-                                                            aria-hidden="true"></span>
-                                                        Sil
-                                                    </a>
+                                                        <span class="sr-only">Toggle Dropdown</span>
+                                                    </button>
+                                                    <div class="dropdown-menu">
+                                                        <a class="dropdown-item"
+                                                           href="{% url "admin:index" %}blog/posts/{{ object.pk }}/change/">
+                                                            <span class="fas fa-edit mr-2"></span>
+                                                            Güncelle
+                                                        </a>
+                                                        <a class="dropdown-item text-danger"
+                                                           href="{% url "blog:post_delete" object.pk %}"><span
+                                                                class="fa fa-trash mr-2"
+                                                                aria-hidden="true"></span>
+                                                            Sil
+                                                        </a>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        {% endif %}
+                                            {% endif %}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    {% endfor %}
-                </div>
-            {% else %}
-                <div class="col-12 col-md-8 col-lg-12 text-center">
-                    <h3 class="font-weight-bolder mb-3 mt-3 text-center"> Gönderi Bulunamadı </h3>
-                    <a href="{% url "blog:post_create" %}">
-                        <p>Gönderi Ekle</p>
-                    </a>
-                </div>
-            {% endif %}
-
-            <!-- Pagination -->
-            <div class="d-flex justify-content-center w-100">
-                <div class="mt-5">
-                    <nav aria-label="Blog page navigation">
-                        <ul class="pagination">
-                            {% if page_obj.has_previous %}
-                                <li class="page-item">
-                                    <a class="page-link" aria-label="ilk sayfa" title="ilk sayfa"
-                                       href="?page=1">
-                                        <span class="fas fa-angle-double-left"></span>
-                                    </a>
-                                </li>
-
-                                <li class="page-item">
-                                    <a class="page-link rounded" aria-label="önceki sayfa"
-                                       title="önceki sayfa"
-                                       href="?page={{ page_obj.previous_page_number }}">
-                                        <span class="fas fa-angle-left"></span>
-                                    </a>
-                                </li>
-
-                            {% endif %}
-                            {% for number in page_obj.paginator.page_range %}
-                                {% if page_obj.number == number %}
-                                    <li class="page-item active">
-                                        <a class="page-link" href="#">{{ number }}</a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="col-12 col-md-8 col-lg-12 text-center">
+                        <h3 class="font-weight-bolder mb-3 mt-3 text-center"> Gönderi Bulunamadı </h3>
+                        <a href="{% url "blog:post_create" %}">
+                            <p>Gönderi Ekle</p>
+                        </a>
+                    </div>
+                {% endif %}
+                <!-- Pagination -->
+                <div class="d-flex justify-content-center w-100">
+                    <div class="mt-5">
+                        <nav aria-label="Blog page navigation">
+                            <ul class="pagination">
+                                {% if page_obj.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link" aria-label="ilk sayfa" title="ilk sayfa"
+                                           href="?page=1">
+                                            <span class="fas fa-angle-double-left"></span>
+                                        </a>
                                     </li>
+
+                                    <li class="page-item">
+                                        <a class="page-link rounded" aria-label="önceki sayfa"
+                                           title="önceki sayfa"
+                                           href="?page={{ page_obj.previous_page_number }}">
+                                            <span class="fas fa-angle-left"></span>
+                                        </a>
+                                    </li>
+
+                                {% endif %}
+                                {% for number in page_obj.paginator.page_range %}
+                                    {% if page_obj.number == number %}
+                                        <li class="page-item active">
+                                            <a class="page-link" href="#">{{ number }}</a>
+                                        </li>
+                                    {% else %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ number }}">{{ number }}</a>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+                                {% if page_obj.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link rounded" aria-label="first link"
+                                           title="sonraki sayfa"
+                                           href="?page={{ page_obj.next_page_number }}">
+                                            <span class="fas fa-angle-right"></span>
+                                        </a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" aria-label="first link" title="son sayfa"
+                                           href="?page={{ page_obj.paginator.num_pages }}">
+                                            <span class="fas fa-angle-double-right"></span>
+                                        </a>
+                                    </li>
+
                                 {% else %}
                                     <li class="page-item">
-                                        <a class="page-link" href="?page={{ number }}">{{ number }}</a>
+                                        <a class="page-link" aria-label="first link"
+                                           href="#">
+                                            <span class="fas fa-angle-double-right"></span>
+                                        </a>
                                     </li>
                                 {% endif %}
-                            {% endfor %}
-                            {% if page_obj.has_next %}
-                                <li class="page-item">
-                                    <a class="page-link rounded" aria-label="first link"
-                                       title="sonraki sayfa"
-                                       href="?page={{ page_obj.next_page_number }}">
-                                        <span class="fas fa-angle-right"></span>
-                                    </a>
-                                </li>
-                                <li class="page-item">
-                                    <a class="page-link" aria-label="first link" title="son sayfa"
-                                       href="?page={{ page_obj.paginator.num_pages }}">
-                                        <span class="fas fa-angle-double-right"></span>
-                                    </a>
-                                </li>
-
-                            {% else %}
-                                <li class="page-item">
-                                    <a class="page-link" aria-label="first link"
-                                       href="#">
-                                        <span class="fas fa-angle-double-right"></span>
-                                    </a>
-                                </li>
-                            {% endif %}
-                        </ul>
-                    </nav>
+                            </ul>
+                        </nav>
+                    </div>
                 </div>
-            </div>
         </main>
     {% endif %}
 {% endblock %}

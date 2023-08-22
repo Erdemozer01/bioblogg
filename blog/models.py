@@ -144,4 +144,46 @@ class Comments(models.Model):
         verbose_name_plural = 'Yorumlar'
 
 
+class Subscribe(models.Model):
+    email = models.EmailField()
 
+    def __str__(self):
+        return self.email
+
+    class Meta:
+        db_table = 'subscribe'
+        verbose_name = 'abone'
+        verbose_name_plural = 'aboneler'
+
+
+class BlogContactModel(models.Model):
+    map_url = models.TextField(verbose_name="Google map url")
+    title = models.CharField(max_length=250, verbose_name="Başlık")
+    explain = models.TextField(verbose_name="Açıklama")
+    address = models.CharField(max_length=100, verbose_name="Adres")
+    telephone = models.CharField(max_length=100, verbose_name="Telefon")
+    email = models.EmailField(verbose_name="Email adresimiz")
+    created = models.DateTimeField(auto_now_add=True, verbose_name='Oluşturulma Tarihi')
+
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        db_table = 'blog_contact'
+        verbose_name = 'İletişim'
+        verbose_name_plural = 'İletişim'
+
+
+class BlogContactFormModel(models.Model):
+    name = models.CharField(max_length=100, verbose_name="Ad Soyad")
+    email = models.CharField(verbose_name="Email", max_length=100)
+    message = models.TextField(verbose_name="Mesaj")
+    created = models.DateTimeField(auto_now_add=True, verbose_name='Oluşturulma Tarihi')
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        db_table = "blog_contact_form_model"
+        verbose_name = "Blog İletişim"
+        verbose_name_plural = "Blog İletişim"

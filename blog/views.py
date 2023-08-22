@@ -1,26 +1,44 @@
 from django.views import generic
-from .models import Posts, Category, Comments
+from .models import Posts, Category, Comments, Subscribe, BlogContactModel
 from hitcount.views import HitCountDetailView
 from django.views.generic.dates import MonthArchiveView
 from django.shortcuts import get_object_or_404, reverse, redirect, render
 from django.conf import settings
 from django.db.models import Q
-from .forms import AddCommentForm, ContactForm, ProfileModelForm, ContactProfileForm
+from .forms import AddCommentForm, ContactForm, ProfileModelForm, ContactProfileForm, SubscribeModelForm
 from django.http import HttpResponseRedirect
 from django.contrib import messages
 from accounts.models import Profile, ContactModel
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
+from blog.forms.contact import BlogContactForm
 
 
-class CategoriesView(generic.ListView):
+class CategoriesView(generic.ListView, generic.FormView):
     template_name = 'blog/pages/category.html'
     model = Category
     paginate_by = 10
     context_object_name = "category_list"
+    form_class = SubscribeModelForm
 
-    def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
+    def post(self, request, *args, **kwargs):
+        email = request.POST.get('email')
+
+        if Subscribe.objects.exists():
+            for abone in Subscribe.objects.all():
+                if email in abone.email:
+                    messages.error(request, "Bültene zaten abonesiniz")
+                    return HttpResponseRedirect(self.request.build_absolute_uri())
+
+                else:
+                    Subscribe.objects.create(email=email)
+
+        else:
+            Subscribe.objects.create(email=email)
+
+        messages.success(request, "Başarılı bir şekilde abone oldunuz")
+
+        return HttpResponseRedirect(self.request.build_absolute_uri())
 
     def get_queryset(self):
         search = self.request.GET.get('search', False)
@@ -30,11 +48,31 @@ class CategoriesView(generic.ListView):
             return Category.objects.all()
 
 
-class CategoryView(generic.ListView):
+class CategoryView(generic.ListView, generic.FormView):
     template_name = 'blog/pages/category.html'
     model = Posts
     paginate_by = 3
     context_object_name = "category_post"
+    form_class = SubscribeModelForm
+
+    def post(self, request, *args, **kwargs):
+        email = request.POST.get('email')
+
+        if Subscribe.objects.exists():
+            for abone in Subscribe.objects.all():
+                if email in abone.email:
+                    messages.error(request, "Bültene zaten abonesiniz")
+                    return HttpResponseRedirect(self.request.build_absolute_uri())
+
+                else:
+                    Subscribe.objects.create(email=email)
+
+        else:
+            Subscribe.objects.create(email=email)
+
+        messages.success(request, "Başarılı bir şekilde abone oldunuz")
+
+        return HttpResponseRedirect(self.request.build_absolute_uri())
 
     def get_queryset(self):
         category = get_object_or_404(Category, slug=self.kwargs['slug'])
@@ -46,11 +84,31 @@ class CategoryView(generic.ListView):
         return context
 
 
-class BlogHomeView(generic.ListView):
+class BlogHomeView(generic.ListView, generic.FormView):
     template_name = "blog/pages/home.html"
     model = Posts
     paginate_by = 10
     ordering = "-id"
+    form_class = SubscribeModelForm
+
+    def post(self, request, *args, **kwargs):
+        email = request.POST.get('email')
+
+        if Subscribe.objects.exists():
+            for abone in Subscribe.objects.all():
+                if email in abone.email:
+                    messages.error(request, "Bültene zaten abonesiniz")
+                    return HttpResponseRedirect(self.request.build_absolute_uri())
+
+                else:
+                    Subscribe.objects.create(email=email)
+
+        else:
+            Subscribe.objects.create(email=email)
+
+        messages.success(request, "Başarılı bir şekilde abone oldunuz")
+
+        return HttpResponseRedirect(self.request.build_absolute_uri())
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -62,11 +120,34 @@ class BlogHomeView(generic.ListView):
         return context
 
 
-class PostDetailView(HitCountDetailView, generic.DetailView):
+class PostDetailView(HitCountDetailView, generic.DetailView, generic.FormView):
     template_name = "blog/pages/detail.html"
     model = Posts
     count_hit = True
     form_class = AddCommentForm
+
+    def post(self, request, *args, **kwargs):
+        email = request.POST.get('email')
+        comment = request.POST.get('comment')
+
+        if email:
+            for abone in Subscribe.objects.all():
+                if request.POST.get('email') in abone.email:
+                    messages.success(request, "Bültene zaten abonesiniz")
+                    return HttpResponseRedirect(self.request.build_absolute_uri())
+                else:
+                    Subscribe(email=email).save()
+            messages.success(request, "Başarılı bir şekilde abone oldunuz")
+
+        if comment:
+            comment = Comments(comment=request.POST.get('comment'),
+                               commentator=self.request.user,
+                               post=self.get_object())
+            comment.save()
+
+            messages.success(request, "Yorumunuz başarılı bir şekilde eklendi")
+
+        return HttpResponseRedirect(self.request.build_absolute_uri())
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -80,22 +161,34 @@ class PostDetailView(HitCountDetailView, generic.DetailView):
             context['post_list'] = Posts.objects.all().filter(author=self.request.user)
         return context
 
-    def post(self, request, *args, **kwargs):
-        comment = Comments(comment=request.POST.get('comment'),
-                           commentator=self.request.user,
-                           post=self.get_object())
-        comment.save()
-        messages.success(request, "Yorumunuz başarılı bir şekilde eklendi")
-        return HttpResponseRedirect(self.request.build_absolute_uri())
 
-
-class ArchiveView(MonthArchiveView):
+class ArchiveView(MonthArchiveView, generic.FormView):
     template_name = "blog/pages/category.html"
     model = Posts
     date_field = "created"
     allow_future = True
     paginate_by = 10
     month_format = "%m"
+    form_class = SubscribeModelForm
+
+    def post(self, request, *args, **kwargs):
+        email = request.POST.get('email')
+
+        if Subscribe.objects.exists():
+            for abone in Subscribe.objects.all():
+                if email in abone.email:
+                    messages.error(request, "Bültene zaten abonesiniz")
+                    return HttpResponseRedirect(self.request.build_absolute_uri())
+
+                else:
+                    Subscribe.objects.create(email=email)
+
+        else:
+            Subscribe.objects.create(email=email)
+
+        messages.success(request, "Başarılı bir şekilde abone oldunuz")
+
+        return HttpResponseRedirect(self.request.build_absolute_uri())
 
     def get_queryset(self):
         return Posts.objects.order_by('-id')
@@ -237,10 +330,19 @@ class CommentUpdate(generic.UpdateView):
     form_class = AddCommentForm
 
     def get_success_url(self):
+        obj = self.get_object().post.pk
+        post = get_object_or_404(Posts, pk=int(obj))
+        print(post)
         messages.success(self.request, "Yorumunuz başarılı bir şekilde güncellendi..")
-        return HttpResponseRedirect(
-            self.request.build_absolute_uri()
-        ).url
+        return reverse('blog:post_detail',
+                       kwargs={
+                           'category': post.category.slug,
+                           'slug': post.slug,
+                           'pk': post.pk,
+                           'author': post.author,
+                           'author_id': post.author_id,
+                           'created': post.created,
+                       })
 
 
 class ProfileView(generic.DetailView, generic.CreateView):
@@ -279,19 +381,39 @@ def profile_view(request, username, pk):
     for profile in Profile.objects.filter(user=pk):
         user_social = profile.user_social.values()
     form = ContactProfileForm(request.POST or None)
-
+    # Paginator
     paginator = Paginator(post_list, 6)
-
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
     if request.method == "POST":
+        email = request.POST.get('email')
+
+        if email:
+
+            if Subscribe.objects.exists():
+                for abone in Subscribe.objects.all():
+                    if email in abone.email:
+                        messages.error(request, "Bültene zaten abonesiniz")
+                        return HttpResponseRedirect(request.build_absolute_uri())
+
+                    else:
+                        Subscribe.objects.create(email=email)
+
+            else:
+                Subscribe.objects.create(email=email)
+
         if form.is_valid():
+
             content = form.cleaned_data['content']
             contact_email = form.cleaned_data['contact_email']
             title = form.cleaned_data['title']
             receiver = User.objects.get(pk=pk)
             sender = request.user
+
+            if sender.username == receiver.username:
+                messages.error(request, "Kendi kendinize mesaj attınız")
+                return HttpResponseRedirect(request.build_absolute_uri())
             ContactModel.objects.create(sender=sender, receiver=receiver, content=content, contact_email=contact_email,
                                         title=title)
             messages.success(request, "Mesajınız başarılı bir şekilde gönderildi")
@@ -314,3 +436,16 @@ class ProfileUpdateViewNonStaff(generic.UpdateView):
         return HttpResponseRedirect(reverse('blog:profile', kwargs={
             'username': self.request.user, 'pk': self.request.user.pk
         }))
+
+
+def blog_contact(request):
+    contact = BlogContactModel.objects.last()
+    contact_form = BlogContactForm(request.POST or None)
+    if request.method == "POST":
+        if contact_form.is_valid():
+            contact_form.save()
+            messages.success(request, "Mesajınız iletildi")
+            return HttpResponseRedirect(request.build_absolute_uri())
+        else:
+            contact_form = BlogContactForm()
+    return render(request, "blog/pages/blog_contact.html", {'contact': contact, 'contact_form': contact_form})

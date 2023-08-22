@@ -143,7 +143,7 @@ class DashBoardView(generic.ListView):
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         context['messages_list'] = ContactModel.objects.filter(receiver=self.request.user.pk)
-        context['messages_count'] = ContactModel.objects.filter(receiver=self.request.user.pk).count()
+        context['messages_count'] = ContactModel.objects.filter(receiver=self.request.user.pk, is_read=False).count()
         return context
 
 
@@ -164,7 +164,7 @@ class ProfileListView(generic.ListView):
         context = super().get_context_data(**kwargs)
         context['user_post_list'] = Posts.objects.filter(author=self.request.user)
         context['messages_list'] = ContactModel.objects.filter(receiver=self.request.user.pk)
-        context['messages_count'] = ContactModel.objects.filter(receiver=self.request.user.pk).count()
+        context['messages_count'] = ContactModel.objects.filter(receiver=self.request.user.pk, is_read=False).count()
         return context
 
 
@@ -180,7 +180,7 @@ def profile_update(request, pk, username):
     delete_account_form = DeleteAccountForm(request.POST or None)
 
     messages_list = ContactModel.objects.filter(receiver=request.user.pk)
-    messages_count = ContactModel.objects.filter(receiver=request.user.pk).count()
+    messages_count = ContactModel.objects.filter(receiver=request.user.pk, is_read=False).count()
 
     if request.method == "POST":
 
@@ -217,33 +217,9 @@ def profile_update(request, pk, username):
                    'messages_list': messages_list, 'messages_count': messages_count})
 
 
-class ProfileUpdateView(generic.UpdateView):
-    template_name = 'dashboard/pages/update.html'
-    model = Profile
-    form_class = ProfileModelForm
-
-    def get(self, request, *args, **kwargs):
-        if not self.request.user.is_staff:
-            messages.error(request, "Yetkili girişi yapınız!")
-            return redirect('%s?next=/blog/' % (settings.LOGIN_URL))
-        return super().get(request, *args, **kwargs)
-
-    def form_valid(self, form):
-        instance = form.save(commit=False)
-        instance.user_id = self.request.user.id
-        instance.save()
-        messages.success(self.request, "Profiliniz başarılı bir şekilde güncellendi!")
-        return HttpResponseRedirect(self.request.META.get('HTTP_REFERER'))
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['messages_list'] = ContactModel.objects.filter(receiver=self.request.user.pk)
-        context['messages_count'] = ContactModel.objects.filter(receiver=self.request.user.pk).count()
-        return context
-
 
 class MessagesListView(generic.ListView):
-    template_name = 'dashboard/pages/index.html'
+    template_name = 'dashboard/pages/messages.html'
     model = ContactModel
     context_object_name = 'messages_list'
 
@@ -252,7 +228,7 @@ class MessagesListView(generic.ListView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['messages_count'] = ContactModel.objects.filter(receiver=self.request.user.pk).count()
+        context['messages_count'] = ContactModel.objects.filter(receiver=self.request.user.pk, is_read=False).count()
         return context
 
 
@@ -267,7 +243,7 @@ class MessagesDetailView(generic.DetailView):
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         context['messages_list'] = ContactModel.objects.filter(receiver=self.request.user.pk)
-        context['messages_count'] = ContactModel.objects.filter(receiver=self.request.user.pk).count()
+        context['messages_count'] = ContactModel.objects.filter(receiver=self.request.user.pk, is_read=False).count()
         return context
 
 
@@ -318,7 +294,7 @@ class SocialMediaListView(generic.ListView):
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         context['messages_list'] = ContactModel.objects.filter(receiver=self.request.user.pk)
-        context['messages_count'] = ContactModel.objects.filter(receiver=self.request.user.pk).count()
+        context['messages_count'] = ContactModel.objects.filter(receiver=self.request.user.pk, is_read=False).count()
         return context
 
 
@@ -353,7 +329,7 @@ class SocialMediaCreateView(generic.CreateView):
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         context['messages_list'] = ContactModel.objects.filter(receiver=self.request.user.pk)
-        context['messages_count'] = ContactModel.objects.filter(receiver=self.request.user.pk).count()
+        context['messages_count'] = ContactModel.objects.filter(receiver=self.request.user.pk, is_read=False).count()
         return context
 
 
@@ -383,16 +359,18 @@ class SocialMediaUpdateView(generic.UpdateView):
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         context['messages_list'] = ContactModel.objects.filter(receiver=self.request.user.pk)
-        context['messages_count'] = ContactModel.objects.filter(receiver=self.request.user.pk).count()
+        context['messages_count'] = ContactModel.objects.filter(receiver=self.request.user.pk, is_read=False).count()
         return context
 
 
 def user_reply_message(request, pk, username, user_pk):
+
     form = ContactMessagesReplyForm(request.POST or None)
     contact_object = ContactModel.objects.get(pk=pk)
     receiver = User.objects.get(pk=user_pk)
+
     messages_list = ContactModel.objects.filter(receiver=request.user.pk)
-    messages_count = ContactModel.objects.filter(receiver=request.user.pk).count()
+    messages_count = ContactModel.objects.filter(receiver=request.user.pk, is_read=False).count()
 
     if request.method == "POST":
         if form.is_valid():
@@ -414,10 +392,13 @@ def user_reply_message(request, pk, username, user_pk):
 
 def user_sent_message(request, pk, username):
     form = UserMessagesForm(request.POST or None)
+
     messages_list = ContactModel.objects.filter(receiver=request.user.pk)
-    messages_count = ContactModel.objects.filter(receiver=request.user.pk).count()
+    messages_count = ContactModel.objects.filter(receiver=request.user.pk, is_read=False).count()
+
     if request.method == "POST":
         if form.is_valid():
+
             title = form.cleaned_data['title']
             message = form.cleaned_data['content']
             contact_email = form.cleaned_data['contact_email']
@@ -428,7 +409,8 @@ def user_sent_message(request, pk, username):
                 messages.error(request, 'Kendinize mesaj gönderdiniz. Farklı bir kullanıcı seçiniz.')
                 return redirect(request.META['HTTP_REFERER'])
 
-            ContactModel.objects.create(title=title, sender=sender, receiver=receiver, content=message, contact_email=contact_email)
+            ContactModel.objects.create(title=title, sender=sender, receiver=receiver, content=message,
+                                        contact_email=contact_email)
             messages.success(request, 'Mesajnız gönderilmiştir...')
             return HttpResponseRedirect(reverse('dashboard:messages_list',
                                                 kwargs={'user': request.user}))
@@ -436,9 +418,12 @@ def user_sent_message(request, pk, username):
         else:
             form = UserMessagesForm()
 
-    return render(request, 'dashboard/pages/messages.html', {'form': form,
-                                                             'messages_list': messages_list,
-                                                             'messages_count': messages_count})
+    return render(request, 'dashboard/pages/messages.html',
+                  {
+                      'form': form,
+                      'messages_list': messages_list,
+                      'messages_count': messages_count
+                  })
 
 
 class MyPostList(generic.ListView):
@@ -458,5 +443,5 @@ class MyPostList(generic.ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['messages_list'] = ContactModel.objects.filter(receiver=self.request.user.pk)
-        context['messages_count'] = ContactModel.objects.filter(receiver=self.request.user.pk).count()
+        context['messages_count'] = ContactModel.objects.filter(receiver=self.request.user.pk, is_read=False).count()
         return context

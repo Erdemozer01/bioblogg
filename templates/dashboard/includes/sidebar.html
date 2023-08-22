@@ -81,7 +81,7 @@
                         <a href="{% url 'dashboard:user_sent_message' request.user.pk request.user %}">
                             <i class="fas flaticon-message"></i>
                             <p>Mesaj Gönder</p>
-                            <span class="badge badge-success">{{ messages_count }}</span>
+
                         </a>
                     </li>
 
@@ -138,10 +138,14 @@
                         <div class="collapse" id="profile">
 
                             <ul class="nav nav-collapse">
-
+                                <li>
+                                    <a href="{% url 'blog:profile' request.user request.user.pk %}">
+                                        <span class="sub-item">Anasayfa</span>
+                                    </a>
+                                </li>
                                 <li>
                                     <a href="{% url 'dashboard:profile_update' request.user request.user.pk %}">
-                                        <span class="sub-item">Profili Düzenle</span>
+                                        <span class="sub-item">Ayarlar</span>
                                     </a>
                                 </li>
 

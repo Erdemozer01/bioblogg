@@ -1,5 +1,6 @@
 from django import forms
 from accounts.models import ContactModel
+from blog.models import BlogContactFormModel
 
 
 class ContactForm(forms.ModelForm):
@@ -36,3 +37,9 @@ class ContactProfileForm(forms.ModelForm):
             'contact_email': "Email",
             'title': "Konu",
         }
+
+
+class BlogContactForm(forms.ModelForm):
+    class Meta:
+        model = BlogContactFormModel
+        fields = '__all__'

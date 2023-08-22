@@ -58,11 +58,12 @@
               </div>
               <div class="col-12 col-lg-4 mb-5 mb-lg-0">
                   <h5>Abone Ol</h5>
-                  <p class="text-gray font-small mt-2">Join our mailing list. We write rarely, but only the best content.</p>
-                  <form action="#">
+
+                  <form action="#" method="post">
+                      {% csrf_token %}
                       <div class="form-row mb-2">
                           <div class="col-12">
-                              <label class="h6 font-weight-normal d-none" for="exampleInputEmail3">Email address</label>
+                              <label class="h6 font-weight-normal d-none" for="exampleInputEmail3">Email addres</label>
                               <input type="email" class="form-control mb-2" placeholder="example@company.com" name="email" aria-label="Subscribe form" id="exampleInputEmail3" required>
                           </div>
                           <div class="col-12">
@@ -72,7 +73,7 @@
                           </div>
                       </div>
                   </form>
-                  <p class="text-gray font-small m-0">We’ll never share your details. See our <a class="text-black" href="#">Gizlilik</a></p>
+                  <p class="text-gray font-small m-0"> Email adresiniz paylaşılmayacaktır. <a class="text-black" href="#">Gizlilik ilkemiz</a></p>
               </div>
           </div>
 

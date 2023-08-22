@@ -1,5 +1,22 @@
 from django.contrib import admin
-from .models import Category, Posts, Comments
+from .models import Category, Posts, Comments, Subscribe, BlogContactModel, BlogContactFormModel
+
+
+@admin.register(BlogContactFormModel)
+class BlogContactAdmin(admin.ModelAdmin):
+    list_display = ['name', 'email', 'created']
+
+
+@admin.register(BlogContactModel)
+class BlogContactModelAdmin(admin.ModelAdmin):
+    list_display = ['title', 'created']
+
+
+@admin.register(Subscribe)
+class SubscribeModelAdmin(admin.ModelAdmin):
+    list_display = ['email']
+    list_filter = ['email']
+    search_fields = ['email']
 
 
 @admin.register(Comments)

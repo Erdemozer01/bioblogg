@@ -9,16 +9,16 @@
     {% if 'messages_detail' in request.path %}
         {% if object.receiver.username == request.user.username %}
             <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 mt-4 container">
-            {% if messages %}
-                {% for message in messages %}
-                    {% if message.tags == 'error' %}
-                        <div class="alert alert-danger alert-dismissible shadow-soft fade show" role="alert">
-                    {% else %}
-                        <div class="alert alert-{{ message.tags }} alert-dismissible shadow-soft fade show"
-                             role="alert">
-                    {% endif %}
+                {% if messages %}
+                    {% for message in messages %}
+                        {% if message.tags == 'error' %}
+                            <div class="alert alert-danger alert-dismissible shadow-soft fade show" role="alert">
+                        {% else %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible shadow-soft fade show"
+                                 role="alert">
+                        {% endif %}
 
-                <span class="alert-inner--icon">
+                    <span class="alert-inner--icon">
                                     {% if message.tags == 'error' %}
                                         <span class="far fa-thumbs-down"></span>
                                     {% elif message.tags == 'success' %}
@@ -28,14 +28,14 @@
                                     {% endif %}
                                 </span>
 
-                <span class="alert-inner--text"><strong>{{ message }}</strong> </span>
+                    <span class="alert-inner--text"><strong>{{ message }}</strong> </span>
 
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-                </div>
-                {% endfor %}
-            {% endif %}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    </div>
+                    {% endfor %}
+                {% endif %}
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                     <h1 class="h1 text-success">Mesajlarım</h1>
                 </div>
@@ -51,11 +51,16 @@
                                     <p>Gönderen: <a
                                             href="{% url 'blog:profile' object.sender object.sender.pk %}">{{ object.sender }}</a>
                                     </p>
-                                    <p>Email: {{ object.contact_email }}</p>
+                                    <p>Email: <a href="mailto:{{ object.contact_email }}">{{ object.contact_email }}</a></p>
                                     <p>Mesaj: {{ object.content }}</p>
                                 </div>
-                                <a href="{% url 'dashboard:user_reply_message' object.pk object.sender object.sender.pk %}"
-                                   class="btn btn-primary col-12">Cevapla</a>
+                                {% if object.sender.is_staff %}
+                                    <a href="{% url 'dashboard:user_reply_message' object.pk object.sender object.sender.pk %}"
+                                       class="btn btn-primary col-12">Cevapla</a>
+                                {% else %}
+                                    <a class="btn btn-primary col-12" href="mailto:{{ object.contact_email }}">Cevapla</a>
+                                {% endif %}
+
                                 <a href="{% url 'dashboard:message_delete' object.pk %}"
                                    class="btn btn-danger col-12 mt-2">Sil</a>
                                 <a href="{% url 'dashboard:report_message' object.pk %}"
@@ -68,7 +73,7 @@
         {% endif %}
     {% elif 'user-reply-message' in request.path %}
         <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 mt-4 container">
-        {% if messages %}
+            {% if messages %}
                 {% for message in messages %}
                     {% if message.tags == 'error' %}
                         <div class="alert alert-danger alert-dismissible shadow-soft fade show" role="alert">
@@ -104,24 +109,35 @@
                 <div class="col-md-12 col-12 col-sm-12">
                     <div class="card">
                         <div class="card-header">
-                            <h4 class="card-title">{{ contact_object.created }}</h4>
+                            <h4 class="card-title"><a class="btn-link text-info"
+                                                      href="{% url 'blog:profile' contact_object.sender contact_object.sender.pk %}">{{ contact_object.sender }}</a>
+                                isimli kullanıcının mesajı
+                            </h4>
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
-                                <p>Gönderen: <a
-                                        href="{% url 'blog:profile' contact_object.sender contact_object.sender.pk %}">{{ contact_object.sender }}</a>
+                                {% if contact_object.sender.is_staff %}
+                                    <p>Kullanıcı Durumu: Yönetici</p>
+                                {% else %}
+                                    <p>Kullanıcı Durumu: Yönetici değil</p>
+                                {% endif %}
+                                <p>Tarih: {{ contact_object.created.date }}</p>
+                                <p>Email: <a
+                                        href="mailto:{{ contact_object.contact_email }}">{{ contact_object.contact_email }}</a>
                                 </p>
-                                <p>Email: {{ contact_object.contact_email }}</p>
                                 <p>Mesaj: {{ contact_object.content }}</p>
                             </div>
-                            <form action="" method="post">
-                                {% csrf_token %}
-                                {% bootstrap_form form %}
-                                <button type="submit" class="btn btn-primary col-12 mt-2">Gönder</button>
-                            </form>
-                            <a href="{% url 'dashboard:message_delete' contact_object.pk %}" class="btn btn-danger col-12 mt-2">Sil</a>
-                            <a href="{% url 'dashboard:report_message' contact_object.pk %}"
-                               class="btn btn-warning col-12 mt-2">Rahatsız edici içerik</a>
+                            {% if contact_object.sender.is_staff %}
+                                <form action="" method="post">
+                                    {% csrf_token %}
+                                    {% bootstrap_form form %}
+                                    <button type="submit" class="btn btn-primary col-12 mt-2">Gönder</button>
+                                </form>
+                                <a href="{% url 'dashboard:message_delete' contact_object.pk %}"
+                                   class="btn btn-danger col-12 mt-2">Sil</a>
+                                <a href="{% url 'dashboard:report_message' contact_object.pk %}"
+                                   class="btn btn-warning col-12 mt-2">Rahatsız edici içerik</a>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -129,7 +145,7 @@
         </main>
     {% elif 'user-sent-message' in request.path %}
         <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 mt-4 container">
-        {% if messages %}
+            {% if messages %}
                 {% for message in messages %}
                     {% if message.tags == 'error' %}
                         <div class="alert alert-danger alert-dismissible shadow-soft fade show" role="alert">
@@ -170,10 +186,71 @@
                                 {% bootstrap_form form %}
                                 <button type="submit" class="btn btn-primary col-12 mt-2">Gönder</button>
                             </form>
-                            <a href="{% url 'dashboard:messages_list' request.user %}" class="btn btn-danger col-12 mt-2">İPTAL</a>
+                            <a href="{% url 'dashboard:messages_list' request.user %}"
+                               class="btn btn-danger col-12 mt-2">İPTAL</a>
                         </div>
                     </div>
                 </div>
+            </div>
+        </main>
+    {% elif 'messages' in request.path %}
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 mt-4 container">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h1 text-success">Mesajlarım</h1>
+            </div>
+
+            <div class="table ">
+                <table id="add-row" class="display ">
+                    <thead>
+                    <tr>
+                        <th>GÖNDEREN</th>
+                        <th>EMAİL</th>
+                        <th>OKUNMA</th>
+                        <th>YÖNETİCİ?</th>
+
+                    </tr>
+                    </thead>
+                    <tbody>
+
+                    {% for messages in messages_list %}
+                        {% if request.user.username == messages.receiver.username %}
+                            <tr>
+                                <td>{{ messages.sender }}</td>
+                                <td><a href="mailto:{{ messages.contact_email }}">{{ messages.contact_email }}</a></td>
+
+                                {% if messages.is_read == True %}
+                                    <td>Okundu</td>
+                                {% else %}
+                                    <td>Okunmadı</td>
+                                {% endif %}
+                                {% if messages.sender.is_staff == True %}
+                                    <td>Evet</td>
+                                {% else %}
+                                    <td>Hayır</td>
+                                {% endif %}
+                                <td>
+                                    <div class="form-button-action">
+
+                                        <a href="{% url 'dashboard:message_detail' messages.sender messages.pk %}"
+                                           class="btn btn-link btn-primary " title="Görüntüle">
+                                            <i class="fa fa-eye animate-hover"></i>
+                                        </a>
+
+                                        <a href="{% url 'dashboard:message_delete' messages.pk %}"
+                                           class="btn btn-link btn-danger"
+                                           title="Sil">
+                                            <i class="fa fa-trash"></i>
+                                        </a>
+
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endif %}
+
+                    {% endfor %}
+
+                    </tbody>
+                </table>
             </div>
         </main>
     {% endif %}
