@@ -174,7 +174,6 @@ class BlogContactModel(models.Model):
         verbose_name_plural = 'İletişim'
 
 
-
 class BlogContactFormModel(models.Model):
     name = models.CharField(max_length=100, verbose_name="Ad Soyad")
     email = models.CharField(verbose_name="Email", max_length=100)
@@ -188,3 +187,9 @@ class BlogContactFormModel(models.Model):
         db_table = "blog_contact_form_model"
         verbose_name = "Blog İletişim"
         verbose_name_plural = "Blog İletişim"
+
+
+class About(models.Model):
+    image = models.ImageField(upload_to='blog/posts/about/')
+    title = models.CharField(max_length=100, verbose_name="Başlık")
+    text = models.TextField(verbose_name="Hakkımızda")

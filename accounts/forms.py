@@ -37,7 +37,7 @@ class ProfileEditForm(forms.ModelForm):
         model = Profile
         exclude = ['user', 'first_name', 'last_name', 'email']
         widgets = {
-            'birth_day': forms.SelectDateWidget(years=range(1900, datetime.datetime.now().year))
+            'birth_day': forms.SelectDateWidget(years=range(1900, datetime.datetime.now().year)),
         }
 
 
@@ -61,5 +61,5 @@ class UserMessagesForm(forms.ModelForm):
         }
 
         labels = {
-            'contact_email' : "Email adresiniz"
+            'contact_email': "Email adresiniz"
         }

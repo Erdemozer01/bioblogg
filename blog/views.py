@@ -473,3 +473,7 @@ def blog_contact(request):
         else:
             contact_form = BlogContactForm()
     return render(request, "blog/pages/blog_contact.html", {'contact': contact, 'contact_form': contact_form})
+
+
+def about(request):
+    return render(request, "blog/pages/about.html")
