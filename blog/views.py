@@ -444,27 +444,29 @@ def blog_contact(request):
     contact = BlogContactModel.objects.last()
     contact_form = BlogContactForm(request.POST or None)
     if request.method == "POST":
-        email = request.POST.get('email')
+        email = request.POST.get('email_sub')
 
         if email:
-
             if Subscribe.objects.exists():
                 for abone in Subscribe.objects.all():
                     if email in abone.email:
                         messages.error(request, "Bültene zaten abonesiniz")
-                        return HttpResponseRedirect(self.request.build_absolute_uri())
+                        return HttpResponseRedirect(request.build_absolute_uri())
 
                     else:
                         Subscribe.objects.create(email=email)
+                        messages.success(request, "Başarılı bir şekilde abone oldunuz")
+
+                        return HttpResponseRedirect(request.build_absolute_uri())
 
             else:
                 Subscribe.objects.create(email=email)
 
-            messages.success(request, "Başarılı bir şekilde abone oldunuz")
+                messages.success(request, "Başarılı bir şekilde abone oldunuz")
 
-            return HttpResponseRedirect(request.build_absolute_uri())
+                return HttpResponseRedirect(request.build_absolute_uri())
 
-        if contact_form.is_valid():
+        elif contact_form.is_valid():
             contact_form.save()
             messages.success(request, "Mesajınız iletildi")
             return HttpResponseRedirect(request.build_absolute_uri())
