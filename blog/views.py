@@ -438,6 +438,7 @@ class ProfileUpdateViewNonStaff(generic.UpdateView):
         }))
 
 
+
 def blog_contact(request):
     contact = BlogContactModel.objects.last()
     contact_form = BlogContactForm(request.POST or None)

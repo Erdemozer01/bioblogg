@@ -39,6 +39,7 @@ class ContactProfileForm(forms.ModelForm):
         }
 
 
+
 class BlogContactForm(forms.ModelForm):
     class Meta:
         model = BlogContactFormModel

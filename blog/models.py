@@ -174,6 +174,7 @@ class BlogContactModel(models.Model):
         verbose_name_plural = 'İletişim'
 
 
+
 class BlogContactFormModel(models.Model):
     name = models.CharField(max_length=100, verbose_name="Ad Soyad")
     email = models.CharField(verbose_name="Email", max_length=100)
