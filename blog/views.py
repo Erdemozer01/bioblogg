@@ -24,17 +24,19 @@ class CategoriesView(generic.ListView, generic.FormView):
     def post(self, request, *args, **kwargs):
         email = request.POST.get('email')
 
-        if Subscribe.objects.exists():
-            for abone in Subscribe.objects.all():
-                if email in abone.email:
-                    messages.error(request, "Bültene zaten abonesiniz")
-                    return HttpResponseRedirect(self.request.build_absolute_uri())
+        if email:
 
-                else:
-                    Subscribe.objects.create(email=email)
+            if Subscribe.objects.exists():
+                for abone in Subscribe.objects.all():
+                    if email in abone.email:
+                        messages.error(request, "Bültene zaten abonesiniz")
+                        return HttpResponseRedirect(self.request.build_absolute_uri())
 
-        else:
-            Subscribe.objects.create(email=email)
+                    else:
+                        Subscribe.objects.create(email=email)
+
+            else:
+                Subscribe.objects.create(email=email)
 
         messages.success(request, "Başarılı bir şekilde abone oldunuz")
 
@@ -438,11 +440,30 @@ class ProfileUpdateViewNonStaff(generic.UpdateView):
         }))
 
 
-
 def blog_contact(request):
     contact = BlogContactModel.objects.last()
     contact_form = BlogContactForm(request.POST or None)
     if request.method == "POST":
+        email = request.POST.get('email')
+
+        if email:
+
+            if Subscribe.objects.exists():
+                for abone in Subscribe.objects.all():
+                    if email in abone.email:
+                        messages.error(request, "Bültene zaten abonesiniz")
+                        return HttpResponseRedirect(self.request.build_absolute_uri())
+
+                    else:
+                        Subscribe.objects.create(email=email)
+
+            else:
+                Subscribe.objects.create(email=email)
+
+            messages.success(request, "Başarılı bir şekilde abone oldunuz")
+
+            return HttpResponseRedirect(request.build_absolute_uri())
+
         if contact_form.is_valid():
             contact_form.save()
             messages.success(request, "Mesajınız iletildi")
