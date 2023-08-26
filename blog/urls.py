@@ -24,5 +24,4 @@ urlpatterns = [
     path('profile-update/<user>/<pk>/', ProfileUpdateViewNonStaff.as_view(), name="profile_update"),
     path('iletişim/', blog_contact, name="blog_contact"),
     path('hakkimizda/', about, name="about"),
-
 ]
