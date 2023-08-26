@@ -50,7 +50,6 @@ class ContactMessagesReplyForm(forms.ModelForm):
         model = ContactModel
         fields = ['content']
 
-
 class UserMessagesForm(forms.ModelForm):
     class Meta:
         model = ContactModel
