@@ -129,7 +129,7 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
 EMAIL_HOST_USER = 'bioblogdestek@gmail.com'
-EMAIL_HOST_PASSWORD = 'Er880413.Dm'
+EMAIL_HOST_PASSWORD = 'sjtxedogsracahcb'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
