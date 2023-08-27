@@ -122,7 +122,7 @@ MEDIA_URL = "/media/"
 LOGIN_REDIRECT_URL = reverse_lazy('blog:anasayfa')
 
 LOGOUT_REDIRECT_URL = reverse_lazy('blog:anasayfa')
-from django.core.mail.backends.smtp import EmailBackend
+
 # email configs
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
