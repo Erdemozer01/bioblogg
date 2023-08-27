@@ -3,306 +3,318 @@
 {% categories_middle as orta %}
 {% categories_large as large %}
 
-{% if request.user.is_anonymous %}
-    <header class="header-global">
-        <nav id="navbar-main" aria-label="Primary navigation"
-             class="navbar navbar-main navbar-expand-lg navbar-expand-md navbar-theme-primary headroom navbar-light navbar-transparent navbar-theme-primary">
-            <div class="container position-relative">
+{% if 'blog' in request.path %}
 
-                <a class="navbar-brand shadow-soft py-2 px-3 rounded border border-light mr-lg-4"
-                   href="{% url "blog:anasayfa" %}">
-                    <span>Blog</span>
-                </a>
+    {% if request.user.is_anonymous %}
+        <header class="header-global">
+            <nav id="navbar-main" aria-label="Primary navigation"
+                 class="navbar navbar-main navbar-expand-lg navbar-expand-md navbar-theme-primary headroom navbar-light navbar-transparent navbar-theme-primary">
+                <div class="container position-relative">
 
-                <div class="navbar-collapse collapse" id="navbar_global">
+                    <a class="navbar-brand shadow-soft py-2 px-3 rounded border border-light mr-lg-4"
+                       href="{% url "blog:anasayfa" %}">
+                        <span>Blog</span>
+                    </a>
 
-                    <div class="navbar-collapse-header">
-                        <div class="row">
+                    <div class="navbar-collapse collapse" id="navbar_global">
 
-                            <div class="col-6 collapse-brand">
-                                <a href="{% url "blog:anasayfa" %}"
-                                   class="navbar-brand shadow-soft py-2 px-3 rounded border border-light">
-                                    Blog
-                                </a>
+                        <div class="navbar-collapse-header">
+                            <div class="row">
+
+                                <div class="col-6 collapse-brand">
+                                    <a href="{% url "blog:anasayfa" %}"
+                                       class="navbar-brand shadow-soft py-2 px-3 rounded border border-light">
+                                        Blog
+                                    </a>
+                                </div>
+
+                                <div class="col-6 collapse-close">
+                                    <a href="#navbar_global" class="fas fa-times" data-toggle="collapse"
+                                       data-target="#navbar_global" aria-controls="navbar_global" aria-expanded="false"
+                                       title="close" aria-label="Toggle navigation"></a>
+                                </div>
+
                             </div>
-
-                            <div class="col-6 collapse-close">
-                                <a href="#navbar_global" class="fas fa-times" data-toggle="collapse"
-                                   data-target="#navbar_global" aria-controls="navbar_global" aria-expanded="false"
-                                   title="close" aria-label="Toggle navigation"></a>
-                            </div>
-
                         </div>
-                    </div>
 
-                    <ul class="navbar-nav navbar-nav-hover align-items-lg-center">
+                        <ul class="navbar-nav navbar-nav-hover align-items-lg-center">
 
-                        <li class="nav-item">
-                            <a href="#" class="nav-link">
-                                <span class="nav-link-inner-text">Laboratuvar</span>
-                            </a>
-                        </li>
+                            <li class="nav-item dropdown">
 
-                        {% if ilk_on %}
-                            <li class="nav-item dropdown mega-dropdown">
-                                <a href="{% url "blog:categories" %}" class="nav-link" data-toggle="dropdown">
-                                    <span class="nav-link-inner-text">Kategoriler</span>
+                                <a href="#" class="nav-link" data-toggle="dropdown">
+                                    <span class="nav-link-inner-text">Laboratuvar</span>
                                     <span class="fas fa-angle-down nav-link-arrow ml-2"></span>
                                 </a>
 
-                                <div class="dropdown-menu">
-                                    <div class="row">
-                                        <div class="col-lg-6 inside-bg d-none d-lg-block">
-                                            <div class="justify-content-center bg-primary text-white">
-                                                <div class="px-6 pb-5 pt-3">
-                                                    <lottie-player
-                                                            src="https://assets7.lottiefiles.com/packages/lf20_04Hqp2.json"
-                                                            background="transparent" speed="1"
-                                                            style="width: 300px; height: 300px;" loop
-                                                            autoplay>
-                                                    </lottie-player>
-                                                </div>
-                                                <div class="z-2 pb-4 text-center">
-                                                    <a href="{% url "blog:categories" %}"
-                                                       class="btn btn-primary mb-2 mb-sm-0 mr-1 text-secondary">
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item"
+                                           href="{% url 'bioinformatic:home' %}">Biyoinformatik</a></li>
+                                    <li><a class="dropdown-item" href="#">Biyoistatislik</a></li>
+                                    <li><a class="dropdown-item" href="#">Coğrafi Bilgi Sistemleri</a></li>
+                                </ul>
+                            </li>
+
+                            {% if ilk_on %}
+                                <li class="nav-item dropdown mega-dropdown">
+                                    <a href="{% url "blog:categories" %}" class="nav-link" data-toggle="dropdown">
+                                        <span class="nav-link-inner-text">Kategoriler</span>
+                                        <span class="fas fa-angle-down nav-link-arrow ml-2"></span>
+                                    </a>
+
+                                    <div class="dropdown-menu">
+                                        <div class="row">
+                                            <div class="col-lg-6 inside-bg d-none d-lg-block">
+                                                <div class="justify-content-center bg-primary text-white">
+                                                    <div class="px-6 pb-5 pt-3">
+                                                        <lottie-player
+                                                                src="https://assets7.lottiefiles.com/packages/lf20_04Hqp2.json"
+                                                                background="transparent" speed="1"
+                                                                style="width: 300px; height: 300px;" loop
+                                                                autoplay>
+                                                        </lottie-player>
+                                                    </div>
+                                                    <div class="z-2 pb-4 text-center">
+                                                        <a href="{% url "blog:categories" %}"
+                                                           class="btn btn-primary mb-2 mb-sm-0 mr-1 text-secondary">
                                                         <span class="mr-1">
                                                             <span class="fas fa-th-large"></span>
                                                         </span>
-                                                        Tüm Kategoriler
-                                                    </a>
+                                                            Tüm Kategoriler
+                                                        </a>
 
+                                                    </div>
                                                 </div>
                                             </div>
+                                            {% if ilk_on %}
+                                                <div class="col pl-0">
+                                                    <ul class="list-style-none">
+                                                        {% for foo in ilk_on %}
+                                                            <li><a class="dropdown-item"
+                                                                   href="{% url "blog:category" foo.slug %}">{{ foo.title }}</a>
+                                                            </li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </div>
+                                            {% endif %}
+                                            {% if orta %}
+                                                <div class="col pl-0">
+                                                    <ul class="list-style-none">
+                                                        {% for foo in orta %}
+                                                            <li><a class="dropdown-item"
+                                                                   href="/ui-forms.html">{{ foo.title }}</a></li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </div>
+                                            {% endif %}
+                                            {% if large %}
+                                                <div class="col pl-0">
+                                                    <ul class="list-style-none">
+                                                        {% for foo in large %}
+                                                            <li>
+                                                                <a class="dropdown-item d-flex align-items-center justify-content-between"
+                                                                   href="https://themesberg.com/docs/neumorphism-ui/components/icon-boxes/#steps"
+                                                                   target="_blank">{{ foo.title }} <span
+                                                                        class="badge badge-dark ml-3">Pro</span></a>
+                                                            </li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </div>
+                                            {% endif %}
+
                                         </div>
-                                        {% if ilk_on %}
+                                    </div>
+                                </li>
+                            {% else %}
+                                <li class="nav-item dropdown mega-dropdown">
+                                    <a href="#" class="nav-link" data-toggle="dropdown">
+                                        <span class="nav-link-inner-text">Kategoriler</span>
+                                        <span class="fas fa-angle-down nav-link-arrow ml-2"></span>
+                                    </a>
+                                    <div class="dropdown-menu">
+                                        <div class="row">
+                                            <div class="col-lg-6 inside-bg d-none d-lg-block">
+                                                <div class="justify-content-center bg-primary text-white">
+                                                    <div class="px-6 pb-5 pt-3">
+                                                        <lottie-player
+                                                                src="https://assets7.lottiefiles.com/packages/lf20_04Hqp2.json"
+                                                                background="transparent" speed="1"
+                                                                style="width: 300px; height: 300px;" loop
+                                                                autoplay></lottie-player>
+                                                    </div>
+                                                    <div class="z-2 pb-4 text-center">
+                                                        <a href="/ui-all.html"
+                                                           class="btn btn-primary mb-2 mb-sm-0 mr-3 text-secondary">
+                                                            <span class="mr-1"><span
+                                                                    class="fas fa-th-large"></span></span>
+                                                            Tüm Kategoriler
+                                                        </a>
+
+                                                    </div>
+                                                </div>
+                                            </div>
+
                                             <div class="col pl-0">
                                                 <ul class="list-style-none">
                                                     {% for foo in ilk_on %}
                                                         <li><a class="dropdown-item"
-                                                               href="{% url "blog:category" foo.slug %}">{{ foo.title }}</a>
+                                                               href="/ui-accordions.html">{{ foo.title }}</a>
                                                         </li>
                                                     {% endfor %}
-                                                </ul>
-                                            </div>
-                                        {% endif %}
-                                        {% if orta %}
-                                            <div class="col pl-0">
-                                                <ul class="list-style-none">
-                                                    {% for foo in orta %}
-                                                        <li><a class="dropdown-item"
-                                                               href="/ui-forms.html">{{ foo.title }}</a></li>
-                                                    {% endfor %}
-                                                </ul>
-                                            </div>
-                                        {% endif %}
-                                        {% if large %}
-                                            <div class="col pl-0">
-                                                <ul class="list-style-none">
-                                                    {% for foo in large %}
-                                                        <li>
-                                                            <a class="dropdown-item d-flex align-items-center justify-content-between"
-                                                               href="https://themesberg.com/docs/neumorphism-ui/components/icon-boxes/#steps"
-                                                               target="_blank">{{ foo.title }} <span
-                                                                    class="badge badge-dark ml-3">Pro</span></a>
-                                                        </li>
-                                                    {% endfor %}
-                                                </ul>
-                                            </div>
-                                        {% endif %}
 
+                                                    <li><a class="dropdown-item"
+                                                           href="/ui-accordions.html">Accordions</a>
+                                                    </li>
+                                                    <li><a class="dropdown-item" href="/ui-alerts.html">Alerts</a></li>
+                                                    <li><a class="dropdown-item" href="/ui-badges.html">Badges</a></li>
+                                                    <li><a class="dropdown-item" href="/ui-bootstrap-carousels.html">Bootstrap
+                                                        Carousels</a></li>
+                                                    <li><a class="dropdown-item"
+                                                           href="/ui-breadcrumbs.html">Breadcrumbs</a>
+                                                    </li>
+                                                    <li><a class="dropdown-item" href="/ui-buttons.html">Buttons</a>
+                                                    </li>
+                                                    <li>
+                                                        <a class="dropdown-item d-flex align-items-center justify-content-between"
+                                                           href="https://themesberg.com/docs/neumorphism-ui/plugins/jquery-counters/"
+                                                           target="_blank">Counters <span
+                                                                class="badge badge-dark ml-3">Pro</span></a></li>
+                                                    <li><a class="dropdown-item" href="/ui-cards.html">Cards</a></li>
+                                                    <li>
+                                                        <a class="dropdown-item d-flex align-items-center justify-content-between"
+                                                           href="https://themesberg.com/docs/neumorphism-ui/components/e-commerce/"
+                                                           target="_blank">E-commerce <span
+                                                                class="badge badge-dark ml-3">Pro</span></a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+
+                                            <div class="col pl-0">
+                                                <ul class="list-style-none">
+                                                    <li><a class="dropdown-item" href="/ui-forms.html">Forms</a></li>
+                                                    <li>
+                                                        <a class="dropdown-item d-flex align-items-center justify-content-between"
+                                                           href="https://themesberg.com/docs/neumorphism-ui/components/icon-boxes/"
+                                                           target="_blank">Icon Boxes <span
+                                                                class="badge badge-dark ml-3">Pro</span></a>
+                                                    </li>
+                                                    <li><a class="dropdown-item" href="/ui-modals.html">Modals</a></li>
+                                                    <li><a class="dropdown-item" href="/ui-navs.html">Navs</a></li>
+                                                    <li>
+                                                        <a class="dropdown-item d-flex align-items-center justify-content-between"
+                                                           href="https://themesberg.com/docs/neumorphism-ui/plugins/owl-carousel/"
+                                                           target="_blank">Owl Carousels <span
+                                                                class="badge badge-dark ml-3">Pro</span></a></li>
+                                                    <li><a class="dropdown-item"
+                                                           href="/ui-pagination.html">Pagination</a>
+                                                    </li>
+                                                    <li><a class="dropdown-item" href="/ui-popovers.html">Popovers</a>
+                                                    </li>
+                                                    <li><a class="dropdown-item" href="/ui-progress-bars.html">Progress
+                                                        Bars</a>
+                                                    <li><a class="dropdown-item" href="/ui-progress-bars.html">Progress
+                                                        Bars</a>
+                                                    </li>
+
+                                                </ul>
+                                            </div>
+
+                                            <div class="col pl-0">
+                                                <ul class="list-style-none">
+                                                    <li>
+                                                        <a class="dropdown-item d-flex align-items-center justify-content-between"
+                                                           href="https://themesberg.com/docs/neumorphism-ui/components/icon-boxes/#steps"
+                                                           target="_blank">Steps <span
+                                                                class="badge badge-dark ml-3">Pro</span></a>
+                                                    </li>
+                                                    <li><a class="dropdown-item" href="/ui-tables.html">Tables</a></li>
+                                                    <li><a class="dropdown-item" href="/ui-tabs.html">Tabs</a></li>
+                                                    <li><a class="dropdown-item" href="/ui-toasts.html">Toasts</a></li>
+                                                    <li>
+                                                        <a class="dropdown-item d-flex align-items-center justify-content-between"
+                                                           href="https://themesberg.com/docs/neumorphism-ui/components/timelines/"
+                                                           target="_blank">Timelines <span
+                                                                class="badge badge-dark ml-3">Pro</span></a>
+                                                    </li>
+                                                    <li><a class="dropdown-item" href="/ui-tooltips.html">Tooltips</a>
+                                                    </li>
+                                                    <li><a class="dropdown-item"
+                                                           href="/ui-typography.html">Typography</a>
+                                                    </li>
+                                                    <li>
+                                                        <a class="dropdown-item d-flex align-items-center justify-content-between"
+                                                           href="https://demo.themesberg.com/neumorphism-ui-pro/html/components/widgets.html"
+                                                           target="_blank">Widgets <span
+                                                                class="badge badge-dark ml-3">Pro</span></a></li>
+                                                </ul>
+                                            </div>
+
+                                        </div>
                                     </div>
-                                </div>
-                            </li>
-                        {% else %}
-                            <li class="nav-item dropdown mega-dropdown">
+                                </li>
+                            {% endif %}
+
+
+                            <li class="nav-item dropdown">
+
                                 <a href="#" class="nav-link" data-toggle="dropdown">
-                                    <span class="nav-link-inner-text">Kategoriler</span>
+                                    <span class="nav-link-inner-text">Diğer</span>
                                     <span class="fas fa-angle-down nav-link-arrow ml-2"></span>
                                 </a>
-                                <div class="dropdown-menu">
-                                    <div class="row">
-                                        <div class="col-lg-6 inside-bg d-none d-lg-block">
-                                            <div class="justify-content-center bg-primary text-white">
-                                                <div class="px-6 pb-5 pt-3">
-                                                    <lottie-player
-                                                            src="https://assets7.lottiefiles.com/packages/lf20_04Hqp2.json"
-                                                            background="transparent" speed="1"
-                                                            style="width: 300px; height: 300px;" loop
-                                                            autoplay></lottie-player>
-                                                </div>
-                                                <div class="z-2 pb-4 text-center">
-                                                    <a href="/ui-all.html"
-                                                       class="btn btn-primary mb-2 mb-sm-0 mr-3 text-secondary">
-                                                        <span class="mr-1"><span class="fas fa-th-large"></span></span>
-                                                        Tüm Kategoriler
-                                                    </a>
 
-                                                </div>
-                                            </div>
-                                        </div>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="{% url 'blog:about' %}">Hakkımızda</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'blog:blog_contact' %}">İletişim</a></li>
+                                    <li><a class="dropdown-item" href="#">Gizlilik</a></li>
+                                </ul>
 
-                                        <div class="col pl-0">
-                                            <ul class="list-style-none">
-                                                {% for foo in ilk_on %}
-                                                    <li><a class="dropdown-item"
-                                                           href="/ui-accordions.html">{{ foo.title }}</a>
-                                                    </li>
-                                                {% endfor %}
-
-                                                <li><a class="dropdown-item" href="/ui-accordions.html">Accordions</a>
-                                                </li>
-                                                <li><a class="dropdown-item" href="/ui-alerts.html">Alerts</a></li>
-                                                <li><a class="dropdown-item" href="/ui-badges.html">Badges</a></li>
-                                                <li><a class="dropdown-item" href="/ui-bootstrap-carousels.html">Bootstrap
-                                                    Carousels</a></li>
-                                                <li><a class="dropdown-item" href="/ui-breadcrumbs.html">Breadcrumbs</a>
-                                                </li>
-                                                <li><a class="dropdown-item" href="/ui-buttons.html">Buttons</a></li>
-                                                <li>
-                                                    <a class="dropdown-item d-flex align-items-center justify-content-between"
-                                                       href="https://themesberg.com/docs/neumorphism-ui/plugins/jquery-counters/"
-                                                       target="_blank">Counters <span
-                                                            class="badge badge-dark ml-3">Pro</span></a></li>
-                                                <li><a class="dropdown-item" href="/ui-cards.html">Cards</a></li>
-                                                <li>
-                                                    <a class="dropdown-item d-flex align-items-center justify-content-between"
-                                                       href="https://themesberg.com/docs/neumorphism-ui/components/e-commerce/"
-                                                       target="_blank">E-commerce <span
-                                                            class="badge badge-dark ml-3">Pro</span></a>
-                                                </li>
-                                            </ul>
-                                        </div>
-
-                                        <div class="col pl-0">
-                                            <ul class="list-style-none">
-                                                <li><a class="dropdown-item" href="/ui-forms.html">Forms</a></li>
-                                                <li>
-                                                    <a class="dropdown-item d-flex align-items-center justify-content-between"
-                                                       href="https://themesberg.com/docs/neumorphism-ui/components/icon-boxes/"
-                                                       target="_blank">Icon Boxes <span
-                                                            class="badge badge-dark ml-3">Pro</span></a>
-                                                </li>
-                                                <li><a class="dropdown-item" href="/ui-modals.html">Modals</a></li>
-                                                <li><a class="dropdown-item" href="/ui-navs.html">Navs</a></li>
-                                                <li>
-                                                    <a class="dropdown-item d-flex align-items-center justify-content-between"
-                                                       href="https://themesberg.com/docs/neumorphism-ui/plugins/owl-carousel/"
-                                                       target="_blank">Owl Carousels <span
-                                                            class="badge badge-dark ml-3">Pro</span></a></li>
-                                                <li><a class="dropdown-item" href="/ui-pagination.html">Pagination</a>
-                                                </li>
-                                                <li><a class="dropdown-item" href="/ui-popovers.html">Popovers</a></li>
-                                                <li><a class="dropdown-item" href="/ui-progress-bars.html">Progress
-                                                    Bars</a>
-                                                <li><a class="dropdown-item" href="/ui-progress-bars.html">Progress
-                                                    Bars</a>
-                                                </li>
-
-                                            </ul>
-                                        </div>
-
-                                        <div class="col pl-0">
-                                            <ul class="list-style-none">
-                                                <li>
-                                                    <a class="dropdown-item d-flex align-items-center justify-content-between"
-                                                       href="https://themesberg.com/docs/neumorphism-ui/components/icon-boxes/#steps"
-                                                       target="_blank">Steps <span
-                                                            class="badge badge-dark ml-3">Pro</span></a>
-                                                </li>
-                                                <li><a class="dropdown-item" href="/ui-tables.html">Tables</a></li>
-                                                <li><a class="dropdown-item" href="/ui-tabs.html">Tabs</a></li>
-                                                <li><a class="dropdown-item" href="/ui-toasts.html">Toasts</a></li>
-                                                <li>
-                                                    <a class="dropdown-item d-flex align-items-center justify-content-between"
-                                                       href="https://themesberg.com/docs/neumorphism-ui/components/timelines/"
-                                                       target="_blank">Timelines <span
-                                                            class="badge badge-dark ml-3">Pro</span></a>
-                                                </li>
-                                                <li><a class="dropdown-item" href="/ui-tooltips.html">Tooltips</a></li>
-                                                <li><a class="dropdown-item" href="/ui-typography.html">Typography</a>
-                                                </li>
-                                                <li>
-                                                    <a class="dropdown-item d-flex align-items-center justify-content-between"
-                                                       href="https://demo.themesberg.com/neumorphism-ui-pro/html/components/widgets.html"
-                                                       target="_blank">Widgets <span
-                                                            class="badge badge-dark ml-3">Pro</span></a></li>
-                                            </ul>
-                                        </div>
-
-                                    </div>
-                                </div>
                             </li>
-                        {% endif %}
 
+                        </ul>
 
-                        <li class="nav-item dropdown">
+                    </div>
 
-                            <a href="#" class="nav-link" data-toggle="dropdown">
-                                <span class="nav-link-inner-text">Diğer</span>
-                                <span class="fas fa-angle-down nav-link-arrow ml-2"></span>
-                            </a>
+                    <div class="d-flex align-items-center">
+                        <a href="{% url "accounts:register" %}"
+                           class="btn btn-primary btn-pill animate-up-3 text-secondary d-none d-md-inline-block mr-3">
+                            <i class="far fa-user-circle mr-2"></i>
+                            Üye Ol
+                        </a>
 
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{% url 'blog:about' %}">Hakkımızda</a></li>
-                                <li><a class="dropdown-item" href="{% url 'blog:blog_contact' %}">İletişim</a></li>
-                                <li><a class="dropdown-item" href="/page-sign-in.html">Gizlilik</a></li>
-                            </ul>
+                        <a href="{% url "login" %}" class="btn btn-primary">
+                            <span class="text-sm-left">Giriş Yap</span>
+                            <i class="fas fa-sign-in"></i>
+                        </a>
 
-                        </li>
-
-                    </ul>
-
+                        <button class="navbar-toggler ml-2" type="button" data-toggle="collapse"
+                                data-target="#navbar_global"
+                                aria-controls="navbar_global" aria-expanded="true" aria-label="Toggle navigation">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+                    </div>
                 </div>
-
-                <div class="d-flex align-items-center">
-                    <a href="{% url "accounts:register" %}" target="_blank"
-                       class="btn btn-primary btn-pill animate-up-3 text-secondary d-none d-md-inline-block mr-3">
-                        <i class="far fa-user-circle mr-2"></i>
-                        Üye Ol
+            </nav>
+        </header>
+    {% else %}
+        <header class="header-global">
+            <nav id="navbar-main" aria-label="Primary navigation"
+                 class="navbar navbar-main navbar-expand-lg navbar-expand-md navbar-theme-primary headroom navbar-light navbar-transparent navbar-theme-primary">
+                <div class="container position-relative">
+                    <a class="navbar-brand shadow-soft py-2 px-3 rounded border border-light mr-lg-4"
+                       href="{% url "blog:anasayfa" %}">
+                        <span>Blog</span>
                     </a>
 
-                    <a href="{% url "login" %}" class="btn btn-primary">
-                        <span class="text-sm-left">Giriş Yap</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                             class="bi bi-box-arrow-in-right" viewBox="0 0 16 16">
-                            <path fill-rule="evenodd"
-                                  d="M6 3.5a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-2a.5.5 0 0 0-1 0v2A1.5 1.5 0 0 0 6.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-8A1.5 1.5 0 0 0 5 3.5v2a.5.5 0 0 0 1 0v-2z"/>
-                            <path fill-rule="evenodd"
-                                  d="M11.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H1.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z"/>
-                        </svg>
-                    </a>
+                    <div class="navbar-collapse collapse" id="navbar-dark-profile">
+                        <div class="navbar-collapse-header">
+                            <div class="row">
+                                <div class="col-6 collapse-brand">
+                                    <a href="{% url "blog:anasayfa" %}"
+                                       class="navbar-brand shadow-soft py-2 px-3 rounded border border-light">
+                                        Blog
+                                    </a>
+                                </div>
 
-                    <button class="navbar-toggler ml-2" type="button" data-toggle="collapse"
-                            data-target="#navbar_global"
-                            aria-controls="navbar_global" aria-expanded="true" aria-label="Toggle navigation">
-                        <span class="navbar-toggler-icon"></span>
-                    </button>
-
-                </div>
-            </div>
-        </nav>
-    </header>
-{% else %}
-    <header class="header-global">
-        <nav id="navbar-main" aria-label="Primary navigation"
-             class="navbar navbar-main navbar-expand-lg navbar-expand-md navbar-theme-primary headroom navbar-light navbar-transparent navbar-theme-primary">
-            <div class="container position-relative">
-                <a class="navbar-brand shadow-soft py-2 px-3 rounded border border-light mr-lg-4"
-                   href="{% url "blog:anasayfa" %}">
-                    <span>Blog</span>
-                </a>
-
-                <div class="navbar-collapse collapse" id="navbar-dark-profile">
-                    <div class="navbar-collapse-header">
-                        <div class="row">
-                            <div class="col-6 collapse-brand">
-                                <a href="{% url "blog:anasayfa" %}"
-                                   class="navbar-brand shadow-soft py-2 px-3 rounded border border-light">
-                                    Blog
-                                </a>
-                            </div>
-
-                            <div class="col-6 collapse-close">
+                                <div class="col-6 collapse-close">
                             <span class="fas fa-times"
                                   data-toggle="collapse" role="button"
                                   data-target="#navbar-dark-profile"
@@ -310,262 +322,901 @@
                                   aria-expanded="false"
                                   aria-label="Toggle navigation">
                             </span>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <ul class="navbar-nav navbar-nav-hover align-items-lg-center">
+                        <ul class="navbar-nav navbar-nav-hover align-items-lg-center">
 
-                        <li class="nav-item">
-                            <a href="#" class="nav-link">
-                                <span class="nav-link-inner-text">Laboratuvar</span>
-                            </a>
-                        </li>
+                            <li class="nav-item dropdown">
 
-                        {% if ilk_on %}
-                            <li class="nav-item dropdown mega-dropdown">
                                 <a href="#" class="nav-link" data-toggle="dropdown">
-                                    <span class="nav-link-inner-text">Kategoriler</span>
+                                    <span class="nav-link-inner-text">Laboratuvar</span>
                                     <span class="fas fa-angle-down nav-link-arrow ml-2"></span>
                                 </a>
-                                <div class="dropdown-menu">
-                                    <div class="row">
-                                        <div class="col-lg-6 inside-bg d-none d-lg-block">
-                                            <div class="justify-content-center bg-primary text-white">
-                                                <div class="px-6 pb-5 pt-3">
-                                                    <lottie-player
-                                                            src="https://assets7.lottiefiles.com/packages/lf20_04Hqp2.json"
-                                                            background="transparent" speed="1"
-                                                            style="width: 300px; height: 300px;" loop
-                                                            autoplay></lottie-player>
-                                                </div>
-                                                <div class="z-2 pb-4 text-center">
-                                                    <a href="{% url "blog:categories" %}"
-                                                       class="btn btn-primary mb-2 mb-sm-0 mr-3 text-secondary">
-                                                        <span class="mr-1"><span class="fas fa-th-large"></span></span>
-                                                        Tüm Kategoriler
-                                                    </a>
+
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item"
+                                           href="{% url 'bioinformatic:home' %}">Biyoinformatik</a></li>
+                                    <li><a class="dropdown-item" href="#">Biyoistatislik</a></li>
+                                    <li><a class="dropdown-item" href="#">Coğrafi Bilgi Sistemleri</a></li>
+                                </ul>
+                            </li>
+
+                            {% if ilk_on %}
+                                <li class="nav-item dropdown mega-dropdown">
+                                    <a href="#" class="nav-link" data-toggle="dropdown">
+                                        <span class="nav-link-inner-text">Kategoriler</span>
+                                        <span class="fas fa-angle-down nav-link-arrow ml-2"></span>
+                                    </a>
+                                    <div class="dropdown-menu">
+                                        <div class="row">
+                                            <div class="col-lg-6 inside-bg d-none d-lg-block">
+                                                <div class="justify-content-center bg-primary text-white">
+                                                    <div class="px-6 pb-5 pt-3">
+                                                        <lottie-player
+                                                                src="https://assets7.lottiefiles.com/packages/lf20_04Hqp2.json"
+                                                                background="transparent" speed="1"
+                                                                style="width: 300px; height: 300px;" loop
+                                                                autoplay></lottie-player>
+                                                    </div>
+                                                    <div class="z-2 pb-4 text-center">
+                                                        <a href="{% url "blog:categories" %}"
+                                                           class="btn btn-primary mb-2 mb-sm-0 mr-3 text-secondary">
+                                                            <span class="mr-1"><span
+                                                                    class="fas fa-th-large"></span></span>
+                                                            Tüm Kategoriler
+                                                        </a>
+                                                    </div>
                                                 </div>
                                             </div>
+                                            {% if ilk_on %}
+                                                <div class="col pl-0">
+                                                    <ul class="list-style-none">
+                                                        {% for foo in ilk_on %}
+                                                            <li><a class="dropdown-item"
+                                                                   href="{% url "blog:category" foo.slug|slugify %}">{{ foo.title }}</a>
+                                                            </li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </div>
+                                            {% endif %}
+                                            {% if orta %}
+                                                <div class="col pl-0">
+                                                    <ul class="list-style-none">
+                                                        {% for foo in orta %}
+                                                            <li><a class="dropdown-item"
+                                                                   href="/ui-forms.html">{{ foo.title }}</a></li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </div>
+                                            {% endif %}
+                                            {% if large %}
+                                                <div class="col pl-0">
+                                                    <ul class="list-style-none">
+                                                        {% for foo in large %}
+                                                            <li>
+                                                                <a class="dropdown-item d-flex align-items-center justify-content-between"
+                                                                   href="https://themesberg.com/docs/neumorphism-ui/components/icon-boxes/#steps"
+                                                                   target="_blank">{{ foo.title }} <span
+                                                                        class="badge badge-dark ml-3">Pro</span></a>
+                                                            </li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </div>
+                                            {% endif %}
                                         </div>
-                                        {% if ilk_on %}
+                                    </div>
+                                </li>
+                            {% else %}
+                                <li class="nav-item dropdown mega-dropdown">
+                                    <a href="#" class="nav-link" data-toggle="dropdown">
+                                        <span class="nav-link-inner-text">Kategoriler</span>
+                                        <span class="fas fa-angle-down nav-link-arrow ml-2"></span>
+                                    </a>
+                                    <div class="dropdown-menu">
+                                        <div class="row">
+                                            <div class="col-lg-6 inside-bg d-none d-lg-block">
+                                                <div class="justify-content-center bg-primary text-white">
+                                                    <div class="px-6 pb-5 pt-3">
+                                                        <lottie-player
+                                                                src="https://assets7.lottiefiles.com/packages/lf20_04Hqp2.json"
+                                                                background="transparent" speed="1"
+                                                                style="width: 300px; height: 300px;" loop
+                                                                autoplay></lottie-player>
+                                                    </div>
+                                                    <div class="z-2 pb-4 text-center">
+                                                        <a href="/ui-all.html"
+                                                           class="btn btn-primary mb-2 mb-sm-0 mr-3 text-secondary">
+                                                            <span class="mr-1"><span
+                                                                    class="fas fa-th-large"></span></span>
+                                                            Tüm Kategoriler
+                                                        </a>
+
+                                                    </div>
+                                                </div>
+                                            </div>
+
                                             <div class="col pl-0">
                                                 <ul class="list-style-none">
                                                     {% for foo in ilk_on %}
                                                         <li><a class="dropdown-item"
-                                                               href="{% url "blog:category" foo.slug|slugify %}">{{ foo.title }}</a>
+                                                               href="/ui-accordions.html">{{ foo.title }}</a>
                                                         </li>
                                                     {% endfor %}
+
+                                                    <li><a class="dropdown-item"
+                                                           href="/ui-accordions.html">Accordions</a>
+                                                    </li>
+                                                    <li><a class="dropdown-item" href="/ui-alerts.html">Alerts</a></li>
+                                                    <li><a class="dropdown-item" href="/ui-badges.html">Badges</a></li>
+                                                    <li><a class="dropdown-item" href="/ui-bootstrap-carousels.html">Bootstrap
+                                                        Carousels</a></li>
+                                                    <li><a class="dropdown-item"
+                                                           href="/ui-breadcrumbs.html">Breadcrumbs</a>
+                                                    </li>
+                                                    <li><a class="dropdown-item" href="/ui-buttons.html">Buttons</a>
+                                                    </li>
+                                                    <li>
+                                                        <a class="dropdown-item d-flex align-items-center justify-content-between"
+                                                           href="https://themesberg.com/docs/neumorphism-ui/plugins/jquery-counters/"
+                                                           target="_blank">Counters <span
+                                                                class="badge badge-dark ml-3">Pro</span></a></li>
+                                                    <li><a class="dropdown-item" href="/ui-cards.html">Cards</a></li>
+                                                    <li>
+                                                        <a class="dropdown-item d-flex align-items-center justify-content-between"
+                                                           href="https://themesberg.com/docs/neumorphism-ui/components/e-commerce/"
+                                                           target="_blank">E-commerce <span
+                                                                class="badge badge-dark ml-3">Pro</span></a>
+                                                    </li>
                                                 </ul>
                                             </div>
-                                        {% endif %}
-                                        {% if orta %}
+
                                             <div class="col pl-0">
                                                 <ul class="list-style-none">
-                                                    {% for foo in orta %}
-                                                        <li><a class="dropdown-item"
-                                                               href="/ui-forms.html">{{ foo.title }}</a></li>
-                                                    {% endfor %}
+                                                    <li><a class="dropdown-item" href="/ui-forms.html">Forms</a></li>
+                                                    <li>
+                                                        <a class="dropdown-item d-flex align-items-center justify-content-between"
+                                                           href="https://themesberg.com/docs/neumorphism-ui/components/icon-boxes/"
+                                                           target="_blank">Icon Boxes <span
+                                                                class="badge badge-dark ml-3">Pro</span></a>
+                                                    </li>
+                                                    <li><a class="dropdown-item" href="/ui-modals.html">Modals</a></li>
+                                                    <li><a class="dropdown-item" href="/ui-navs.html">Navs</a></li>
+                                                    <li>
+                                                        <a class="dropdown-item d-flex align-items-center justify-content-between"
+                                                           href="https://themesberg.com/docs/neumorphism-ui/plugins/owl-carousel/"
+                                                           target="_blank">Owl Carousels <span
+                                                                class="badge badge-dark ml-3">Pro</span></a></li>
+                                                    <li><a class="dropdown-item"
+                                                           href="/ui-pagination.html">Pagination</a>
+                                                    </li>
+                                                    <li><a class="dropdown-item" href="/ui-popovers.html">Popovers</a>
+                                                    </li>
+                                                    <li><a class="dropdown-item" href="/ui-progress-bars.html">Progress
+                                                        Bars</a>
+                                                    <li><a class="dropdown-item" href="/ui-progress-bars.html">Progress
+                                                        Bars</a>
+                                                    </li>
+
                                                 </ul>
                                             </div>
-                                        {% endif %}
-                                        {% if large %}
+
                                             <div class="col pl-0">
                                                 <ul class="list-style-none">
-                                                    {% for foo in large %}
-                                                        <li>
-                                                            <a class="dropdown-item d-flex align-items-center justify-content-between"
-                                                               href="https://themesberg.com/docs/neumorphism-ui/components/icon-boxes/#steps"
-                                                               target="_blank">{{ foo.title }} <span
-                                                                    class="badge badge-dark ml-3">Pro</span></a>
-                                                        </li>
-                                                    {% endfor %}
+                                                    <li>
+                                                        <a class="dropdown-item d-flex align-items-center justify-content-between"
+                                                           href="https://themesberg.com/docs/neumorphism-ui/components/icon-boxes/#steps"
+                                                           target="_blank">Steps <span
+                                                                class="badge badge-dark ml-3">Pro</span></a>
+                                                    </li>
+                                                    <li><a class="dropdown-item" href="/ui-tables.html">Tables</a></li>
+                                                    <li><a class="dropdown-item" href="/ui-tabs.html">Tabs</a></li>
+                                                    <li><a class="dropdown-item" href="/ui-toasts.html">Toasts</a></li>
+                                                    <li>
+                                                        <a class="dropdown-item d-flex align-items-center justify-content-between"
+                                                           href="https://themesberg.com/docs/neumorphism-ui/components/timelines/"
+                                                           target="_blank">Timelines <span
+                                                                class="badge badge-dark ml-3">Pro</span></a>
+                                                    </li>
+                                                    <li><a class="dropdown-item" href="/ui-tooltips.html">Tooltips</a>
+                                                    </li>
+                                                    <li><a class="dropdown-item"
+                                                           href="/ui-typography.html">Typography</a>
+                                                    </li>
+                                                    <li>
+                                                        <a class="dropdown-item d-flex align-items-center justify-content-between"
+                                                           href="https://demo.themesberg.com/neumorphism-ui-pro/html/components/widgets.html"
+                                                           target="_blank">Widgets <span
+                                                                class="badge badge-dark ml-3">Pro</span></a></li>
                                                 </ul>
                                             </div>
-                                        {% endif %}
+
+                                        </div>
                                     </div>
-                                </div>
-                            </li>
-                        {% else %}
-                            <li class="nav-item dropdown mega-dropdown">
+                                </li>
+                            {% endif %}
+                            <li class="nav-item dropdown">
+
                                 <a href="#" class="nav-link" data-toggle="dropdown">
-                                    <span class="nav-link-inner-text">Kategoriler</span>
+                                    <span class="nav-link-inner-text">Diğer</span>
                                     <span class="fas fa-angle-down nav-link-arrow ml-2"></span>
                                 </a>
-                                <div class="dropdown-menu">
-                                    <div class="row">
-                                        <div class="col-lg-6 inside-bg d-none d-lg-block">
-                                            <div class="justify-content-center bg-primary text-white">
-                                                <div class="px-6 pb-5 pt-3">
-                                                    <lottie-player
-                                                            src="https://assets7.lottiefiles.com/packages/lf20_04Hqp2.json"
-                                                            background="transparent" speed="1"
-                                                            style="width: 300px; height: 300px;" loop
-                                                            autoplay></lottie-player>
-                                                </div>
-                                                <div class="z-2 pb-4 text-center">
-                                                    <a href="/ui-all.html"
-                                                       class="btn btn-primary mb-2 mb-sm-0 mr-3 text-secondary">
-                                                        <span class="mr-1"><span class="fas fa-th-large"></span></span>
-                                                        Tüm Kategoriler
-                                                    </a>
 
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="col pl-0">
-                                            <ul class="list-style-none">
-                                                {% for foo in ilk_on %}
-                                                    <li><a class="dropdown-item"
-                                                           href="/ui-accordions.html">{{ foo.title }}</a>
-                                                    </li>
-                                                {% endfor %}
-
-                                                <li><a class="dropdown-item" href="/ui-accordions.html">Accordions</a>
-                                                </li>
-                                                <li><a class="dropdown-item" href="/ui-alerts.html">Alerts</a></li>
-                                                <li><a class="dropdown-item" href="/ui-badges.html">Badges</a></li>
-                                                <li><a class="dropdown-item" href="/ui-bootstrap-carousels.html">Bootstrap
-                                                    Carousels</a></li>
-                                                <li><a class="dropdown-item" href="/ui-breadcrumbs.html">Breadcrumbs</a>
-                                                </li>
-                                                <li><a class="dropdown-item" href="/ui-buttons.html">Buttons</a></li>
-                                                <li>
-                                                    <a class="dropdown-item d-flex align-items-center justify-content-between"
-                                                       href="https://themesberg.com/docs/neumorphism-ui/plugins/jquery-counters/"
-                                                       target="_blank">Counters <span
-                                                            class="badge badge-dark ml-3">Pro</span></a></li>
-                                                <li><a class="dropdown-item" href="/ui-cards.html">Cards</a></li>
-                                                <li>
-                                                    <a class="dropdown-item d-flex align-items-center justify-content-between"
-                                                       href="https://themesberg.com/docs/neumorphism-ui/components/e-commerce/"
-                                                       target="_blank">E-commerce <span
-                                                            class="badge badge-dark ml-3">Pro</span></a>
-                                                </li>
-                                            </ul>
-                                        </div>
-
-                                        <div class="col pl-0">
-                                            <ul class="list-style-none">
-                                                <li><a class="dropdown-item" href="/ui-forms.html">Forms</a></li>
-                                                <li>
-                                                    <a class="dropdown-item d-flex align-items-center justify-content-between"
-                                                       href="https://themesberg.com/docs/neumorphism-ui/components/icon-boxes/"
-                                                       target="_blank">Icon Boxes <span
-                                                            class="badge badge-dark ml-3">Pro</span></a>
-                                                </li>
-                                                <li><a class="dropdown-item" href="/ui-modals.html">Modals</a></li>
-                                                <li><a class="dropdown-item" href="/ui-navs.html">Navs</a></li>
-                                                <li>
-                                                    <a class="dropdown-item d-flex align-items-center justify-content-between"
-                                                       href="https://themesberg.com/docs/neumorphism-ui/plugins/owl-carousel/"
-                                                       target="_blank">Owl Carousels <span
-                                                            class="badge badge-dark ml-3">Pro</span></a></li>
-                                                <li><a class="dropdown-item" href="/ui-pagination.html">Pagination</a>
-                                                </li>
-                                                <li><a class="dropdown-item" href="/ui-popovers.html">Popovers</a></li>
-                                                <li><a class="dropdown-item" href="/ui-progress-bars.html">Progress
-                                                    Bars</a>
-                                                <li><a class="dropdown-item" href="/ui-progress-bars.html">Progress
-                                                    Bars</a>
-                                                </li>
-
-                                            </ul>
-                                        </div>
-
-                                        <div class="col pl-0">
-                                            <ul class="list-style-none">
-                                                <li>
-                                                    <a class="dropdown-item d-flex align-items-center justify-content-between"
-                                                       href="https://themesberg.com/docs/neumorphism-ui/components/icon-boxes/#steps"
-                                                       target="_blank">Steps <span
-                                                            class="badge badge-dark ml-3">Pro</span></a>
-                                                </li>
-                                                <li><a class="dropdown-item" href="/ui-tables.html">Tables</a></li>
-                                                <li><a class="dropdown-item" href="/ui-tabs.html">Tabs</a></li>
-                                                <li><a class="dropdown-item" href="/ui-toasts.html">Toasts</a></li>
-                                                <li>
-                                                    <a class="dropdown-item d-flex align-items-center justify-content-between"
-                                                       href="https://themesberg.com/docs/neumorphism-ui/components/timelines/"
-                                                       target="_blank">Timelines <span
-                                                            class="badge badge-dark ml-3">Pro</span></a>
-                                                </li>
-                                                <li><a class="dropdown-item" href="/ui-tooltips.html">Tooltips</a></li>
-                                                <li><a class="dropdown-item" href="/ui-typography.html">Typography</a>
-                                                </li>
-                                                <li>
-                                                    <a class="dropdown-item d-flex align-items-center justify-content-between"
-                                                       href="https://demo.themesberg.com/neumorphism-ui-pro/html/components/widgets.html"
-                                                       target="_blank">Widgets <span
-                                                            class="badge badge-dark ml-3">Pro</span></a></li>
-                                            </ul>
-                                        </div>
-
-                                    </div>
-                                </div>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="{% url 'blog:about' %}">Hakkımızda</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'blog:blog_contact' %}">İletişim</a></li>
+                                    <li><a class="dropdown-item" href="#">Gizlilik</a></li>
+                                </ul>
                             </li>
-                        {% endif %}
-                        <li class="nav-item dropdown">
-
-                            <a href="#" class="nav-link" data-toggle="dropdown">
-                                <span class="nav-link-inner-text">Diğer</span>
-                                <span class="fas fa-angle-down nav-link-arrow ml-2"></span>
-                            </a>
-
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{% url 'blog:about' %}">Hakkımızda</a></li>
-                                <li><a class="dropdown-item" href="{% url 'blog:blog_contact' %}">İletişim</a></li>
-                                <li><a class="dropdown-item" href="#">Gizlilik</a></li>
-                            </ul>
-                        </li>
-                    </ul>
-                </div>
-
-                <div class="d-flex align-items-center">
-                    <div class="dropdown pl-1">
-
-                        <div class="d-flex align-items-center" id="dropdownMenuButton"
-                             data-toggle="dropdown">
-                            <button class="btn btn-xs btn-circle btn-icon-only btn-soft dropdown-toggle mr-2"
-                                    type="button" aria-haspopup="true" aria-expanded="false"
-                                    aria-label="dropdown social link"><span class="fa fa-user"></span>
-                            </button>
-                            <p class="font-small m-0">{{ request.user|title }}</p>
-                        </div>
-
-                        <div class="dropdown-menu dropdown-menu-md" aria-labelledby="dropdownMenuButton">
-                            <h2 class="h6 dropdown-header">Merhaba, {{ request.user }}</h2>
-                            {% if request.user.is_superuser or request.user.is_staff %}
-                                <a class="dropdown-item" href="{% url 'blog:profile' request.user request.user.pk %}">Profilim</a>
-                                <a class="dropdown-item" href="{% url "admin:index" %}">Yönetici Paneli</a>
-                                <a class="dropdown-item"
-                                   href="{% url 'dashboard:profile_update' request.user request.user.pk %}">Profil
-                                    Güncelle</a>
-                                <a class="dropdown-item"
-                                   href="{% url "dashboard:anasayfa" request.user %}">Dashboard</a>
-                            {% else %}
-                                <a class="dropdown-item" href="{% url 'blog:profile' request.user request.user.pk %}"> Profil </a>
-                                <a class="dropdown-item" href="{% url 'blog:profile_update' request.user request.user.pk %}"> Profili Güncelle</a>
-                            {% endif %}
-
-                            <div class="dropdown-divider"></div>
-                            <a class="dropdown-item" href="{% url "logout" %}">
-                                <span class="fas fa-sign-out-alt mr-2"></span>Çıkış
-                            </a>
-
-                        </div>
+                        </ul>
                     </div>
 
-                    <button class="navbar-toggler ml-2" type="button" data-toggle="collapse"
-                            data-target="#navbar-dark-profile" aria-controls="navbar-dark-profile"
-                            aria-expanded="false" aria-label="Toggle navigation">
-                        <span class="navbar-toggler-icon"></span>
-                    </button>
-                </div>
+                    <div class="d-flex align-items-center">
+                        <div class="dropdown pl-1">
 
-            </div>
-        </nav>
-    </header>
+                            <div class="d-flex align-items-center" id="dropdownMenuButton"
+                                 data-toggle="dropdown">
+                                <button class="btn btn-xs btn-circle btn-icon-only btn-soft dropdown-toggle mr-2"
+                                        type="button" aria-haspopup="true" aria-expanded="false"
+                                        aria-label="dropdown social link"><span class="fa fa-user"></span>
+                                </button>
+                                <p class="font-small m-0">{{ request.user|title }}</p>
+                            </div>
+
+                            <div class="dropdown-menu dropdown-menu-md" aria-labelledby="dropdownMenuButton">
+                                <h2 class="h6 dropdown-header">Merhaba, {{ request.user }}</h2>
+                                {% if request.user.is_superuser or request.user.is_staff %}
+                                    <a class="dropdown-item"
+                                       href="{% url 'blog:profile' request.user request.user.pk %}">Profilim</a>
+                                    <a class="dropdown-item" href="{% url "admin:index" %}">Yönetici Paneli</a>
+                                    <a class="dropdown-item"
+                                       href="{% url 'dashboard:profile_update' request.user request.user.pk %}">Profil
+                                        Güncelle</a>
+                                    <a class="dropdown-item"
+                                       href="{% url "dashboard:anasayfa" request.user %}">Dashboard</a>
+                                {% else %}
+                                    <a class="dropdown-item"
+                                       href="{% url 'blog:profile' request.user request.user.pk %}"> Profil </a>
+                                    <a class="dropdown-item"
+                                       href="{% url 'blog:profile_update' request.user request.user.pk %}"> Profili
+                                        Güncelle</a>
+                                {% endif %}
+
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="{% url "logout" %}">
+                                    <span class="fas fa-sign-out-alt mr-2"></span>Çıkış
+                                </a>
+
+                            </div>
+                        </div>
+
+                        <button class="navbar-toggler ml-2" type="button" data-toggle="collapse"
+                                data-target="#navbar-dark-profile" aria-controls="navbar-dark-profile"
+                                aria-expanded="false" aria-label="Toggle navigation">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+                    </div>
+
+                </div>
+            </nav>
+        </header>
+    {% endif %}
+
+{% elif 'bioinformatic' in request.path %}
+
+    {% if request.user.is_anonymous %}
+        <header class="header-global">
+            <nav id="navbar-main" aria-label="Primary navigation"
+                 class="navbar navbar-main navbar-expand-lg navbar-expand-md navbar-theme-primary headroom navbar-light navbar-transparent navbar-theme-primary">
+
+                <div class="container position-relative">
+
+                    <a class="navbar-brand shadow-soft py-2 px-3 rounded border border-light mr-lg-4"
+                       href="{% url "bioinformatic:home" %}">
+                        <span>Biyoinformatik</span>
+                    </a>
+
+
+                    <div class="navbar-collapse collapse" id="navbar_global">
+
+                        <div class="navbar-collapse-header">
+                            <div class="row">
+
+                                <div class="col-6 collapse-brand">
+                                    <a href="{% url "bioinformatic:home" %}"
+                                       class="navbar-brand shadow-soft py-2 px-3 rounded border border-light">
+                                        Biyoinformaik
+                                    </a>
+                                </div>
+
+                                <div class="col-6 collapse-close">
+                                    <a href="#navbar_global" class="fas fa-times" data-toggle="collapse"
+                                       data-target="#navbar_global" aria-controls="navbar_global" aria-expanded="false"
+                                       title="close" aria-label="Toggle navigation"></a>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <ul class="navbar-nav navbar-nav-hover align-items-lg-center">
+
+                            <a class="border-light nav-link"
+                               href="{% url "blog:anasayfa" %}">
+                                <span>Blog</span>
+                            </a>
+
+                            <li class="nav-item dropdown">
+
+                                <a href="#" class="nav-link" data-toggle="dropdown">
+                                    <span class="nav-link-inner-text">Laboratuvar</span>
+                                    <span class="fas fa-angle-down nav-link-arrow ml-2"></span>
+                                </a>
+
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item"
+                                           href="{% url 'bioinformatic:home' %}">Biyoinformatik</a></li>
+                                    <li><a class="dropdown-item" href="#">Biyoistatislik</a></li>
+                                    <li><a class="dropdown-item" href="#">Coğrafi Bilgi Sistemleri</a></li>
+                                </ul>
+                            </li>
+
+                            {% if ilk_on %}
+                                <li class="nav-item dropdown mega-dropdown">
+                                    <a href="{% url "blog:categories" %}" class="nav-link" data-toggle="dropdown">
+                                        <span class="nav-link-inner-text">İşlemler</span>
+                                        <span class="fas fa-angle-down nav-link-arrow ml-2"></span>
+                                    </a>
+
+                                    <div class="dropdown-menu">
+                                        <div class="row">
+                                            <div class="col-lg-6 inside-bg d-none d-lg-block">
+                                                <div class="justify-content-center bg-primary text-white">
+                                                    <div class="px-6 pb-5 pt-3">
+                                                        <lottie-player
+                                                                src="https://assets7.lottiefiles.com/packages/lf20_04Hqp2.json"
+                                                                background="transparent" speed="1"
+                                                                style="width: 300px; height: 300px;" loop
+                                                                autoplay>
+                                                        </lottie-player>
+                                                    </div>
+                                                    <div class="z-2 pb-4 text-center">
+                                                        <a href="{% url "blog:categories" %}"
+                                                           class="btn btn-primary mb-2 mb-sm-0 mr-1 text-secondary">
+                                                        <span class="mr-1">
+                                                            <span class="fas fa-th-large"></span>
+                                                        </span>
+                                                            Tüm Kategoriler
+                                                        </a>
+
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {% if ilk_on %}
+                                                <div class="col pl-0">
+                                                    <ul class="list-style-none">
+                                                        {% for foo in ilk_on %}
+                                                            <li><a class="dropdown-item"
+                                                                   href="{% url "blog:category" foo.slug %}">{{ foo.title }}</a>
+                                                            </li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </div>
+                                            {% endif %}
+                                            {% if orta %}
+                                                <div class="col pl-0">
+                                                    <ul class="list-style-none">
+                                                        {% for foo in orta %}
+                                                            <li><a class="dropdown-item"
+                                                                   href="/ui-forms.html">{{ foo.title }}</a></li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </div>
+                                            {% endif %}
+                                            {% if large %}
+                                                <div class="col pl-0">
+                                                    <ul class="list-style-none">
+                                                        {% for foo in large %}
+                                                            <li>
+                                                                <a class="dropdown-item d-flex align-items-center justify-content-between"
+                                                                   href="https://themesberg.com/docs/neumorphism-ui/components/icon-boxes/#steps"
+                                                                   target="_blank">{{ foo.title }} <span
+                                                                        class="badge badge-dark ml-3">Pro</span></a>
+                                                            </li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </div>
+                                            {% endif %}
+
+                                        </div>
+                                    </div>
+                                </li>
+                            {% else %}
+                                <li class="nav-item dropdown mega-dropdown">
+                                    <a href="#" class="nav-link" data-toggle="dropdown">
+                                        <span class="nav-link-inner-text">Kategoriler</span>
+                                        <span class="fas fa-angle-down nav-link-arrow ml-2"></span>
+                                    </a>
+                                    <div class="dropdown-menu">
+                                        <div class="row">
+                                            <div class="col-lg-6 inside-bg d-none d-lg-block">
+                                                <div class="justify-content-center bg-primary text-white">
+                                                    <div class="px-6 pb-5 pt-3">
+                                                        <lottie-player
+                                                                src="https://assets7.lottiefiles.com/packages/lf20_04Hqp2.json"
+                                                                background="transparent" speed="1"
+                                                                style="width: 300px; height: 300px;" loop
+                                                                autoplay></lottie-player>
+                                                    </div>
+                                                    <div class="z-2 pb-4 text-center">
+                                                        <a href="/ui-all.html"
+                                                           class="btn btn-primary mb-2 mb-sm-0 mr-3 text-secondary">
+                                                            <span class="mr-1"><span
+                                                                    class="fas fa-th-large"></span></span>
+                                                            Tüm Kategoriler
+                                                        </a>
+
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col pl-0">
+                                                <ul class="list-style-none">
+                                                    {% for foo in ilk_on %}
+                                                        <li><a class="dropdown-item"
+                                                               href="/ui-accordions.html">{{ foo.title }}</a>
+                                                        </li>
+                                                    {% endfor %}
+
+                                                    <li><a class="dropdown-item"
+                                                           href="/ui-accordions.html">Accordions</a>
+                                                    </li>
+                                                    <li><a class="dropdown-item" href="/ui-alerts.html">Alerts</a></li>
+                                                    <li><a class="dropdown-item" href="/ui-badges.html">Badges</a></li>
+                                                    <li><a class="dropdown-item" href="/ui-bootstrap-carousels.html">Bootstrap
+                                                        Carousels</a></li>
+                                                    <li><a class="dropdown-item"
+                                                           href="/ui-breadcrumbs.html">Breadcrumbs</a>
+                                                    </li>
+                                                    <li><a class="dropdown-item" href="/ui-buttons.html">Buttons</a>
+                                                    </li>
+                                                    <li>
+                                                        <a class="dropdown-item d-flex align-items-center justify-content-between"
+                                                           href="https://themesberg.com/docs/neumorphism-ui/plugins/jquery-counters/"
+                                                           target="_blank">Counters <span
+                                                                class="badge badge-dark ml-3">Pro</span></a></li>
+                                                    <li><a class="dropdown-item" href="/ui-cards.html">Cards</a></li>
+                                                    <li>
+                                                        <a class="dropdown-item d-flex align-items-center justify-content-between"
+                                                           href="https://themesberg.com/docs/neumorphism-ui/components/e-commerce/"
+                                                           target="_blank">E-commerce <span
+                                                                class="badge badge-dark ml-3">Pro</span></a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+
+                                            <div class="col pl-0">
+                                                <ul class="list-style-none">
+                                                    <li><a class="dropdown-item" href="/ui-forms.html">Forms</a></li>
+                                                    <li>
+                                                        <a class="dropdown-item d-flex align-items-center justify-content-between"
+                                                           href="https://themesberg.com/docs/neumorphism-ui/components/icon-boxes/"
+                                                           target="_blank">Icon Boxes <span
+                                                                class="badge badge-dark ml-3">Pro</span></a>
+                                                    </li>
+                                                    <li><a class="dropdown-item" href="/ui-modals.html">Modals</a></li>
+                                                    <li><a class="dropdown-item" href="/ui-navs.html">Navs</a></li>
+                                                    <li>
+                                                        <a class="dropdown-item d-flex align-items-center justify-content-between"
+                                                           href="https://themesberg.com/docs/neumorphism-ui/plugins/owl-carousel/"
+                                                           target="_blank">Owl Carousels <span
+                                                                class="badge badge-dark ml-3">Pro</span></a></li>
+                                                    <li><a class="dropdown-item"
+                                                           href="/ui-pagination.html">Pagination</a>
+                                                    </li>
+                                                    <li><a class="dropdown-item" href="/ui-popovers.html">Popovers</a>
+                                                    </li>
+                                                    <li><a class="dropdown-item" href="/ui-progress-bars.html">Progress
+                                                        Bars</a>
+                                                    <li><a class="dropdown-item" href="/ui-progress-bars.html">Progress
+                                                        Bars</a>
+                                                    </li>
+
+                                                </ul>
+                                            </div>
+
+                                            <div class="col pl-0">
+                                                <ul class="list-style-none">
+                                                    <li>
+                                                        <a class="dropdown-item d-flex align-items-center justify-content-between"
+                                                           href="https://themesberg.com/docs/neumorphism-ui/components/icon-boxes/#steps"
+                                                           target="_blank">Steps <span
+                                                                class="badge badge-dark ml-3">Pro</span></a>
+                                                    </li>
+                                                    <li><a class="dropdown-item" href="/ui-tables.html">Tables</a></li>
+                                                    <li><a class="dropdown-item" href="/ui-tabs.html">Tabs</a></li>
+                                                    <li><a class="dropdown-item" href="/ui-toasts.html">Toasts</a></li>
+                                                    <li>
+                                                        <a class="dropdown-item d-flex align-items-center justify-content-between"
+                                                           href="https://themesberg.com/docs/neumorphism-ui/components/timelines/"
+                                                           target="_blank">Timelines <span
+                                                                class="badge badge-dark ml-3">Pro</span></a>
+                                                    </li>
+                                                    <li><a class="dropdown-item" href="/ui-tooltips.html">Tooltips</a>
+                                                    </li>
+                                                    <li><a class="dropdown-item"
+                                                           href="/ui-typography.html">Typography</a>
+                                                    </li>
+                                                    <li>
+                                                        <a class="dropdown-item d-flex align-items-center justify-content-between"
+                                                           href="https://demo.themesberg.com/neumorphism-ui-pro/html/components/widgets.html"
+                                                           target="_blank">Widgets <span
+                                                                class="badge badge-dark ml-3">Pro</span></a></li>
+                                                </ul>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </li>
+                            {% endif %}
+
+                            <li class="nav-item dropdown">
+
+                                <a href="#" class="nav-link" data-toggle="dropdown">
+                                    <span class="nav-link-inner-text">Diğer</span>
+                                    <span class="fas fa-angle-down nav-link-arrow ml-2"></span>
+                                </a>
+
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="{% url 'blog:about' %}">Hakkımızda</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'blog:blog_contact' %}">İletişim</a></li>
+                                    <li><a class="dropdown-item" href="/page-sign-in.html">Gizlilik</a></li>
+                                </ul>
+
+                            </li>
+
+                        </ul>
+
+                    </div>
+
+                    <div class="d-flex align-items-center">
+                        <a href="{% url "accounts:register" %}" target="_blank"
+                           class="btn btn-primary btn-pill animate-up-3 text-secondary d-none d-md-inline-block mr-3">
+                            <i class="far fa-user-circle mr-2"></i>
+                            Üye Ol
+                        </a>
+
+                        <a href="{% url "login" %}" class="btn btn-primary">
+                            <span class="text-sm-left">Giriş Yap</span>
+                            <i class="fas fa-sign-in"></i>
+                        </a>
+
+                        <button class="navbar-toggler ml-2" type="button" data-toggle="collapse"
+                                data-target="#navbar_global"
+                                aria-controls="navbar_global" aria-expanded="true" aria-label="Toggle navigation">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+
+                    </div>
+                </div>
+            </nav>
+        </header>
+    {% else %}
+        <header class="header-global">
+            <nav id="navbar-main" aria-label="Primary navigation"
+                 class="navbar navbar-main navbar-expand-lg navbar-expand-md navbar-theme-primary headroom navbar-light navbar-transparent navbar-theme-primary">
+                <div class="container position-relative">
+                    <a class="navbar-brand shadow-soft py-2 px-3 rounded border border-light mr-lg-4"
+                       href="{% url "bioinformatic:home" %}">
+                        <span>Biyoinformatik</span>
+                    </a>
+
+                    <div class="navbar-collapse collapse" id="navbar-dark-profile">
+                        <div class="navbar-collapse-header">
+                            <div class="row">
+                                <div class="col-6 collapse-brand">
+                                    <a href="{% url "bioinformatic:home" %}"
+                                       class="navbar-brand shadow-soft py-2 px-3 rounded border border-light">
+                                        Biyoinformatik
+                                    </a>
+                                </div>
+
+                                <div class="col-6 collapse-close">
+                            <span class="fas fa-times"
+                                  data-toggle="collapse" role="button"
+                                  data-target="#navbar-dark-profile"
+                                  aria-controls="navbar-dark-profile"
+                                  aria-expanded="false"
+                                  aria-label="Toggle navigation">
+                            </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <ul class="navbar-nav navbar-nav-hover align-items-lg-center">
+
+                            <a class="border-light nav-link"
+                               href="{% url "blog:anasayfa" %}">
+                                <span>Blog</span>
+                            </a>
+
+                            <li class="nav-item dropdown">
+
+                                <a href="#" class="nav-link" data-toggle="dropdown">
+                                    <span class="nav-link-inner-text">Laboratuvar</span>
+                                    <span class="fas fa-angle-down nav-link-arrow ml-2"></span>
+                                </a>
+
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item"
+                                           href="{% url 'bioinformatic:home' %}">Biyoinformatik</a></li>
+                                    <li><a class="dropdown-item" href="#">Biyoistatislik</a></li>
+                                    <li><a class="dropdown-item" href="#">Coğrafi Bilgi Sistemleri</a></li>
+                                </ul>
+                            </li>
+
+                            {% if ilk_on %}
+                                <li class="nav-item dropdown mega-dropdown">
+                                    <a href="#" class="nav-link" data-toggle="dropdown">
+                                        <span class="nav-link-inner-text">Kategoriler</span>
+                                        <span class="fas fa-angle-down nav-link-arrow ml-2"></span>
+                                    </a>
+                                    <div class="dropdown-menu">
+                                        <div class="row">
+                                            <div class="col-lg-6 inside-bg d-none d-lg-block">
+                                                <div class="justify-content-center bg-primary text-white">
+                                                    <div class="px-6 pb-5 pt-3">
+                                                        <lottie-player
+                                                                src="https://assets7.lottiefiles.com/packages/lf20_04Hqp2.json"
+                                                                background="transparent" speed="1"
+                                                                style="width: 300px; height: 300px;" loop
+                                                                autoplay></lottie-player>
+                                                    </div>
+                                                    <div class="z-2 pb-4 text-center">
+                                                        <a href="{% url "blog:categories" %}"
+                                                           class="btn btn-primary mb-2 mb-sm-0 mr-3 text-secondary">
+                                                            <span class="mr-1"><span
+                                                                    class="fas fa-th-large"></span></span>
+                                                            Tüm Kategoriler
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {% if ilk_on %}
+                                                <div class="col pl-0">
+                                                    <ul class="list-style-none">
+                                                        {% for foo in ilk_on %}
+                                                            <li><a class="dropdown-item"
+                                                                   href="{% url "blog:category" foo.slug|slugify %}">{{ foo.title }}</a>
+                                                            </li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </div>
+                                            {% endif %}
+                                            {% if orta %}
+                                                <div class="col pl-0">
+                                                    <ul class="list-style-none">
+                                                        {% for foo in orta %}
+                                                            <li><a class="dropdown-item"
+                                                                   href="/ui-forms.html">{{ foo.title }}</a></li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </div>
+                                            {% endif %}
+                                            {% if large %}
+                                                <div class="col pl-0">
+                                                    <ul class="list-style-none">
+                                                        {% for foo in large %}
+                                                            <li>
+                                                                <a class="dropdown-item d-flex align-items-center justify-content-between"
+                                                                   href="https://themesberg.com/docs/neumorphism-ui/components/icon-boxes/#steps"
+                                                                   target="_blank">{{ foo.title }} <span
+                                                                        class="badge badge-dark ml-3">Pro</span></a>
+                                                            </li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </li>
+                            {% else %}
+                                <li class="nav-item dropdown mega-dropdown">
+                                    <a href="#" class="nav-link" data-toggle="dropdown">
+                                        <span class="nav-link-inner-text">Kategoriler</span>
+                                        <span class="fas fa-angle-down nav-link-arrow ml-2"></span>
+                                    </a>
+                                    <div class="dropdown-menu">
+                                        <div class="row">
+                                            <div class="col-lg-6 inside-bg d-none d-lg-block">
+                                                <div class="justify-content-center bg-primary text-white">
+                                                    <div class="px-6 pb-5 pt-3">
+                                                        <lottie-player
+                                                                src="https://assets7.lottiefiles.com/packages/lf20_04Hqp2.json"
+                                                                background="transparent" speed="1"
+                                                                style="width: 300px; height: 300px;" loop
+                                                                autoplay></lottie-player>
+                                                    </div>
+                                                    <div class="z-2 pb-4 text-center">
+                                                        <a href="/ui-all.html"
+                                                           class="btn btn-primary mb-2 mb-sm-0 mr-3 text-secondary">
+                                                            <span class="mr-1"><span
+                                                                    class="fas fa-th-large"></span></span>
+                                                            Tüm Kategoriler
+                                                        </a>
+
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col pl-0">
+                                                <ul class="list-style-none">
+                                                    {% for foo in ilk_on %}
+                                                        <li><a class="dropdown-item"
+                                                               href="/ui-accordions.html">{{ foo.title }}</a>
+                                                        </li>
+                                                    {% endfor %}
+
+                                                    <li><a class="dropdown-item"
+                                                           href="/ui-accordions.html">Accordions</a>
+                                                    </li>
+                                                    <li><a class="dropdown-item" href="/ui-alerts.html">Alerts</a></li>
+                                                    <li><a class="dropdown-item" href="/ui-badges.html">Badges</a></li>
+                                                    <li><a class="dropdown-item" href="/ui-bootstrap-carousels.html">Bootstrap
+                                                        Carousels</a></li>
+                                                    <li><a class="dropdown-item"
+                                                           href="/ui-breadcrumbs.html">Breadcrumbs</a>
+                                                    </li>
+                                                    <li><a class="dropdown-item" href="/ui-buttons.html">Buttons</a>
+                                                    </li>
+                                                    <li>
+                                                        <a class="dropdown-item d-flex align-items-center justify-content-between"
+                                                           href="https://themesberg.com/docs/neumorphism-ui/plugins/jquery-counters/"
+                                                           target="_blank">Counters <span
+                                                                class="badge badge-dark ml-3">Pro</span></a></li>
+                                                    <li><a class="dropdown-item" href="/ui-cards.html">Cards</a></li>
+                                                    <li>
+                                                        <a class="dropdown-item d-flex align-items-center justify-content-between"
+                                                           href="https://themesberg.com/docs/neumorphism-ui/components/e-commerce/"
+                                                           target="_blank">E-commerce <span
+                                                                class="badge badge-dark ml-3">Pro</span></a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+
+                                            <div class="col pl-0">
+                                                <ul class="list-style-none">
+                                                    <li><a class="dropdown-item" href="/ui-forms.html">Forms</a></li>
+                                                    <li>
+                                                        <a class="dropdown-item d-flex align-items-center justify-content-between"
+                                                           href="https://themesberg.com/docs/neumorphism-ui/components/icon-boxes/"
+                                                           target="_blank">Icon Boxes <span
+                                                                class="badge badge-dark ml-3">Pro</span></a>
+                                                    </li>
+                                                    <li><a class="dropdown-item" href="/ui-modals.html">Modals</a></li>
+                                                    <li><a class="dropdown-item" href="/ui-navs.html">Navs</a></li>
+                                                    <li>
+                                                        <a class="dropdown-item d-flex align-items-center justify-content-between"
+                                                           href="https://themesberg.com/docs/neumorphism-ui/plugins/owl-carousel/"
+                                                           target="_blank">Owl Carousels <span
+                                                                class="badge badge-dark ml-3">Pro</span></a></li>
+                                                    <li><a class="dropdown-item"
+                                                           href="/ui-pagination.html">Pagination</a>
+                                                    </li>
+                                                    <li><a class="dropdown-item" href="/ui-popovers.html">Popovers</a>
+                                                    </li>
+                                                    <li><a class="dropdown-item" href="/ui-progress-bars.html">Progress
+                                                        Bars</a>
+                                                    <li><a class="dropdown-item" href="/ui-progress-bars.html">Progress
+                                                        Bars</a>
+                                                    </li>
+
+                                                </ul>
+                                            </div>
+
+                                            <div class="col pl-0">
+                                                <ul class="list-style-none">
+                                                    <li>
+                                                        <a class="dropdown-item d-flex align-items-center justify-content-between"
+                                                           href="https://themesberg.com/docs/neumorphism-ui/components/icon-boxes/#steps"
+                                                           target="_blank">Steps <span
+                                                                class="badge badge-dark ml-3">Pro</span></a>
+                                                    </li>
+                                                    <li><a class="dropdown-item" href="/ui-tables.html">Tables</a></li>
+                                                    <li><a class="dropdown-item" href="/ui-tabs.html">Tabs</a></li>
+                                                    <li><a class="dropdown-item" href="/ui-toasts.html">Toasts</a></li>
+                                                    <li>
+                                                        <a class="dropdown-item d-flex align-items-center justify-content-between"
+                                                           href="https://themesberg.com/docs/neumorphism-ui/components/timelines/"
+                                                           target="_blank">Timelines <span
+                                                                class="badge badge-dark ml-3">Pro</span></a>
+                                                    </li>
+                                                    <li><a class="dropdown-item" href="/ui-tooltips.html">Tooltips</a>
+                                                    </li>
+                                                    <li><a class="dropdown-item"
+                                                           href="/ui-typography.html">Typography</a>
+                                                    </li>
+                                                    <li>
+                                                        <a class="dropdown-item d-flex align-items-center justify-content-between"
+                                                           href="https://demo.themesberg.com/neumorphism-ui-pro/html/components/widgets.html"
+                                                           target="_blank">Widgets <span
+                                                                class="badge badge-dark ml-3">Pro</span></a></li>
+                                                </ul>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </li>
+                            {% endif %}
+                            <li class="nav-item dropdown">
+
+                                <a href="#" class="nav-link" data-toggle="dropdown">
+                                    <span class="nav-link-inner-text">Diğer</span>
+                                    <span class="fas fa-angle-down nav-link-arrow ml-2"></span>
+                                </a>
+
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item"
+                                           href="{% url 'blog:about' %}">Hakkımızda</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'blog:blog_contact' %}">İletişim</a></li>
+                                    <li><a class="dropdown-item" href="#">Gizlilik</a></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="d-flex align-items-center">
+                        <div class="dropdown pl-1">
+
+                            <div class="d-flex align-items-center" id="dropdownMenuButton"
+                                 data-toggle="dropdown">
+                                <button class="btn btn-xs btn-circle btn-icon-only btn-soft dropdown-toggle mr-2"
+                                        type="button" aria-haspopup="true" aria-expanded="false"
+                                        aria-label="dropdown social link"><span class="fa fa-user"></span>
+                                </button>
+                                <p class="font-small m-0">{{ request.user|title }}</p>
+                            </div>
+
+                            <div class="dropdown-menu dropdown-menu-md" aria-labelledby="dropdownMenuButton">
+                                <h2 class="h6 dropdown-header">Merhaba, {{ request.user }}</h2>
+                                {% if request.user.is_superuser or request.user.is_staff %}
+                                    <a class="dropdown-item"
+                                       href="{% url 'blog:profile' request.user request.user.pk %}">Profilim</a>
+                                    <a class="dropdown-item" href="{% url "admin:index" %}">Yönetici Paneli</a>
+                                    <a class="dropdown-item"
+                                       href="{% url 'dashboard:profile_update' request.user request.user.pk %}">Profil
+                                        Güncelle</a>
+                                    <a class="dropdown-item"
+                                       href="{% url "dashboard:anasayfa" request.user %}">Dashboard</a>
+                                {% else %}
+                                    <a class="dropdown-item"
+                                       href="{% url 'blog:profile' request.user request.user.pk %}">
+                                        Profil </a>
+                                    <a class="dropdown-item"
+                                       href="{% url 'blog:profile_update' request.user request.user.pk %}"> Profili
+                                        Güncelle</a>
+                                {% endif %}
+
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="{% url "logout" %}">
+                                    <span class="fas fa-sign-out-alt mr-2"></span>Çıkış
+                                </a>
+
+                            </div>
+                        </div>
+
+                        <button class="navbar-toggler ml-2" type="button" data-toggle="collapse"
+                                data-target="#navbar-dark-profile" aria-controls="navbar-dark-profile"
+                                aria-expanded="false" aria-label="Toggle navigation">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+                    </div>
+
+                </div>
+            </nav>
+        </header>
+    {% endif %}
+
 {% endif %}
+
 

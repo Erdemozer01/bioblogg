@@ -58,6 +58,7 @@ class CategoryView(generic.ListView, generic.FormView):
     form_class = SubscribeModelForm
 
     def post(self, request, *args, **kwargs):
+
         email = request.POST.get('email')
 
         if Subscribe.objects.exists():

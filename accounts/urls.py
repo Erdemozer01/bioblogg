@@ -5,5 +5,4 @@ app_name = "accounts"
 
 urlpatterns = [
     path('register/', UserRegister.as_view(), name="register"),
-
 ]

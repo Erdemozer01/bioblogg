@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     'accounts.apps.AccountsConfig',
     'django_plotly_dash.apps.DjangoPlotlyDashConfig',
     'dashboard.apps.DashboardConfig',
+    'bioinformatic',
     'django_bootstrap5',
     'bootstrap4',
     'django_cleanup',
@@ -121,6 +122,14 @@ MEDIA_URL = "/media/"
 LOGIN_REDIRECT_URL = reverse_lazy('blog:anasayfa')
 
 LOGOUT_REDIRECT_URL = reverse_lazy('blog:anasayfa')
+from django.core.mail.backends.smtp import EmailBackend
+# email configs
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'bioblogdestek@gmail.com'
+EMAIL_HOST_PASSWORD = 'Er880413.Dm'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
