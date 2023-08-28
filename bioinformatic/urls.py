@@ -5,7 +5,7 @@ app_name = "bioinformatic"
 
 urlpatterns = [
     path('anasayfa/', views.BioinformaticHomeView.as_view(), name="home"),
-    path('dna-sequence/', views.sekans, name="sekans_analiz"),
+    path('dna-sequence/', views.sekans, name="sequence_analiz"),
     path('protein-sentezi/', views.translation, name="translation"),
     path('download-fasta/', views.fasta_download, name="fasta_download"),
     path('combine-fasta-download/', views.combine_fasta_download, name="combine_fasta_download"),
@@ -69,8 +69,10 @@ urlpatterns = [
     path('pwm-download/', views.pwm_download, name="pwm_download"),
     path('molecule-analiz/', views.molecule3dviewer, name="molecule_analiz"),
     path('multiplemoleculeviewer/', views.multiplemoleculeviewer, name="multiplemoleculeviewer"),
-    path('molecule-viewer/<slug:user>/<int:pk>/<id_name>/<created>/', views.Molecule3DView.as_view(), name="molecule3dviewer"),
-    path('multiplemoleculeviewer/<slug:user>/<int:pk>/<created>/', views.MultipleMoleculeView.as_view(), name="ngl_molecule_detail"),
+    path('molecule-viewer/<slug:user>/<int:pk>/<id_name>/<created>/', views.Molecule3DView.as_view(),
+         name="molecule3dviewer"),
+    path('multiplemoleculeviewer/<slug:user>/<int:pk>/<created>/', views.MultipleMoleculeView.as_view(),
+         name="ngl_molecule_detail"),
     path('molecule-detail/<slug:user>/<int:pk>/<created>/', views.MoleculeDetailView.as_view(), name="molecule_detail"),
     path('jaspar-motif-create/', views.jaspar_motif_create, name="jaspar_motif_create"),
     path('nucleotid-matrix-positions-download/', views.nucleotid_matrix_positions_download,

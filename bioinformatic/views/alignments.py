@@ -100,8 +100,8 @@ def local_alignment(request):
 
             app = open(filepath, "a")
             app.write(result)
-
             app.close()
+
             return redirect("bioinformatic:local_alignment_download")
 
         else:

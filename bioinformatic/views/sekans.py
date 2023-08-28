@@ -5,6 +5,7 @@ from Bio.SeqUtils import GC
 
 
 def sekans(request):
+
     form = DNASekansForm(request.POST or None)
     if request.method == "POST":
         if form.is_valid():
@@ -36,7 +37,7 @@ def sekans(request):
             for aa in protein:
                 for dna in my_seq:
                     if aa in dna:
-                        return render(request, 'accounts/404.html', {'msg': 'Sekensda protein tespit edilmiştir.'})
+                        return render(request, 'exception/page-404.html', {'msg': 'Sekensda protein tespit edilmiştir.'})
 
             return render(request, 'bioinformatic/sekans/result.html', {'len': len(my_seq), 'A': my_seq.count('A'), 'G': my_seq.count('G'), 'C': my_seq.count('C'),
                            'T': my_seq.count('T'), 'GC': GC(my_seq), 'sekans': sekans})
@@ -44,4 +45,4 @@ def sekans(request):
         else:
             form = DNASekansForm(request.POST)
 
-    return render(request, 'bioinformatic/sekans/analize.html', {'form': form})
+    return render(request, 'bioinformatic/sekans/analiz.html', {'form': form})
