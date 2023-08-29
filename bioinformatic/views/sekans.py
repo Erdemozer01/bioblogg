@@ -1,11 +1,17 @@
-from django.shortcuts import render
+import datetime
+import dash_bio as dashbio
+
+import pandas as pd
+import plotly.express as px
 from Bio.Seq import Seq
-from bioinformatic.forms.dna import DNASekansForm
 from Bio.SeqUtils import GC
+from dash import html, dash_table, dcc
+from django.shortcuts import render
+from django_plotly_dash import DjangoDash
+from bioinformatic.forms.dna import DNASekansForm
 
 
-def sekans(request):
-
+def sequence_analiz(request):
     form = DNASekansForm(request.POST or None)
     if request.method == "POST":
         if form.is_valid():
@@ -13,7 +19,6 @@ def sekans(request):
             sekans = form.cleaned_data['dna'].upper()
 
             sekans = sekans.replace(" ", "")
-
             sekans = sekans.replace("\n", "")
             sekans = sekans.replace("\t", "")
             sekans = sekans.replace("\r", "")
@@ -32,17 +37,34 @@ def sekans(request):
 
             protein = ['M', 'R', 'N', '	D', 'E', 'Q', 'H']
 
-            istenmeyen = ['\n', '\r', '\t', '1', '2', '3', '4', '5']
-
             for aa in protein:
                 for dna in my_seq:
                     if aa in dna:
-                        return render(request, 'exception/page-404.html', {'msg': 'Sekensda protein tespit edilmiştir.'})
+                        return render(request, 'exception/page-404.html',
+                                      {'msg': 'Sekensda protein tespit edilmiştir.'})
 
-            return render(request, 'bioinformatic/sekans/result.html', {'len': len(my_seq), 'A': my_seq.count('A'), 'G': my_seq.count('G'), 'C': my_seq.count('C'),
-                           'T': my_seq.count('T'), 'GC': GC(my_seq), 'sekans': sekans})
+            app = DjangoDash('sekans')
+
+            df = pd.DataFrame(
+                {
+                    'NÜKLEOTİT': ["ADENİN", "TİMİN", "GUANİN", "SİTOZİN"],
+                    'UZUNLUK': [my_seq.count('A'), my_seq.count('T'), my_seq.count('G'), my_seq.count('C')]
+                }
+            )
+
+            app.layout = html.Div([
+                html.Div(children='Grafik'),
+                dcc.Graph(figure=px.bar(df, x="NÜKLEOTİT", y="UZUNLUK", color="NÜKLEOTİT")),
+            ])
+
+            return render(request, 'bioinformatic/sekans/result.html',
+                          {
+                              'len': len(my_seq), 'A': my_seq.count('A'), 'G': my_seq.count('G'),
+                              'C': my_seq.count('C'), 'T': my_seq.count('T'),
+                              'GC': GC(my_seq).__round__(2),
+                          })
 
         else:
-            form = DNASekansForm(request.POST)
+            form = DNASekansForm()
 
     return render(request, 'bioinformatic/sekans/analiz.html', {'form': form})

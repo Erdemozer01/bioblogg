@@ -1,5 +1,5 @@
 from .home import BioinformaticHomeView
-from .sekans import sekans
+from .sekans import sequence_analiz
 from .translation import translation
 from .fasta import *
 from .download import *

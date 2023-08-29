@@ -1,6 +1,6 @@
 {% extends "blog/layouts/base.html" %}
 {% load django_bootstrap5 %}
-{% block title %} Login {% endblock %}
+{% block title %} DNA SEKANS ANALİZ {% endblock %}
 
 <!-- Specific Page CSS goes HERE  -->
 {% block stylesheets %}{% endblock %}
@@ -29,11 +29,10 @@
                             {% endif %}
                         </div>
                         <div class="card-body">
-                            <form class="mt-1" method="post">
+                            <form method="post">
                                 {% csrf_token %}
                                 {% bootstrap_form form %}
-
-                                <button type="submit" class="btn btn-block btn-primary">DNA SEKANSINI ANALİZ ET</button>
+                                <button type="submit" class="btn btn-primary float-right"> ANALİZ </button>
                             </form>
                             <!-- End of Form -->
                         </div>

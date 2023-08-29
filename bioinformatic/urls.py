@@ -5,7 +5,7 @@ app_name = "bioinformatic"
 
 urlpatterns = [
     path('anasayfa/', views.BioinformaticHomeView.as_view(), name="home"),
-    path('dna-sequence/', views.sekans, name="sequence_analiz"),
+    path('dna-sequence-analiz/', views.sequence_analiz, name="sequence_analiz"),
     path('protein-sentezi/', views.translation, name="translation"),
     path('download-fasta/', views.fasta_download, name="fasta_download"),
     path('combine-fasta-download/', views.combine_fasta_download, name="combine_fasta_download"),

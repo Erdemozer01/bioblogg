@@ -1,3 +1,5 @@
+import datetime
+
 from django.shortcuts import render
 from bioinformatic.forms.translation import TranslationForm
 import Bio.Data.CodonTable
@@ -11,6 +13,7 @@ def translation(request):
         if form.is_valid():
             table = form.cleaned_data['table']
             sequence = form.cleaned_data['sequence'].upper()
+
             sequence = sequence.replace(" ", "")
             sequence = sequence.replace("\n", "")
             sequence = sequence.replace("\t", "")
@@ -27,39 +30,35 @@ def translation(request):
             sequence = sequence.replace("9", "")
 
             complement = Seq("{}".format(sequence)).complement()
-            revese = Seq("{}".format(sequence)).reverse_complement()
+            reverse = Seq("{}".format(sequence)).reverse_complement()
             transcribe = Seq("{}".format(sequence)).transcribe()
 
             try:
 
                 translate = Seq("{}".format(sequence)).translate(table='{}'.format(table))
 
+                return render(request, 'bioinformatic/translation/result.html',
+                              context={
+                                  'date': datetime.datetime.now(),
+                                  'table': table,
+                                  'len': len(sequence),
+                                  'GC': GC(sequence).__round__(2),
+                                  'complement': complement,
+                                  'revese': reverse,
+                                  'transcribe': transcribe,
+                                  'translate': translate,
+                              })
+
             except Bio.Data.CodonTable.TranslationError:
 
                 msg = "Codon Tablo Hatası"
 
-                return render(request, 'accounts/404.html', {'msg': msg})
+                return render(request, 'exception/page-404.html', {'msg': msg})
 
-            return render(request, 'bioinformatic/translation/result.html',
-                          context={
-                              'sequence': sequence,
-                              'len': len(sequence),
-                              'GC': GC(sequence),
-                              'table': table,
-                              'complement': complement,
-                              'revese': revese,
-                              'transcribe': transcribe,
-                              'translate': translate,
-                              'bre': 'Protein Sentezi'
-                          })
         else:
-            error = 'hata'
-            return render(request, 'accounts/404.html', context={
+
+            return render(request, 'exception/page-404.html', context={
                 'msg': "HATA"
             })
 
-    return render(request, 'bioinformatic/translation/analize.html',
-                  context={
-                      'form': form,
-                      "bre": "Protein Sentezi"
-                  })
+    return render(request, 'bioinformatic/translation/analiz.html', {'form': form})

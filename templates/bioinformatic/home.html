@@ -10,7 +10,8 @@
         <div class="section-header pb-6 bg-primary overflow-hidden text-center border-bottom border-light">
             <div class="container z-2">
                 <div class="row mb-4 justify-content-center">
-                    <div class="col-12 col-md-8 col-lg-7"><h1 class="display-4 mb-4">BİYOİNFORMATİK LABORATUVARI</h1>
+                    <div class="col-12 col-md-8 col-lg-7 mt-6">
+                        <h1 class="display-4 mb-4">BİYOİNFORMATİK LABORATUVARI</h1>
                     </div>
                 </div>
             </div>
@@ -19,31 +20,37 @@
         <section class="section bg-primary text-dark section-lg">
 
             <div class="container">
-                <!-- Title -->
-                <div class="row">
-                    <div class="col text-center">
-                        <h2 class="display-3 mb-6">İşlemler</h2>
-                    </div>
-                </div>
-                <!-- End of title-->
-                <div class="row mb-5">
+
+                <div class="row mb-3">
 
                     <div class="col-12 col-md-6 col-lg-4 mb-5">
                         <a href="{% url 'bioinformatic:sequence_analiz' %}">
                             <div class="card bg-primary border-light shadow-soft">
-                            <img src="{% static 'blog/assets/img/bioinformatik/sequence.jpg' %}" class="card-img-top rounded-top"
-                                 alt="">
-                            <div class="card-body">
-                                <h3 class="h5 card-title mt-3">DNA SEKANS ANALİZİ</h3>
+                                <img src="{% static 'blog/assets/img/bioinformatik/sequence.jpg' %}"
+                                     class="card-img-top rounded-top"
+                                     alt="">
+                                <div class="card-body">
+                                    <h3 class="h5 card-title mt-3">DNA SEKANS ANALİZİ</h3>
+                                </div>
                             </div>
-                        </div>
                         </a>
+                    </div>
 
+                    <div class="col-12 col-md-6 col-lg-4 mb-5">
+                        <a href="{% url 'bioinformatic:translation' %}">
+                            <div class="card bg-primary border-light shadow-soft">
+                                <img src="{% static 'blog/assets/img/bioinformatik/sequence.jpg' %}"
+                                     class="card-img-top rounded-top"
+                                     alt="PROTEİN SENTEZİ">
+                                <div class="card-body">
+                                    <h3 class="h5 card-title mt-3">PROTEİN SENTEZİ</h3>
+                                </div>
+                            </div>
+                        </a>
                     </div>
 
                 </div>
             </div>
-
         </section>
 
     </main>
