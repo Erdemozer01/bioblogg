@@ -14,7 +14,7 @@ class LabSlideModel(models.Model):
     content = models.TextField(verbose_name='İçerik')
 
     def __str__(self):
-        return self.title + '|' + self.subtitle
+        return self.title
 
     class Meta:
         db_table = "bioinformatic_home"
@@ -23,11 +23,14 @@ class LabSlideModel(models.Model):
 
 
 class FastaRead(models.Model):
-    gene = models.CharField(max_length=1000)
-    sequence = models.TextField()
+    user = models.ForeignKey('auth.User', on_delete=models.CASCADE, verbose_name='Laborant')
+    name = models.CharField(max_length=1000, verbose_name="Canlı")
+    sequence = models.TextField(verbose_name="Sekans:")
+    protein = models.TextField(verbose_name="Protein")
+    gc = models.FloatField(verbose_name="%GC")
 
     def __str__(self):
-        return self.gene
+        return self.name
 
     class Meta:
         db_table = "fasta_read"

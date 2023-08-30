@@ -56,7 +56,7 @@ class LabSlideModelAdmin(admin.ModelAdmin):
 
 @admin.register(FastaRead)
 class FastaAdmin(admin.ModelAdmin):
-    list_display = ['gene']
+    list_display = ['user', 'name']
 
 
 @admin.register(GenbankRead)

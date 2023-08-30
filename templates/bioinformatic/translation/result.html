@@ -31,48 +31,89 @@
                         </div>
                         <div class="card-body">
                             <p>Tarih: {{ date }}</p>
-                            {% if table == "1" %}
-                                <p>Tablo : Standart </p>
+
+                            {% if table %}
+                                {% if table == "1" %}
+                                    <p>Tablo : Standart </p>
+                                {% endif %}
+                                {% if table == "2" %}
+                                    <p>Tablo : Omurgalı Mitokondri </p>
+                                {% endif %}
+                                {% if table == "3" %}
+                                    <p>Tablo : Maya Mitokondri</p>
+                                {% endif %}
+                                {% if table == "4" %}
+                                    <p>Tablo : Küf, Protozoon ve Kölenterat Mitokondri Kodu ve
+                                        Mikoplazma/Spiroplasma</p>
+                                {% endif %}
+                                {% if table == "5" %}
+                                    <p>Tablo : Omurgasız Mitokondri</p>
+                                {% endif %}
+                                {% if table == "6" %}
+                                    <p>Tablo : Siliat, Dasikladas ve Heksamita Nükleer</p>
+                                {% endif %}
+                                {% if table == "9" %}
+                                    <p>Tablo : Ekinoderm ve Yassı Solucan Mitokondri</p>
+                                {% endif %}
+                                {% if table == "10" %}
+                                    <p>Tablo : Euplotid Nükleer </p>
+                                {% endif %}
+                                {% if table == "11" %}
+                                    <p>Tablo : Bakteriyel, Arkeal ve Bitki Plastid Kodu, prokaryotik virüsler</p>
+                                {% endif %}
+                                {% if table == "12" %}
+                                    <p>Tablo : Alternatif Maya Nükleer </p>
+                                {% endif %}
+                                {% if table == "13" %}
+                                    <p>Tablo : Ascidian Mitokondri </p>
+                                {% endif %}
+                                {% if table == "14" %}
+                                    <p>Tablo : Alternatif Yassı Solucan Mitokondri </p>
+                                {% endif %}
+                                {% if table == "16" %}
+                                    <p>Tablo : Klorofis Mitokondri </p>
+                                {% endif %}
+                                {% if table == "21" %}
+                                    <p>Tablo : Trematod Mitokondriyal </p>
+                                {% endif %}
+                                {% if table == "22" %}
+                                    <p>Tablo : Scenedesmus obliquus Mitokondri </p>
+                                {% endif %}
+                                {% if table == "23" %}
+                                    <p>Tablo : Thraustochytrium Mitokondri </p>
+                                {% endif %}
+                                {% if table == "24" %}
+                                    <p>Tablo : Rhabdopleuridae Mitokondri </p>
+                                {% endif %}
+                                {% if table == "24" %}
+                                    <p>Tablo : Rhabdopleuridae Mitokondri </p>
+                                {% endif %}
+                                {% if table == "25" %}
+                                    <p>Tablo : Aday Bölüm SR1 ve Gracilibacteria </p>
+                                {% endif %}
+                                {% if table == "26" %}
+                                    <p>Tablo : Pachysolen tannophilus Nükleer </p>
+                                {% endif %}
+                                {% if table == "27" %}
+                                    <p>Tablo : Karyorelict Nükleer </p>
+                                {% endif %}
+                                {% if table == "28" %}
+                                    <p>Tablo : Kondilostoma Nükleer </p>
+                                {% endif %}
+                                {% if table == "29" %}
+                                    <p>Tablo : Mezodinyum Nükleer </p>
+                                {% endif %}
+                                {% if table == "30" %}
+                                    <p>Tablo : Peritrich Nükleer </p>
+                                {% endif %}
+                                {% if table == "31" %}
+                                    <p>Tablo : Blastocrithidia Nükleer </p>
+                                {% endif %}
+                                {% if table == "33" %}
+                                    <p>Tablo : Cephalodiscidae Mitokondriyal UAA-Tyr </p>
+                                {% endif %}
                             {% endif %}
-                            {% if table == "2" %}
-                                <p>Tablo : Omurgalı Mitokondri </p>
-                            {% endif %}
-                            {% if table == "3" %}
-                                <p>Tablo : Maya Mitokondri</p>
-                            {% endif %}
-                            {% if table == "4" %}
-                                <p>Tablo : Küf, Protozoon ve Kölenterat Mitokondri Kodu ve Mikoplazma/Spiroplasma</p>
-                            {% endif %}
-                            {% if table == "5" %}
-                                <p>Tablo : Omurgasız Mitokondri</p>
-                            {% endif %}
-                            {% if table == "6" %}
-                                <p>Tablo : Siliat, Dasikladas ve Heksamita Nükleer</p>
-                            {% endif %}
-                            {% if table == "9" %}
-                                <p>Tablo : Ekinoderm ve Yassı Solucan Mitokondri</p>
-                            {% endif %}
-                            {% if table == "10" %}
-                                <p>Tablo : Euplotid Nükleer </p>
-                            {% endif %}
-                            {% if table == "11" %}
-                                <p>Tablo : Bakteriyel, Arkeal ve Bitki Plastid Kodu, prokaryotik virüsler</p>
-                            {% endif %}
-                            {% if table == "12" %}
-                                <p>Tablo : Alternatif Maya Nükleer </p>
-                            {% endif %}
-                            {% if table == "13" %}
-                                <p>Tablo : Ascidian Mitokondri </p>
-                            {% endif %}
-                            {% if table == "14" %}
-                                <p>Tablo : Alternatif Yassı Solucan Mitokondri </p>
-                            {% endif %}
-                            {% if table == "16" %}
-                                <p>Tablo : Klorofis Mitokondri </p>
-                            {% endif %}
-                            {% if table == "21" %}
-                                <p>Tablo : Trematod Mitokondriyal Kodu </p>
-                            {% endif %}
+
                             <p>Sekans Uzunluğu: {{ len }}</p>
                             <p>%GC : {{ GC }}</p>
                             <p>Komplement : {{ complement }}</p>

@@ -17,9 +17,9 @@
 <html lang="en">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>Neumorphism Components - Tables</title>
+    <title>Neumorphism Components - Forms</title>
     <meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no">
-    <meta name="title" content="Neumorphism Components - Tables">
+    <meta name="title" content="Neumorphism Components - Forms">
     <meta name="author" content="Themesberg">
     <link rel="canonical" href="https://themesberg.com/product/ui-kit/neumorphism-ui-kit-bootstrap">
     <meta name="keywords"
@@ -258,9 +258,9 @@
     <div class="section-header pb-6 bg-primary overflow-hidden text-center border-bottom border-light">
         <div class="container z-2">
             <div class="row mb-4 justify-content-center">
-                <div class="col-12 col-md-8 col-lg-7"><h1 class="display-3 mb-4">Tables</h1>
-                    <p class="lead">Examples for opt-in styling of tables (given their prevalent use in JavaScript
-                        plugins) with Bootstrap.</p></div>
+                <div class="col-12 col-md-8 col-lg-7"><h1 class="display-3 mb-4">Forms</h1>
+                    <p class="lead">Examples for form control styles, layout options, and custom components for creating
+                        a wide variety of forms.</p></div>
             </div>
             <div class="row justify-content-center">
                 <div class="col-12 col-md-10 col-lg-6">
@@ -268,7 +268,7 @@
                         <div class="d-flex">
                             <div class="alert-inner--text"><span class="icon text-danger icon-xs mr-2 mr-md-1"><span
                                     class="fas fa-file-alt"></span></span> <a target="_blank"
-                                                                              href="https://themesberg.com/docs/neumorphism-ui/components/tables/">See
+                                                                              href="https://themesberg.com/docs/neumorphism-ui/components/forms/">See
                                 our Documentation</a> for a detailed technical explanation.
                             </div>
                         </div>
@@ -277,7 +277,224 @@
             </div>
         </div>
     </div>
-
+    <div class="section section-lg bg-primary text-dark pb-0">
+        <div class="container">
+            <div class="row">
+                <div class="col"><h2 class="h5">Default Forms</h2></div>
+            </div>
+        </div>
+    </div>
+    <div class="section section-lg pt-4">
+        <div class="container">
+            <div class="row mb-4 mb-lg-5">
+                <div class="col-lg-4 col-sm-6">
+                    <div class="form-group mb-4"><label for="exampleInputEmail67">Email address</label> <input
+                            type="email" class="form-control" id="exampleInputEmail67" aria-describedby="emailHelp">
+                        <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone
+                            else.</small></div>
+                    <div class="form-group"><label for="exampleInputIcon1">Icon Left</label>
+                        <div class="input-group mb-4">
+                            <div class="input-group-prepend"><span class="input-group-text"><span
+                                    class="fas fa-search"></span></span></div>
+                            <input class="form-control" id="exampleInputIcon1" placeholder="Icon Left" type="text"
+                                   aria-label="Input with icon left"></div>
+                    </div>
+                    <div class="form-group"><label for="exampleInputIcon2">Icon Right</label>
+                        <div class="input-group mb-4"><input class="form-control" id="exampleInputIcon2"
+                                                             placeholder="Icon Right" aria-label="Input group"
+                                                             type="text">
+                            <div class="input-group-append"><span class="input-group-text"><span
+                                    class="fas fa-search"></span></span></div>
+                        </div>
+                    </div>
+                    <div class="form-group"><label for="exampleInputPassword1">Password</label>
+                        <div class="input-group mb-4"><input class="form-control" id="exampleInputPassword1"
+                                                             placeholder="Password" type="password"
+                                                             aria-label="Password">
+                            <div class="input-group-append"><span class="input-group-text"><span
+                                    class="fas fa-unlock-alt"></span></span></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-sm-6">
+                    <fieldset disabled="disabled">
+                        <legend class="h6">Disabled Inputs</legend>
+                        <div class="form-group"><label for="disabledTextInput">Name</label> <input type="text"
+                                                                                                   id="disabledTextInput"
+                                                                                                   class="form-control"
+                                                                                                   placeholder="Disabled input">
+                        </div>
+                        <div class="form-group"><label for="disabledSelect">Disabled select menu</label> <select
+                                id="disabledSelect" class="form-control">
+                            <option>Disabled select</option>
+                        </select></div>
+                    </fieldset>
+                    <div class="form-group"><label class="my-1 mr-2" for="inlineFormCustomSelectPref">Country</label>
+                        <select class="custom-select my-1 mr-sm-2" id="inlineFormCustomSelectPref">
+                            <option selected="selected">Choose...</option>
+                            <option value="1">United States</option>
+                            <option value="2">Germany</option>
+                            <option value="3">Canada</option>
+                        </select></div>
+                    <div class="form-group"><label for="exampleFormControlTextarea1">Example textarea</label> <textarea
+                            class="form-control" placeholder="Enter your message..." id="exampleFormControlTextarea1"
+                            rows="4"></textarea></div>
+                </div>
+                <div class="col-lg-4 col-sm-6">
+                    <div class="form-group"><label for="validationServer01">First name</label> <input type="text"
+                                                                                                      class="form-control is-valid"
+                                                                                                      id="validationServer01"
+                                                                                                      value="Mark"
+                                                                                                      required>
+                        <div class="valid-feedback">Looks good!</div>
+                    </div>
+                    <div class="form-group mb-4"><label for="validationServerUsername">Username</label> <input
+                            type="text" class="form-control is-invalid" id="validationServerUsername" required>
+                        <div class="invalid-feedback">Please choose a username.</div>
+                    </div>
+                    <div class="custom-file">
+                        <input type="file" class="custom-file-input" id="customFile" aria-label="File upload">
+                        <label class="custom-file-label" for="customFile">
+                            Choose file</label>
+                    </div>
+                </div>
+            </div>
+            <h3 class="h5">Range Sliders</h3>
+            <div class="row mb-4 mb-lg-5">
+                <div class="col-lg-6 col-sm-6">
+                    <div class="input-slider-container">
+                        <div id="input-slider-forms" class="input-slider" data-range-value-min="100"
+                             data-range-value-max="500"></div>
+                        <div class="row mt-3 d-none">
+                            <div class="col-6"><span class="range-slider-value" data-range-value-low="200"></span></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-sm-6">
+                    <div id="input-slider-range" data-range-value-min="100" data-range-value-max="500"></div>
+                    <div class="row d-none">
+                        <div class="col-6"><span class="range-slider-value value-low" data-range-value-low="200"
+                                                 id="input-slider-range-value-low"></span></div>
+                        <div class="col-6 text-right"><span class="range-slider-value value-high"
+                                                            data-range-value-high="400"
+                                                            id="input-slider-range-value-high"></span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mb-4 mb-lg-5">
+                <div class="col-3 col-lg-2">
+                    <div id="input-slider-vertical-1" data-range-value-min="100" data-range-value-max="500"></div>
+                    <div class="row d-none">
+                        <div class="col-6"><span class="range-slider-value value-low" data-range-value-low="200"
+                                                 id="input-slider-range-value-low-3"></span></div>
+                        <div class="col-6 text-right"><span class="range-slider-value value-high"
+                                                            data-range-value-high="400"
+                                                            id="input-slider-range-value-high-3"></span></div>
+                    </div>
+                </div>
+                <div class="col-3 col-lg-2">
+                    <div id="input-slider-vertical-2" data-range-value-min="100" data-range-value-max="500"></div>
+                    <div class="row d-none">
+                        <div class="col-6"><span class="range-slider-value value-low" data-range-value-low="200"
+                                                 id="input-slider-range-value-low-4"></span></div>
+                        <div class="col-6 text-right"><span class="range-slider-value value-high"
+                                                            data-range-value-high="400"
+                                                            id="input-slider-range-value-high-4"></span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mb-5">
+                <div class="col-lg-3 col-md-6">
+                    <div class="mb-3"><span class="h6 font-weight-bold">Checkboxes Square</span></div>
+                    <div class="form-check square-check"><input class="form-check-input" type="checkbox" value
+                                                                id="defaultCheck111" checked="checked"> <label
+                            class="form-check-label" for="defaultCheck111">Active checkbox</label></div>
+                    <div class="form-check square-check"><input class="form-check-input" type="checkbox" value
+                                                                id="defaultCheck222"> <label class="form-check-label"
+                                                                                             for="defaultCheck222">Option
+                        1</label></div>
+                    <div class="form-check square-check"><input class="form-check-input" type="checkbox" value
+                                                                id="defaultCheck333"> <label class="form-check-label"
+                                                                                             for="defaultCheck333">Option
+                        2</label></div>
+                    <div class="form-check square-check"><input class="form-check-input" type="checkbox" value
+                                                                id="defaultCheck444" disabled="disabled"> <label
+                            class="form-check-label" for="defaultCheck444">Disabled checkbox</label></div>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <div class="mb-3"><span class="h6 font-weight-bold">Checkboxes Round</span></div>
+                    <div class="form-check"><input class="form-check-input" type="checkbox" value id="defaultCheck555"
+                                                   checked="checked"> <label class="form-check-label"
+                                                                             for="defaultCheck555">Active
+                        checkbox</label></div>
+                    <div class="form-check"><input class="form-check-input" type="checkbox" value id="defaultCheck666">
+                        <label class="form-check-label" for="defaultCheck666">Option 1</label></div>
+                    <div class="form-check"><input class="form-check-input" type="checkbox" value id="defaultCheck777">
+                        <label class="form-check-label" for="defaultCheck777">Option 2</label></div>
+                    <div class="form-check"><input class="form-check-input" type="checkbox" value id="defaultCheck888"
+                                                   disabled="disabled"> <label class="form-check-label"
+                                                                               for="defaultCheck888">Disabled
+                        checkbox</label></div>
+                </div>
+                <div class="col-lg-3 col-sm-6 mt-4 mt-md-0">
+                    <fieldset>
+                        <legend class="h6">Radios</legend>
+                        <div class="form-check"><input class="form-check-input" type="radio" name="exampleRadios"
+                                                       id="exampleRadios1" value="option1" checked="checked"> <label
+                                class="form-check-label" for="exampleRadios1">Default radio</label></div>
+                        <div class="form-check"><input class="form-check-input" type="radio" name="exampleRadios"
+                                                       id="exampleRadios2" value="option2"> <label
+                                class="form-check-label" for="exampleRadios2">Second default radio</label></div>
+                        <div class="form-check"><input class="form-check-input" type="radio" name="exampleRadios"
+                                                       id="exampleRadios3" value="option3" disabled="disabled"> <label
+                                class="form-check-label" for="exampleRadios3">Disabled radio</label></div>
+                    </fieldset>
+                </div>
+                <div class="col-lg-3 col-sm-6 mt-4 mt-md-0">
+                    <div class="mb-3"><span class="h6 font-weight-bold">Switches</span></div>
+                    <div class="custom-control custom-switch"><input type="checkbox" class="custom-control-input"
+                                                                     id="customSwitch1"> <label
+                            class="custom-control-label" for="customSwitch1">Toggle this switch element</label></div>
+                    <div class="custom-control custom-switch"><input type="checkbox" class="custom-control-input"
+                                                                     disabled="disabled" id="customSwitch2"> <label
+                            class="custom-control-label" for="customSwitch2">Disabled switch element</label></div>
+                </div>
+            </div>
+            <div class="row mb-4 mb-lg-5">
+                <div class="col-12 col-md-4">
+                    <div class="form-group"><label class="h6" for="exampleInputDate1">Choose a date</label>
+                        <div class="input-group mb-4">
+                            <div class="input-group-prepend"><span class="input-group-text"><span
+                                    class="far fa-calendar-alt"></span></span></div>
+                            <input class="form-control datepicker" id="exampleInputDate1" placeholder="Select date"
+                                   type="text" aria-label="Date with icon left"></div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-8">
+                    <div class="input-daterange datepicker row align-items-center">
+                        <div class="col"><label class="h6" for="exampleInputDate2">From</label>
+                            <div class="form-group">
+                                <div class="input-group input-group-border">
+                                    <div class="input-group-prepend"><span class="input-group-text"><span
+                                            class="far fa-calendar-alt"></span></span></div>
+                                    <input class="form-control datepicker" id="exampleInputDate2"
+                                           placeholder="Start date" type="text"></div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="form-group"><label class="h6" for="exampleInputDate3">To</label>
+                                <div class="input-group input-group-border">
+                                    <div class="input-group-prepend"><span class="input-group-text"><span
+                                            class="far fa-calendar-alt"></span></span></div>
+                                    <input class="form-control datepicker" id="exampleInputDate3" placeholder="End date"
+                                           type="text"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </main>
 <a id="producthunt-badge"
    href="https://www.producthunt.com/posts/neumorphism-ui?utm_source=badge-featured&utm_medium=badge&utm_souce=badge-neumorphism-ui"
@@ -382,7 +599,7 @@
 <script src="../../assets/js/neumorphism.js"></script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8b253dfea2ab4077af8c6f58422dfbfd1689876627854"
         integrity="sha512-bjgnUKX4azu3dLTVtie9u6TKqgx29RBwfj3QXYt5EKfWM/9hPSAI/4qcV5NACjwAo8UtTeWefx6Zq5PHcMm7Tg=="
-        data-cf-beacon='{"rayId":"7fde05730d1e98af","version":"2023.8.0","r":1,"token":"3a2c60bab7654724a0f7e5946db4ea5a","si":100}'
+        data-cf-beacon='{"rayId":"7fe1c6c16e880555","version":"2023.8.0","r":1,"token":"3a2c60bab7654724a0f7e5946db4ea5a","si":100}'
         crossorigin="anonymous"></script>
 </body>
 </html>

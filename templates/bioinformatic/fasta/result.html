@@ -1,0 +1,112 @@
+{% extends "blog/layouts/base-fullscreen.html" %}
+{% load django_bootstrap5 %}
+{% load plotly_dash %}
+
+{% block title %} Sonuçlar {% endblock %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}{% endblock %}
+
+{% block content %}
+    <!-- Section -->
+    <div class="section bg-primary text-dark section-lg">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-12">
+                    <div class="mb-4"><span class="h5">Fasta Dosyası okuma sonuçları</span></div>
+
+                    <div class="mb-2">
+                        <table class="table shadow-soft rounded">
+                            <tr>
+                                <th class="border-0" scope="col" id="class">ORGANİZMA</th>
+                                <th class="border-0" scope="col" id="class">DNA SEKANS UZUNLUĞU</th>
+                                <th class="border-0" scope="col" id="class">PROTEİN SEKANS UZUNLUĞU</th>
+                                <th class="border-0" scope="col" id="class">%GC</th>
+                            </tr>
+                            {% for foo in object_list %}
+                                <tr>
+                                    <td id="Bolter" headers="{{ foo.name }}">
+                                        <a href="{% url 'bioinformatic:fasta_reading_detail' foo.pk foo.user foo.name|slugify %}">
+                                            {{ foo.name }}
+                                        </a>
+                                    </td>
+                                    <td id="Bolter" headers="{{ foo.name }}">{{ foo.sequence|length }}</td>
+                                    <td id="Bolter" headers="{{ foo.name }}">{{ foo.protein|length }}</td>
+                                    <td id="Bolter" headers="{{ foo.gc }}">{{ foo.gc }}</td>
+                                </tr>
+                            {% endfor %}
+                        </table>
+                        <p class="text-info"><span class="font-weight-bold ml-2">Not: </span>Stop kodonları dahil
+                            edilmemiştir.</p>
+                    </div>
+
+                    <div class="mb-4"><span class="h5">İSTATİKSEL BİLGİLER</span></div>
+
+                    <div class="mb-2">
+                        <table class="table shadow-soft rounded">
+                            <tr>
+                                <th class="border-0" scope="col" id="class"></th>
+                                <th class="border-0" scope="col" id="class">DNA SEKANS</th>
+                                <th class="border-0" scope="col" id="class">PROTEİN SEKANS</th>
+                                <th class="border-0" scope="col" id="class">%GC</th>
+                            </tr>
+
+                            <tr>
+                                <td id="Bolter" headers="TOPLAM">TOPLAM</td>
+                                <td id="Bolter" headers="TOPLAM">{{ sum_seq }}</td>
+                                <td id="Bolter" headers="TOPLAM">{{ sum_pro }}</td>
+                                <td id="Bolter" headers="TOPLAM">{{ sum_gc }}</td>
+                            </tr>
+                            <tr>
+                                <td id="Bolter" headers="ORTALAMA">ORTALAMA</td>
+                                <td id="Bolter" headers="ORTALAMA">{{ mean_seq }}</td>
+                                <td id="Bolter" headers="ORTALAMA">{{ mean_pro }}</td>
+                                <td id="Bolter" headers="ORTALAMA">{{ mean_gc }}</td>
+                            </tr>
+
+                            <tr>
+                                <td id="Bolter" headers="MEDYAN">MEDYAN</td>
+                                <td id="Bolter" headers="MEDYAN">{{ median_seq }}</td>
+                                <td id="Bolter" headers="MEDYAN">{{ median_pro }}</td>
+                                <td id="Bolter" headers="MEDYAN">{{ median_gc }}</td>
+                            </tr>
+                            <tr>
+                                <td id="Bolter" headers="VARYANS">VARYANS</td>
+                                <td id="Bolter" headers="VARYANS">{{ var_seq }}</td>
+                                <td id="Bolter" headers="VARYANS">{{ var_pro }}</td>
+                                <td id="Bolter" headers="VARYANS">{{ var_gc }}</td>
+                            </tr>
+
+                            <tr>
+                                <td id="Bolter" headers="STANDART SAPMA">STANDART SAPMA</td>
+                                <td id="Bolter" headers="STANDART SAPMA">{{ std_seq }}</td>
+                                <td id="Bolter" headers="STANDART SAPMA">{{ std_pro }}</td>
+                                <td id="Bolter" headers="STANDART SAPMA">{{ std_gc }}</td>
+                            </tr>
+
+                            <tr>
+                                <td id="Bolter" headers="KOVARYANS">KOVARYANS</td>
+                                <td id="Bolter" headers="KOVARYANS">{{ cov_seq }}-PROTEİN</td>
+                                <td id="Bolter" headers="KOVARYANS">{{ cov_pro }}-DNA</td>
+                                <td id="Bolter" headers="KOVARYANS">{{ cov_gc }}-DNA</td>
+                            </tr>
+
+                            <tr>
+                                <td id="Bolter" headers="KORELASYON">KORELASYON</td>
+                                <td id="Bolter" headers="KORELASYON">{{ cor_seq }}-PROTEİN</td>
+                                <td id="Bolter" headers="KORELASYON">{{ cor_pro }}-DNA</td>
+                                <td id="Bolter" headers="KORELASYON">{{ cor_gc }}-DNA</td>
+                            </tr>
+
+                        </table>
+                        {% plotly_app name="dna_pro_corr" ratio=0.5 %}
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}{% endblock %}

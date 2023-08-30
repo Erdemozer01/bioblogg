@@ -12,11 +12,16 @@ from bioinformatic.forms.translation import DNAFastaFileTranslateForm
 from bioinformatic.forms.file import MultipleUploadFileForm, FileReadForm
 from Bio.SeqUtils import GC
 import pylab
-from bioinformatic.models import GraphicModels
+from bioinformatic.models import GraphicModels, FastaRead
 from django.core.files import File
 from django.contrib.auth.decorators import login_required
 from django.views import generic
 from django.contrib import messages
+import pandas as pd
+import plotly.express as px
+from django_plotly_dash import DjangoDash
+from dash import html, dcc
+from django.core.paginator import Paginator
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 path = os.path.join(BASE_DIR, 'files\\')
@@ -26,6 +31,96 @@ def handle_uploaded_file(f):
     with open(os.path.join(BASE_DIR, "files", f"{f}"), 'wb+') as destination:
         for chunk in f.chunks():
             destination.write(chunk)
+
+
+def fasta_reading(request):
+    if request.user.is_anonymous:
+        from django.conf import settings
+        messages.error(request, "Lütfen Giriş Yapınız")
+        return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
+    global read
+    if FastaRead.objects.filter(user=request.user).exists():
+        FastaRead.objects.filter(user=request.user).delete()
+    form = FileReadForm(request.POST or None, request.FILES or None)
+
+    if request.method == "POST":
+        if form.is_valid():
+            handle_uploaded_file(request.FILES['file'])
+            org_type = form.cleaned_data['org_type']
+            file_path = os.path.join(BASE_DIR, "files", f"{request.FILES['file']}")
+            handle = open(file_path)
+            try:
+                if os.path.getsize(file_path) <= 5242880:
+                    read = SeqIO.parse(handle, 'fasta')
+                    for i in read:
+                        FastaRead.objects.create(
+                            user=request.user, name=i.name, sequence=i.seq,
+                            protein=i.seq.translate(table=org_type).replace("*", ""), gc=GC(i.seq).__round__(2)
+                        )
+                else:
+                    handle.close()
+                    os.remove(file_path)
+                    messages.error(request, "Dosya boyutu 5mb dan büyüktür.")
+                    return redirect(request.META['HTTP_REFERER'])
+            finally:
+                handle.close()
+                os.remove(file_path)
+
+            obj = FastaRead.objects.filter(user=request.user)
+
+            data = pd.DataFrame({
+                'name': [i.name for i in obj],
+                'dna_seq': [i.sequence for i in obj],
+                'pro_seq': [i.protein for i in obj],
+                'dna_seq_len': [len(i.sequence) for i in obj],
+                'pro_seq_len': [len(i.protein) for i in obj],
+                'gc': [i.gc for i in obj],
+            })
+
+            app = DjangoDash('dna_pro_corr')
+
+            app.layout = html.Div([
+                dcc.Graph(figure=px.scatter(data_frame=data.to_dict(), x="dna_seq_len", y="pro_seq_len", color="name",
+                                            title="DNA SEKANS - PROTEİN SEKANS UZUNLUKLARI", labels="Canlı"))
+            ])
+
+
+            return render(request, "bioinformatic/fasta/result.html",
+                          {
+                              'object_list': obj,
+                              'org_count': obj.count(),
+                              'sum_seq': sum(data['dna_seq_len']),
+                              'sum_pro': sum(data['pro_seq_len']),
+                              'sum_gc': sum(data['gc']),
+                              'mean_pro': round(data['pro_seq_len'].mean(), 2),
+                              'mean_seq': round(data['dna_seq_len'].mean(), 2),
+                              'mean_gc': round(data['gc'].mean(), 2),
+                              'median_pro': round(data['pro_seq_len'].median(), 2),
+                              'median_seq': round(data['dna_seq_len'].median(), 2),
+                              'median_gc': round(data['gc'].median(), 2),
+                              'var_pro': round(data['pro_seq_len'].var(), 2),
+                              'var_seq': round(data['dna_seq_len'].var(), 2),
+                              'var_gc': round(data['gc'].var(), 2),
+                              'std_pro': round(data['pro_seq_len'].std(), 2),
+                              'std_seq': round(data['dna_seq_len'].std(), 2),
+                              'std_gc': round(data['gc'].std(), 2),
+                              'cov_pro': round(data['pro_seq_len'].cov(data['dna_seq_len']), 2),
+                              'cov_seq': round(data['dna_seq_len'].cov(data['pro_seq_len']), 2),
+                              'cov_gc': round(data['gc'].cov(data['dna_seq_len']), 2),
+                              'cor_pro': round(data['pro_seq_len'].corr(data['dna_seq_len']), 2),
+                              'cor_seq': round(data['dna_seq_len'].corr(data['pro_seq_len']), 2),
+                              'cor_gc': round(data['gc'].corr(data['dna_seq_len']), 2),
+                          })
+
+    return render(request, "bioinformatic/fasta/read.html", {'form': form})
+
+
+class FastaReadingDetailView(generic.DetailView):
+    template_name = "bioinformatic/fasta/detail.html"
+    model = FastaRead
+
+    def get_queryset(self):
+        return FastaRead.objects.filter(user=self.request.user)
 
 
 @login_required
@@ -294,7 +389,7 @@ def fasta_file_translate(request):
 
         return redirect('bioinformatic:fasta_protein_download')
 
-    return render(request, "bioinformatic/fasta/translate.html", {'form': form, 'bre':"Fasta Dosyası Translasyon"})
+    return render(request, "bioinformatic/fasta/translate.html", {'form': form, 'bre': "Fasta Dosyası Translasyon"})
 
 
 files_names = []

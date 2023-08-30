@@ -23,12 +23,20 @@
 
                 <div class="row mb-3">
 
+                    <div class="container z-2">
+                        <div class="row mb-4 ">
+                            <div class="col-12 col-md-8 col-lg-7 mt-1">
+                                <h1 class="display-4 mb-4 text-left border-bottom border-light">SEKANS İŞLEMLERİ</h1>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="col-12 col-md-6 col-lg-4 mb-5">
                         <a href="{% url 'bioinformatic:sequence_analiz' %}">
                             <div class="card bg-primary border-light shadow-soft">
                                 <img src="{% static 'blog/assets/img/bioinformatik/sequence.jpg' %}"
                                      class="card-img-top rounded-top"
-                                     alt="">
+                                     alt="PROTEİN SENTEZİ">
                                 <div class="card-body">
                                     <h3 class="h5 card-title mt-3">DNA SEKANS ANALİZİ</h3>
                                 </div>
@@ -36,14 +44,45 @@
                         </a>
                     </div>
 
-                    <div class="col-12 col-md-6 col-lg-4 mb-5">
+                    <div class="col-12 col-md-6 col-lg-4">
                         <a href="{% url 'bioinformatic:translation' %}">
+                            <div class="card bg-primary border-light shadow-soft">
+                                <img src="{% static 'blog/assets/img/bioinformatik/3d-representation-dna.jpg' %}"
+                                     class="card-img-top rounded-top"
+                                     alt="PROTEİN SENTEZİ">
+                                <div class="card-body">
+                                    <h3 class="h5 card-title mt-3">PROTEİN SENTEZİ</h3>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <section class="section bg-primary text-dark ">
+
+            <div class="container">
+
+                <div class="row mb-1">
+
+                    <div class="container">
+                        <div class="row mb-1 ">
+                            <div class="col-12 col-md-8 col-lg-7">
+                                <h1 class="display-4 mb-4 text-left border-bottom border-light">FASTA İŞLEMLERİ</h1>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-6 col-lg-4 mb-5">
+                        <a href="{% url 'bioinformatic:fasta_reading' %}">
                             <div class="card bg-primary border-light shadow-soft">
                                 <img src="{% static 'blog/assets/img/bioinformatik/sequence.jpg' %}"
                                      class="card-img-top rounded-top"
                                      alt="PROTEİN SENTEZİ">
                                 <div class="card-body">
-                                    <h3 class="h5 card-title mt-3">PROTEİN SENTEZİ</h3>
+                                    <h3 class="h5 card-title mt-3">FASTA DOSYASI OKUMA</h3>
                                 </div>
                             </div>
                         </a>
