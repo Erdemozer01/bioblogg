@@ -13,6 +13,7 @@
         <div class="container">
             <div class="row justify-content-center">
                 <div class="col-lg-12">
+
                     <div class="mb-4"><span class="h5">Fasta Dosyası okuma sonuçları</span></div>
 
                     <div class="mb-2">
@@ -43,7 +44,7 @@
                     <div class="mb-4"><span class="h5">İSTATİKSEL BİLGİLER</span></div>
 
                     <div class="mb-2">
-                        <table class="table shadow-soft rounded">
+                        <table class="table shadow-soft rounded ">
                             <tr>
                                 <th class="border-0" scope="col" id="class"></th>
                                 <th class="border-0" scope="col" id="class">DNA SEKANS</th>
@@ -52,54 +53,50 @@
                             </tr>
 
                             <tr>
-                                <td id="Bolter" headers="TOPLAM">TOPLAM</td>
+                                <th scope="col" id="class">TOPLAM</th>
                                 <td id="Bolter" headers="TOPLAM">{{ sum_seq }}</td>
                                 <td id="Bolter" headers="TOPLAM">{{ sum_pro }}</td>
                                 <td id="Bolter" headers="TOPLAM">{{ sum_gc }}</td>
                             </tr>
                             <tr>
-                                <td id="Bolter" headers="ORTALAMA">ORTALAMA</td>
+                                <th scope="col" id="class">ORTALAMA</th>
                                 <td id="Bolter" headers="ORTALAMA">{{ mean_seq }}</td>
                                 <td id="Bolter" headers="ORTALAMA">{{ mean_pro }}</td>
                                 <td id="Bolter" headers="ORTALAMA">{{ mean_gc }}</td>
                             </tr>
 
                             <tr>
-                                <td id="Bolter" headers="MEDYAN">MEDYAN</td>
+                                <th scope="col" id="class">MEDYAN</th>
                                 <td id="Bolter" headers="MEDYAN">{{ median_seq }}</td>
                                 <td id="Bolter" headers="MEDYAN">{{ median_pro }}</td>
                                 <td id="Bolter" headers="MEDYAN">{{ median_gc }}</td>
                             </tr>
                             <tr>
-                                <td id="Bolter" headers="VARYANS">VARYANS</td>
+                                <th  scope="col" id="class">VARYANS</th>
                                 <td id="Bolter" headers="VARYANS">{{ var_seq }}</td>
                                 <td id="Bolter" headers="VARYANS">{{ var_pro }}</td>
                                 <td id="Bolter" headers="VARYANS">{{ var_gc }}</td>
                             </tr>
 
                             <tr>
-                                <td id="Bolter" headers="STANDART SAPMA">STANDART SAPMA</td>
+                                <th scope="col" id="class">STANDART SAPMA</th>
                                 <td id="Bolter" headers="STANDART SAPMA">{{ std_seq }}</td>
                                 <td id="Bolter" headers="STANDART SAPMA">{{ std_pro }}</td>
                                 <td id="Bolter" headers="STANDART SAPMA">{{ std_gc }}</td>
                             </tr>
 
-                            <tr>
-                                <td id="Bolter" headers="KOVARYANS">KOVARYANS</td>
-                                <td id="Bolter" headers="KOVARYANS">{{ cov_seq }}-PROTEİN</td>
-                                <td id="Bolter" headers="KOVARYANS">{{ cov_pro }}-DNA</td>
-                                <td id="Bolter" headers="KOVARYANS">{{ cov_gc }}-DNA</td>
-                            </tr>
-
-                            <tr>
-                                <td id="Bolter" headers="KORELASYON">KORELASYON</td>
-                                <td id="Bolter" headers="KORELASYON">{{ cor_seq }}-PROTEİN</td>
-                                <td id="Bolter" headers="KORELASYON">{{ cor_pro }}-DNA</td>
-                                <td id="Bolter" headers="KORELASYON">{{ cor_gc }}-DNA</td>
-                            </tr>
-
                         </table>
-                        {% plotly_app name="dna_pro_corr" ratio=0.5 %}
+
+                        <div class="mb-4"><span class="h5">Kovaryans Matriksi</span></div>
+
+                        {{ table_cov|safe }}
+
+                        <div class="mb-4"><span class="h5">Korelasyon Matriksi</span></div>
+
+                        {{ table_cor|safe }}
+
+                        {% plotly_app name='linear' ratio=0.5 %}
+
                     </div>
 
                 </div>

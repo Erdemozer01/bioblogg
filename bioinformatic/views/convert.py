@@ -5,8 +5,7 @@ import os
 from django.shortcuts import *
 from bioinformatic.forms.convert import FileConvertForm, FileConvertModelForm
 from Bio import SeqIO
-from django.views import generic
-from django.http import FileResponse
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 

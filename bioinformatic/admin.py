@@ -5,19 +5,10 @@ admin.site.register(MedlineArticle)
 admin.site.register(FastaDNAMotifModel)
 
 
+
 @admin.register(MolecularModel)
 class MolecularModelModelAdmin(admin.ModelAdmin):
     list_display = ['user', 'in_file', 'id_name', 'created']
-
-
-@admin.register(MaximumFileSize)
-class MaximumFileSizeModelAdmin(admin.ModelAdmin):
-    list_display = ['file_size', 'created']
-
-
-@admin.register(FileFormat)
-class FileFormatModelAdmin(admin.ModelAdmin):
-    list_display = ['name']
 
 
 @admin.register(GraphicModels)
@@ -77,7 +68,3 @@ class SwissProtModelAdmin(admin.ModelAdmin):
     search_fields = ['accessions', 'organism']
     search_help_text = "Erişim Numarası yada organizmaya göre arama yapınız"
 
-
-@admin.register(BigFileUploadModel)
-class BigFileUploadModelAdmin(admin.ModelAdmin):
-    list_display = ['big_file', 'created']

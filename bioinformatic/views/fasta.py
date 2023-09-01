@@ -21,7 +21,6 @@ import pandas as pd
 import plotly.express as px
 from django_plotly_dash import DjangoDash
 from dash import html, dcc
-from django.core.paginator import Paginator
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 path = os.path.join(BASE_DIR, 'files\\')
@@ -34,13 +33,16 @@ def handle_uploaded_file(f):
 
 
 def fasta_reading(request):
+    global read
+
     if request.user.is_anonymous:
         from django.conf import settings
         messages.error(request, "Lütfen Giriş Yapınız")
         return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
-    global read
+
     if FastaRead.objects.filter(user=request.user).exists():
         FastaRead.objects.filter(user=request.user).delete()
+
     form = FileReadForm(request.POST or None, request.FILES or None)
 
     if request.method == "POST":
@@ -77,16 +79,41 @@ def fasta_reading(request):
                 'gc': [i.gc for i in obj],
             })
 
-            app = DjangoDash('dna_pro_corr')
+            df = pd.DataFrame(
 
-            app.layout = html.Div([
-                dcc.Graph(figure=px.scatter(data_frame=data.to_dict(), x="dna_seq_len", y="pro_seq_len", color="name",
-                                            title="DNA SEKANS - PROTEİN SEKANS UZUNLUKLARI", labels="Canlı"))
+                {
+                    'DNA': data["dna_seq_len"],
+                    'PROTEİN': data['pro_seq_len'],
+                    '%GC': data['gc']
+                },
+
+            )
+
+            scatter_map = DjangoDash('linear')
+
+            scatter_map.layout = html.Div([
+                dcc.Graph(figure=px.scatter(
+                    data_frame=data, x="dna_seq_len", y="pro_seq_len", color="name",
+                    title="DNA SEKANS - PROTEİN SEKANS UZUNLUKLARI", trendline="ols",
+                    labels={"dna_seq_len": "DNA SEKANS UZUNLUĞU",
+                            "pro_seq_len": "PROTEİN SEKANS UZUNLUĞU",
+                            'name': 'Canlı'
+                            },
+                )),
             ])
-
 
             return render(request, "bioinformatic/fasta/result.html",
                           {
+                              'table_cov': df.cov().to_html(
+                                  classes="table shadow-soft rounded text-center",
+                                  border=False, header="Kovaryans", justify="center"
+                              ),
+
+                              'table_cor': df.corr().to_html(
+                                  classes="table shadow-soft rounded text-center",
+                                  border=False, header="Korelasyon", justify="center"
+                              ),
+
                               'object_list': obj,
                               'org_count': obj.count(),
                               'sum_seq': sum(data['dna_seq_len']),
@@ -104,12 +131,6 @@ def fasta_reading(request):
                               'std_pro': round(data['pro_seq_len'].std(), 2),
                               'std_seq': round(data['dna_seq_len'].std(), 2),
                               'std_gc': round(data['gc'].std(), 2),
-                              'cov_pro': round(data['pro_seq_len'].cov(data['dna_seq_len']), 2),
-                              'cov_seq': round(data['dna_seq_len'].cov(data['pro_seq_len']), 2),
-                              'cov_gc': round(data['gc'].cov(data['dna_seq_len']), 2),
-                              'cor_pro': round(data['pro_seq_len'].corr(data['dna_seq_len']), 2),
-                              'cor_seq': round(data['dna_seq_len'].corr(data['pro_seq_len']), 2),
-                              'cor_gc': round(data['gc'].corr(data['dna_seq_len']), 2),
                           })
 
     return render(request, "bioinformatic/fasta/read.html", {'form': form})
@@ -243,46 +264,48 @@ class DotPlotDetailView(generic.DetailView):
 
 
 def fasta_writing(request):
+    form = FastaWritingForm(request.POST or None)
+
     if request.user.is_anonymous:
         from django.conf import settings
         messages.error(request, "Lütfen Giriş Yapınız")
         return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
-    fastaform = FastaWritingForm(request.POST or None)
+
     if request.method == "POST":
-        if fastaform.is_valid():
 
-            id = fastaform.cleaned_data["id"]
-            descriptions = fastaform.cleaned_data["description"]
-            sequence = fastaform.cleaned_data["sequence"]
-            sequence = Seq(sequence)
-            bad_chars = [';', ':', '!', "*", "\n", '"', "\r"]
+        if form.is_valid():
 
-            for i in bad_chars:
-                sequence = sequence.replace(i, '')
+            fasta_id = form.cleaned_data["id"]
 
-            rec1 = SeqRecord(
-                sequence,
-                id=id,
-                description=descriptions
+            name = form.cleaned_data["name"]
+
+            description = form.cleaned_data["description"]
+
+            sequence = form.cleaned_data["sequence"].replace("\n", "").replace("\r", "")
+
+            file_path = os.path.join(BASE_DIR, "files", f"{request.user.username}.fasta")
+
+            record = SeqRecord(
+                seq=Seq(sequence),
+                id=fasta_id.encode().decode(encoding="utf-8", errors="ignore"),
+                description=description,
+                name=name
             )
 
-            file = os.path.join(BASE_DIR, f'files\\{request.user.username}.fasta')
+            SeqIO.write(record, file_path, 'fasta')
 
-            SeqIO.write(rec1, file, "fasta")
-
-            return redirect("bioinformatic:fasta_download")
+            return HttpResponseRedirect(reverse('bioinformatic:fasta_download'))
 
         else:
 
             msg = "Bir hata meydana geldi"
 
-            return render(request, 'bioinformatic/fasta/notfound.html', {
+            return render(request, 'exception/page-404.html', {
                 "msg": msg
             })
 
-    return render(request, "bioinformatic/fasta/writing.html", {
-        "form": fastaform,
-        "bre": "Fasta Dosyası Yazma"
+    return render(request, "bioinformatic/fasta/read.html", {
+        "form": form,
     })
 
 
@@ -301,6 +324,7 @@ def append_new_line(file_name, text_to_append):
 
 
 def fasta_add(request):
+    global file_fasta
     form = AddFastaData(request.POST or None, request.FILES or None)
     if request.method == "POST":
 
@@ -362,34 +386,81 @@ def fasta_add(request):
 
 
 def fasta_file_translate(request):
+    global record, input_fasta_path
     form = DNAFastaFileTranslateForm(request.POST or None, request.FILES or None)
+    if request.user.is_anonymous:
+        from django.conf import settings
+        messages.error(request, "Lütfen Giriş Yapınız")
+        return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
+
     if request.method == "POST":
         if form.is_valid():
             try:
+
                 handle_uploaded_file(request.FILES['file'])
                 input_fasta_path = os.path.join(BASE_DIR, "files", f"{form.cleaned_data['file']}")
-                protein_fasta_path = os.path.join(BASE_DIR, "files", "protein.txt")
+                protein_fasta_path = os.path.join(BASE_DIR, "files", f"{request.user.username}.fasta")
                 records = SeqIO.parse(input_fasta_path, format="fasta")
                 table = form.cleaned_data['translate_table']
+                to_stop = form.cleaned_data['to_stop']
 
-                protein_file = open(protein_fasta_path, "w")
+                if to_stop is True:
 
-                for record in records:
-                    protein_file.write(f"{record.description}")
-                    protein_file.write("\n")
-                    protein_file.write("Sekans Uzunlugu: " + f"{len(record.translate().seq)}")
-                    protein_file.write("\n")
-                    protein_file.write(f"{record.translate(table=table).seq}")
-                    protein_file.write(2 * "\n")
+                    protein_file = open(protein_fasta_path, "w")
 
-                os.remove(input_fasta_path)
+                    for i in records:
+                        seq_dna = i.seq
+                        dna_id = i.id
+                        dna_description = i.description
+                        dna_name = i.name
+
+                        SeqIO.write(
+                            SeqRecord(
+                                seq=Seq(seq_dna).translate(table=table),
+                                id=dna_id.encode().decode(encoding="utf-8", errors="ignore"),
+                                description=dna_description,
+                                name=dna_name,
+                            ),
+
+                            protein_file,
+
+                            'fasta'
+
+                        )
+                else:
+
+                    protein_file = open(protein_fasta_path, "w")
+
+                    for i in records:
+                        seq_dna = i.seq
+                        dna_id = i.id
+                        dna_description = i.description
+                        dna_name = i.name
+
+                        SeqIO.write(
+                            SeqRecord(
+                                seq=Seq(seq_dna).translate(table=table).replace("*", ""),
+                                id=dna_id.encode().decode(encoding="utf-8", errors="ignore"),
+                                description=dna_description,
+                                name=dna_name,
+                            ),
+                            protein_file,
+
+                            'fasta'
+
+                        )
+
+                return HttpResponseRedirect(reverse('bioinformatic:fasta_download'))
 
             except Bio.BiopythonWarning:
                 pass
 
+            finally:
+                os.remove(input_fasta_path)
+
         return redirect('bioinformatic:fasta_protein_download')
 
-    return render(request, "bioinformatic/fasta/translate.html", {'form': form, 'bre': "Fasta Dosyası Translasyon"})
+    return render(request, "bioinformatic/fasta/read.html", {'form': form, 'bre': "Fasta Dosyası Translasyon"})
 
 
 files_names = []

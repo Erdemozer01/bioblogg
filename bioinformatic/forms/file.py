@@ -1,5 +1,5 @@
 from django import forms
-from bioinformatic.models import FastaRead, GenbankRead, FileUploadModel
+from bioinformatic.models import FastaRead, GenbankRead
 
 FILE_TYPE = (
     ("fasta", "fasta"),
@@ -62,12 +62,6 @@ class GenbankIdForm(forms.Form):
 
 class XmlIdForm(forms.Form):
     hit_id = forms.Textarea()
-
-
-class FileUploadModelForm(forms.ModelForm):
-    class Meta:
-        model = FileUploadModel
-        fields = ['file']
 
 
 class MultipleUploadFileForm(forms.Form):

@@ -31,8 +31,31 @@ TABLE = (
 
 
 class DNAFastaFileTranslateForm(forms.Form):
-    file = forms.FileField(label="DNA Fasta Dosyası Giriniz")
-    translate_table = forms.ChoiceField(choices=TABLE, label="Dönüşüm Tablosu Seçiniz")
+
+    translate_table = forms.ChoiceField(
+        choices=TABLE,
+        label="Dönüşüm Tablosu Seçiniz",
+        widget=forms.Select(
+            attrs={
+                'class': 'custom-select',
+            },
+        ),
+
+        required=True
+    )
+
+    file = forms.FileField(label="DNA Fasta Dosyası Giriniz", required=True)
+
+    to_stop = forms.BooleanField(
+
+        label="Stop kodonları dahil edilsin",
+
+        required=False,
+
+        widget=forms.CheckboxInput(attrs={
+            'class': 'custom-control-input'
+        })
+    )
 
 
 class GenbankTranslationForm(forms.Form):
@@ -42,7 +65,7 @@ class GenbankTranslationForm(forms.Form):
         help_text='<p style="font-size: x-small"><b>Not: </b> Dönüşüm Tablosu verileri<a target="_blank" href="https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi"> NCBI </a> sitesinden alınmıştır. </p> ',
         widget=forms.Select(
             attrs={
-                'class': 'form-control',
+                'class': 'custom-select',
             }
         )
     )
@@ -57,7 +80,7 @@ class TranslationForm(forms.Form):
         NCBI </a> sitesinden alınmıştır. </p> ',
         widget=forms.Select(
             attrs={
-                'class': 'form-control',
+                'class': 'custom-select',
 
             }
         )
@@ -71,4 +94,15 @@ class TranslationForm(forms.Form):
 
             }
         )
+    )
+
+    to_stop = forms.BooleanField(
+
+        label="Stop kodonları dahil edilsin",
+
+        required=False,
+
+        widget=forms.CheckboxInput(attrs={
+            'class': 'custom-control-input'
+        })
     )

@@ -3,17 +3,27 @@ from django import forms
 
 class FastaWritingForm(forms.Form):
     id = forms.CharField(
-        label="id",
+        label="İD",
         widget=forms.TextInput(
             attrs={
                 'class': 'form-control',
-                'placeholder': 'id numarası'
+                'placeholder': 'İD'
+            }
+        )
+    )
+
+    name = forms.CharField(
+        label="Canlı Adı",
+        widget=forms.TextInput(
+            attrs={
+                'class': 'form-control',
+                'placeholder': 'Canlı Adı'
             }
         )
     )
 
     description = forms.CharField(
-        label="Description",
+        label="Tanım",
         widget=forms.TextInput(
             attrs={
                 'class': 'form-control',
@@ -23,7 +33,7 @@ class FastaWritingForm(forms.Form):
     )
 
     sequence = forms.CharField(
-        label="Sequence",
+        label="Sekans",
         widget=forms.Textarea(
             attrs={
                 'class': 'form-control',
@@ -31,6 +41,7 @@ class FastaWritingForm(forms.Form):
             }
         )
     )
+
 
 class GenbankWritingForm(forms.Form):
     lokus = forms.CharField(
@@ -150,4 +161,3 @@ class GenbankWritingForm(forms.Form):
             }
         )
     )
-

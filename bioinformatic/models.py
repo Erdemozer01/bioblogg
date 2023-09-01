@@ -37,7 +37,6 @@ class FastaRead(models.Model):
         verbose_name = "Fasta Okuması"
         verbose_name_plural = "Fasta Okumaları"
 
-
 class GenbankRead(models.Model):
     organism = models.CharField(verbose_name="Organizma", max_length=1000)
     description = models.CharField(max_length=1000, verbose_name="Tanım")
@@ -108,31 +107,6 @@ class SwissProtModel(models.Model):
         verbose_name = "swiss-prot"
         verbose_name_plural = "swiss-prot"
 
-
-class BigFileUploadModel(models.Model):
-    big_file = models.FileField(verbose_name="Dosya Seçme", upload_to="laboratory/bigfile/")
-    created = models.DateTimeField(auto_now_add=True, null=True)
-
-    def __str__(self):
-        return self.big_file
-
-    class Meta:
-        db_table = "bigfile"
-        verbose_name = "bigfile"
-        verbose_name_plural = "bigfile"
-
-
-class FileUploadModel(models.Model):
-    file = models.FileField(verbose_name="Dosya Seçme", upload_to="laboratory/bigfile/")
-    created = models.DateTimeField(auto_now_add=True, null=True)
-
-    def __str__(self):
-        return self.file
-
-    class Meta:
-        db_table = "file"
-        verbose_name = "file"
-        verbose_name_plural = "files"
 
 
 MSA_TYPE = (
@@ -390,11 +364,3 @@ class GraphicModels(models.Model):
 
     def __str__(self):
         return str(self.user)
-
-
-class MaximumFileSize(models.Model):
-    file_size = models.BigIntegerField()
-    created = models.DateTimeField(auto_now_add=True, verbose_name='Oluşturulma Tarihi')
-
-    def __str__(self):
-        return str(self.file_size)

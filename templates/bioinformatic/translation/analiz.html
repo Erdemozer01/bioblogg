@@ -1,4 +1,4 @@
-{% extends "blog/layouts/base.html" %}
+{% extends "blog/layouts/base-fullscreen.html" %}
 {% load django_bootstrap5 %}
 {% block title %} DNA SEKANS ANALİZ {% endblock %}
 
@@ -7,7 +7,7 @@
 
 {% block content %}
     <!-- Section -->
-    <section class="min-vh-100 d-flex bg-primary align-items-center mt-6 mb-2">
+    <section class="min-vh-50 d-flex bg-primary align-items-center mt-6 mb-2">
         <div class="container">
             <div class="row justify-content-center">
                 <div class="col-12 col-md-8 col-lg-6 justify-content-center">
@@ -28,12 +28,15 @@
                             {% endif %}
                         </div>
                         <div class="card-body">
-                            <form method="post">
+                            <form method="post" class="border-bottom">
                                 {% csrf_token %}
                                 {% bootstrap_form form %}
-                                <button type="submit" class="btn btn-primary float-right"> ANALİZ </button>
+                                <button type="submit" class="btn btn-primary float-right"> ANALİZ</button>
                             </form>
                             <!-- End of Form -->
+                            <a href="{% url 'bioinformatic:home' %}">
+                                <button type="button" class="btn btn-primary float-left">&laquo; GERİ</button>
+                            </a>
                         </div>
                     </div>
                 </div>

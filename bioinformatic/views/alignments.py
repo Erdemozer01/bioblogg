@@ -15,7 +15,7 @@ from Bio.Align.Applications import ClustalwCommandline, ClustalOmegaCommandline,
 from bioinformatic \
     .forms.alignments import GlobalForm, LocalForm, MultipleSequenceAlignmentForm, MultipleSequenceAlignmentSelectForm, \
     MaximumLikeHoodForm
-from bioinformatic.models import MultipleSequenceAlignment, MaximumFileSize
+from bioinformatic.models import MultipleSequenceAlignment
 from django.views import generic
 from dash import html, dcc
 import dash_bio as dashbio
@@ -789,7 +789,7 @@ class AlignmentClusterGramView(generic.DetailView):
 
         df = pd.read_csv(handle).set_index('organizma')
 
-        columns = list(df.columns.values)
+        columns = df.columns.to_list()
         rows = list(df.index)
 
         clustergram = dashbio.Clustergram(

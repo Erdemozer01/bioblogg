@@ -9,6 +9,7 @@ urlpatterns = [
     path('protein-sentezi/', views.translation, name="translation"),
     path('download-fasta/', views.fasta_download, name="fasta_download"),
     path('reading-fasta/', views.fasta_reading, name="fasta_reading"),
+    path('fasta-file-translate/', views.fasta_file_translate, name="fasta_file_translate"),
     path('reading-fasta-detail/<pk>/<user>/<slug:name>/', views.FastaReadingDetailView.as_view(),
          name="fasta_reading_detail"),
     path('combine-fasta-download/', views.combine_fasta_download, name="combine_fasta_download"),
@@ -17,7 +18,7 @@ urlpatterns = [
     path('fasta-add/', views.fasta_add, name="fasta_add"),
     path('fasta-combine/', views.fasta_file_combine, name="fasta_file_combine"),
     path('genbank-read/', views.genbank_read, name="genbank_read"),
-    path('fasta-file-translate/', views.fasta_file_translate, name="fasta_file_translate"),
+
     path('fasta-protein-download/', views.fasta_protein_download, name="fasta_protein_download"),
     path('genbank-region/', views.GenBankResultView.as_view(), name="genbank_region"),
     path('genome-diagram/', views.genome_diagram, name="genome_diagram"),

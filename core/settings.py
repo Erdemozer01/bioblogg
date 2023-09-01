@@ -38,7 +38,10 @@ INSTALLED_APPS = [
     'hitcount',
     'ckeditor',
     'ckeditor_uploader',
+    'channels',
+    'dpd_components',
 ]
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -48,6 +51,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django_plotly_dash.middleware.BaseMiddleware',
     'django_auto_logout.middleware.auto_logout',
 ]
 
@@ -140,7 +144,11 @@ CKEDITOR_UPLOAD_PATH = "uploads/"
 
 X_FRAME_OPTIONS = 'SAMEORIGIN'
 
-AUTO_LOGOUT = {'IDLE_TIME': 600}
+AUTO_LOGOUT = {'IDLE_TIME': 86400}
+
+PLOTLY_COMPONENTS = [
+    'dpd_static_support'
+]
 
 CKEDITOR_CONFIGS = {
     'default': {

@@ -5,31 +5,38 @@ from django.http import HttpResponse
 from django.shortcuts import render, reverse
 from django.http import FileResponse
 from bioinformatic.models import MultipleSequenceAlignment
+from django.contrib import messages
+
 
 def maxlike_download(request):
     obj = MultipleSequenceAlignment.objects.filter(user=request.user).latest('created')
     response = FileResponse(obj.ml_file.file, as_attachment=True)
     return response
 
+
 def aligned_download(request):
     obj = MultipleSequenceAlignment.objects.filter(user=request.user).latest('created')
     response = FileResponse(obj.align_file.file, as_attachment=True)
     return response
+
 
 def maxlike_stats_download(request):
     obj = MultipleSequenceAlignment.objects.filter(user=request.user).latest('created')
     response = FileResponse(obj.stats.file, as_attachment=True)
     return response
 
+
 def maxlike_scores_download(request):
     obj = MultipleSequenceAlignment.objects.filter(user=request.user).latest('created')
     response = FileResponse(obj.scores.file, as_attachment=True)
     return response
 
+
 def phylo_tree_download(request):
     obj = MultipleSequenceAlignment.objects.filter(user=request.user).latest('created')
     response = FileResponse(obj.tree_file.file, as_attachment=True)
     return response
+
 
 def swiss_download(request):
     # Define Django project base directory
@@ -80,14 +87,13 @@ def fasta_download(request):
     # Return the response value
 
     try:
-
         return response
 
     except FileNotFoundError:
 
         msg = "İndirmeye çalıştığınız dosya bulunamadı"
 
-        return render(request, 'bioinformatic/fasta/notfound.html',
+        return render(request, 'exception/page-404.html',
                       {"msg": msg, 'bre': 'Hata'})
     finally:
         os.remove(filepath)
@@ -117,7 +123,7 @@ def genbank_download(request):
 
         msg = "İndirmeye çalıştığınız dosya bulunamadı"
 
-        return render(request, 'bioinformatic/fasta/notfound.html',
+        return render(request, 'exception/page-404.html',
                       {"msg": msg, 'bre': 'Hata'})
     finally:
         os.remove(filepath)
@@ -432,6 +438,7 @@ def clustal_scores_download(request):
     finally:
         os.remove(filepath)
 
+
 def nucleotid_matrix_positions_download(request):
     try:
         # Define Django project base directory
@@ -463,6 +470,7 @@ def nucleotid_matrix_positions_download(request):
                       {"msg": msg, 'bre': 'Hata'})
     finally:
         os.remove(filepath)
+
 
 def motif_download(request):
     try:
@@ -496,6 +504,7 @@ def motif_download(request):
     finally:
         os.remove(filepath)
 
+
 def jaspar_motif_download(request):
     try:
         # Define Django project base directory
@@ -527,6 +536,7 @@ def jaspar_motif_download(request):
                       {"msg": msg, 'bre': 'Hata'})
     finally:
         os.remove(filepath)
+
 
 def pssm_download(request):
     try:
@@ -560,6 +570,7 @@ def pssm_download(request):
     finally:
         os.remove(filepath)
 
+
 def pwm_download(request):
     try:
         # Define Django project base directory
@@ -591,6 +602,7 @@ def pwm_download(request):
                       {"msg": msg, 'bre': 'Hata'})
     finally:
         os.remove(filepath)
+
 
 def histogram_download(request):
     try:
@@ -624,6 +636,7 @@ def histogram_download(request):
     finally:
         os.remove(filepath)
 
+
 def gc_plot_download(request):
     try:
         # Define Django project base directory
@@ -655,6 +668,7 @@ def gc_plot_download(request):
                       {"msg": msg, 'bre': 'Hata'})
     finally:
         os.remove(filepath)
+
 
 def dot_plot_download(request):
     try:
@@ -688,6 +702,7 @@ def dot_plot_download(request):
     finally:
         os.remove(filepath)
 
+
 def genome_diagram_pdf_download(request):
     try:
         # Define Django project base directory
@@ -719,6 +734,7 @@ def genome_diagram_pdf_download(request):
                       {"msg": msg, 'bre': 'Hata'})
     finally:
         os.remove(filepath)
+
 
 def genome_diagram_image_download(request):
     try:
@@ -752,6 +768,7 @@ def genome_diagram_image_download(request):
     finally:
         os.remove(filepath)
 
+
 def global_alignments_download(request):
     # Define Django project base directory
     BASE_DIR = Path(__file__).resolve().parent.parent
@@ -777,6 +794,7 @@ def global_alignments_download(request):
     finally:
         os.remove(filepath)
 
+
 def local_alignments_download(request):
     # Define Django project base directory
     BASE_DIR = Path(__file__).resolve().parent.parent
@@ -801,6 +819,7 @@ def local_alignments_download(request):
                       {"msg": msg, 'bre': 'Hata'})
     finally:
         os.remove(filepath)
+
 
 def muscle_aligned_download(request):
     # Define Django project base directory
@@ -830,6 +849,7 @@ def muscle_aligned_download(request):
                       {"msg": msg, 'bre': 'Hata'})
     finally:
         os.remove(filepath)
+
 
 def blast_xml_download(request):
     # Define Django project base directory

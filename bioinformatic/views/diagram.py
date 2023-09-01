@@ -22,7 +22,7 @@ def handle_uploaded_file(f):
 
 @login_required
 def genome_diagram(request):
-    global file_path, input_file, diagram
+    global file_path, input_file, diagram, input_file_path, handle
     form = GenomeDiagramForm()
     restric = RestrictionModelFormFactory2()
     enzyme_obj = RestrictionModel.objects.filter(user_id=request.user.pk)
