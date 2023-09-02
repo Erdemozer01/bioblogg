@@ -161,8 +161,17 @@ class PostDetailView(HitCountDetailView, generic.DetailView, generic.FormView):
 
             messages.success(request, "Yorumunuz başarılı bir şekilde eklendi")
 
-            Notifications.objects.create(user=comment.post.author,
-                                         name=f"{comment.commentator} {comment.post.title} başlıklı gönderinize yorum yaptı", url=redirect(self.request.build_absolute_uri()).url)
+            if not Notifications.objects.filter(user=comment.post.author, type="yorum",
+                                         title=f"{comment.commentator} {comment.post.title} başlıklı gönderinize yorum yaptı",
+                                         text=comment.comment,
+                                         url=redirect(self.request.build_absolute_uri()).url
+                                         ):
+
+                Notifications.objects.create(user=comment.post.author, type="yorum",
+                                             title=f"{comment.commentator} {comment.post.title} başlıklı gönderinize yorum yaptı",
+                                             text=comment.comment,
+                                             url=redirect(self.request.build_absolute_uri()).url
+                                             )
 
         return HttpResponseRedirect(self.request.build_absolute_uri())
 
@@ -289,12 +298,29 @@ def comment_like(request, id):
         messages.error(request, "Gönderiyi beğenmek için giriş yapınız!")
         return redirect('%s?next=/blog/' % (settings.LOGIN_URL))
     comment = get_object_or_404(Comments, id=id)
+
     if comment.commentator.username == request.user.username:
         messages.info(request, "Kendini beğenmiş birisin :) ")
     else:
         messages.success(request, f"{comment.commentator.username} isimli kullanıcının yorumunu beğendiniz")
 
     comment.likes.add(request.user)
+
+    if not Notifications.objects.filter(user=comment.commentator, title=f"{request.user} yorumunu beğendi",
+                                 type="dislike_comment", text=comment.comment):
+
+        Notifications.objects.create(user=comment.commentator, title=f"{request.user} yorumunu beğendi",
+                                     type="dislike_comment", text=comment.comment)
+
+        for like in comment.likes.values():
+            if not request.user.username == like.get("username"):
+                send_mail(
+                    f"{request.user} yorumunuzu beğendi",
+                    f"{request.user} isimli kullanıcı {comment.comment} yorumunuzu beğendi.",
+                    "bioblogdestek@gmail.com",
+                    [comment.commentator.email],
+                    fail_silently=False,
+                )
 
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
@@ -303,9 +329,30 @@ def comment_dislike(request, id):
     if request.user.is_anonymous:
         messages.error(request, "Gönderiyi beğenmek için giriş yapınız!")
         return redirect('%s?next=/blog/' % (settings.LOGIN_URL))
+
     comment = get_object_or_404(Comments, id=id)
     comment.dislike.add(request.user)
     messages.error(request, f"{comment.commentator.username} isimli kullanıcının yorumunu beğenmediniz")
+
+    if not Notifications.objects.filter(
+            user=comment.commentator,
+            title=f"{request.user} yorumunu beğenmedi",
+            type="dislike_comment", text=comment.comment):
+
+        Notifications.objects.create(user=comment.commentator, title=f"{request.user} yorumunu beğenmedi",
+                                     type="dislike_comment", text=comment.comment)
+
+        for like in comment.dislike.values():
+            if not request.user.username == like.get("username"):
+
+                send_mail(
+                    f"{request.user} yorumunuzu beğenmedi",
+                    f"{request.user} isimli kullanıcı {comment.comment} yorumunuzu beğenmedi.",
+                    "bioblogdestek@gmail.com",
+                    [comment.commentator.email],
+                    fail_silently=False,
+                )
+
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 
@@ -329,14 +376,21 @@ def like_post(request, pk, slug):
     post = get_object_or_404(Posts, pk=pk, slug=slug)
     post.likes.add(request.user)
     messages.success(request, f"{post.title} başlıklı gönderiyi beğendiniz")
-    Notifications.objects.create(user=post.author, name=f"{request.user}, {post.title} başlıklı gönderinizi beğendi.")
-    send_mail(
-        f"{request.user} gönderinizi beğendi",
-        f"{request.user} isimli kullanıcı {post.title} başlıklı gönderinizi beğendi.",
-        "bioblogdestek@gmail.com",
-        [post.author.email],
-        fail_silently=False,
-    )
+
+    if not Notifications.objects.filter(user=post.author, title=f"{request.user}, {post.title} başlıklı gönderinizi beğendi.",
+                                 type="like_post"):
+        Notifications.objects.create(user=post.author,
+                                     title=f"{request.user}, {post.title} başlıklı gönderinizi beğendi.",
+                                     type="like_post")
+    for like in post.likes.values():
+        if not request.user.username == like.get("username"):
+            send_mail(
+                f"{request.user} gönderinizi beğendi",
+                f"{request.user} isimli kullanıcı {post.title} başlıklı gönderinizi beğendi.",
+                "bioblogdestek@gmail.com",
+                [post.author.email],
+                fail_silently=False,
+            )
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 
@@ -347,6 +401,13 @@ def dislike_post(request, pk, title):
     post = get_object_or_404(Posts, pk=pk, title=title)
     post.dislike.add(request.user)
     messages.error(request, f"{post.title} başlıklı gönderiyi beğenmediniz")
+    if Notifications.objects.get(user=post.author,
+                                 title=f"{request.user}, {post.title} başlıklı gönderinizi beğenmedi.",
+                                 type="dislike_post").DoesNotExist:
+        Notifications.objects.create(user=post.author,
+                                     title=f"{request.user}, {post.title} başlıklı gönderinizi beğenmedi.",
+                                     type="dislike_post")
+
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 
