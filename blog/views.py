@@ -12,7 +12,7 @@ from accounts.models import Profile, ContactModel
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
 from blog.forms.contact import BlogContactForm
-
+from django.core.mail import send_mail
 
 class CategoriesView(generic.ListView, generic.FormView):
     template_name = 'blog/pages/category.html'
@@ -149,6 +149,8 @@ class PostDetailView(HitCountDetailView, generic.DetailView, generic.FormView):
             comment.save()
 
             messages.success(request, "Yorumunuz başarılı bir şekilde eklendi")
+
+
 
         return HttpResponseRedirect(self.request.build_absolute_uri())
 
@@ -376,20 +378,25 @@ class ProfileView(generic.DetailView, generic.CreateView):
 def profile_view(request, username, pk):
     global user_social, object
     post_list = Posts.objects.filter(author=pk)
+
     try:
         object = User.objects.get(username=username, pk=pk)
+
     except:
         return render(request, "exception/page-404.html")
 
     for profile in Profile.objects.filter(user=pk):
         user_social = profile.user_social.values()
+
     form = ContactProfileForm(request.POST or None)
+
     # Paginator
     paginator = Paginator(post_list, 6)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
     if request.method == "POST":
+
         email = request.POST.get('email')
 
         if email:
@@ -415,12 +422,26 @@ def profile_view(request, username, pk):
             sender = request.user
 
             if sender.username == receiver.username:
+
                 messages.error(request, "Kendi kendinize mesaj attınız")
+
                 return HttpResponseRedirect(request.build_absolute_uri())
+
             ContactModel.objects.create(sender=sender, receiver=receiver, content=content, contact_email=contact_email,
                                         title=title)
+
+            send_mail(
+                "Mesajınız var.",
+                f" Gönderen : {sender} \n\n\n Başlık: {title} \n\n\n Email: {contact_email} \n\n\n Yazdığı mesaj : \n\n {content}",
+                "bioblogdestek@gmail.com",
+                [receiver.email],
+                fail_silently=False,
+            )
+
             messages.success(request, "Mesajınız başarılı bir şekilde gönderildi")
+
             return HttpResponseRedirect(request.build_absolute_uri())
+
     return render(request, 'blog/pages/profile.html', {'form': form, 'post_list': post_list,
                                                        'user_social': user_social, "object": object,
                                                        "page_obj": page_obj})
@@ -444,6 +465,7 @@ class ProfileUpdateViewNonStaff(generic.UpdateView):
 def blog_contact(request):
     contact = BlogContactModel.objects.last()
     contact_form = BlogContactForm(request.POST or None)
+
     if request.method == "POST":
         email = request.POST.get('email_sub')
 
@@ -468,13 +490,57 @@ def blog_contact(request):
                 return HttpResponseRedirect(request.build_absolute_uri())
 
         elif contact_form.is_valid():
+            name = contact_form.cleaned_data["name"]
+            email = contact_form.cleaned_data["email"]
+            message = contact_form.cleaned_data["message"]
+
+            send_mail(
+                "Blog iletişime mesaj atan oldu...",
+                f" Gönderen : {name} \n\n\n Email: {email} \n\n\n Yazdığı mesaj : \n\n {message}",
+                "bioblogdestek@gmail.com",
+                ["ozer246@gmail.com"],
+                fail_silently=False,
+            )
+
+            messages.success(request, "Mesajınız iletildi. En kısa sürede mesajınızı yanıtlamaya çalışacağız. ")
+
             contact_form.save()
-            messages.success(request, "Mesajınız iletildi")
+
             return HttpResponseRedirect(request.build_absolute_uri())
+
         else:
             contact_form = BlogContactForm()
+
     return render(request, "blog/pages/blog_contact.html", {'contact': contact, 'contact_form': contact_form})
 
 
 def about(request):
+
+    if request.method == "POST":
+        email = request.POST.get('email_sub')
+
+        if email:
+
+            if Subscribe.objects.exists():
+
+                for abone in Subscribe.objects.all():
+
+                    if email in abone.email:
+                        messages.error(request, "Bültene zaten abonesiniz")
+                        return HttpResponseRedirect(request.build_absolute_uri())
+
+                    else:
+                        Subscribe.objects.create(email=email)
+                        messages.success(request, "Başarılı bir şekilde abone oldunuz")
+
+                        return HttpResponseRedirect(request.build_absolute_uri())
+
+            else:
+
+                Subscribe.objects.create(email=email)
+
+                messages.success(request, "Başarılı bir şekilde abone oldunuz")
+
+                return HttpResponseRedirect(request.build_absolute_uri())
+
     return render(request, "blog/pages/about.html")

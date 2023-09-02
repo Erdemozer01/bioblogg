@@ -8,6 +8,33 @@
     <main>
         <section class="section section-lg pt-0 mt-8">
             <div class="container">
+                {% if messages %}
+                    {% for message in messages %}
+                        {% if message.tags == 'error' %}
+                            <div class="alert alert-danger alert-dismissible shadow-soft fade show" role="alert">
+                        {% else %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible shadow-soft fade show"
+                                 role="alert">
+                        {% endif %}
+
+                    <span class="alert-inner--icon">
+                                    {% if message.tags == 'error' %}
+                                        <span class="far fa-thumbs-down"></span>
+                                    {% elif message.tags == 'success' %}
+                                        <span class="far fa-thumbs-up"></span>
+                                    {% else %}
+
+                                    {% endif %}
+                                </span>
+
+                    <span class="alert-inner--text"><strong>{{ message }}</strong> </span>
+
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    </div>
+                    {% endfor %}
+                {% endif %}
                 <div class="row align-items-center justify-content-around">
                     <div class="col-md-6 col-xl-6 mb-5">
                         <div class="card bg-primary shadow-soft border-light organic-radius p-3"><img
@@ -15,24 +42,32 @@
                                 alt="modern desk">
                         </div>
                     </div>
-                    <div class="col-md-6 col-xl-5 text-center text-md-left"><h2 class="h1 mb-4">Design with us, Develop
-                        Anything.</h2>
-                        <p class="lead">Themesberg is an experienced and passionate group of designers, developers,
-                            project
+
+                    <div class="col-md-6 col-xl-5 text-center text-md-left">
+                        <h2 class="h1 mb-4">Design with us, Develop Anything.</h2>
+
+                        <p class="lead">
+                            Themesberg is an experienced and passionate group of designers, developers, project
                             managers, writers and artists. Every client we work with becomes a part of the team.
-                            Together we
-                            face the challenges and celebrate the victories.</p>
-                        <p class="lead">Our small team is active in the creative community, endlessly interested in
-                            what’s
-                            next, and generally pleasant to be around.</p><img
-                                src="{% static "blog/assets/img/signature.svg" %}"
+                            Together we face the challenges and celebrate the victories.
+                        </p>
+
+
+                        <p class="lead">
+
+                            Our small team is active in the creative community, endlessly interested in what’s
+                            next, and generally pleasant to be around.</p>
+
+                        <img src="{% static "blog/assets/img/signature.svg" %}"
                                 alt="signature" class="mt-4" width="150">
                     </div>
+                </div>
                 </div>
             </div>
         </section>
 
         <section class="section section-lg pt-0">
+
             <div class="container">
                 <div class="row">
                     <div class="col">
@@ -68,6 +103,7 @@
                     </div>
                 </div>
             </div>
+
         </section>
 
         <section class="section section-lg pt-0">
@@ -99,15 +135,21 @@
         </section>
 
         <section class="section section-lg pt-0">
+
             <div class="container">
+
                 <div class="row justify-content-center mb-5"><h2 class="h1">Our Team</h2></div>
+
                 <div class="row">
+
                     <div class="col-12 col-md-6 col-lg-4">
                         <div class="card bg-primary shadow-soft border-light text-center py-4 mb-5">
                             <div class="profile-image shadow-inset border border-light bg-primary rounded-circle p-3 mx-auto">
                                 <img src="../../assets/img/team/profile-picture-1.jpg"
                                      class="card-img-top shadow-soft p-2 border border-light rounded-circle"
-                                     alt="Neil Avatar"></div>
+                                     alt="Neil Avatar">
+                            </div>
+
                             <div class="card-body"><h3 class="h5 mb-2">Neil Sims</h3><span
                                     class="h6 font-weight-normal text-gray mb-3">Co-Founder Themesberg</span>
                                 <ul class="list-unstyled d-flex justify-content-center my-3">
@@ -181,7 +223,9 @@
                         </div>
                     </div>
                 </div>
+
             </div>
+
         </section>
 
     </main>

@@ -167,6 +167,7 @@
                         </div>
                     </div>
             </section>
+
             <section class="section section-lg bg-primary">
                 <div class="container">
                     <div class="row">
@@ -197,66 +198,65 @@
                                 </div>
                             </div>
                         {% endfor %}
-
                         <div class="d-flex justify-content-center w-100">
-                        <div class="mt-5">
-                            <nav aria-label="Blog page navigation">
-                                <ul class="pagination">
-                                    {% if page_obj.has_previous %}
-                                        <li class="page-item">
-                                            <a class="page-link" aria-label="ilk sayfa" title="ilk sayfa"
-                                               href="?page=1">
-                                                <span class="fas fa-angle-double-left"></span>
-                                            </a>
-                                        </li>
-
-                                        <li class="page-item">
-                                            <a class="page-link rounded" aria-label="önceki sayfa"
-                                               title="önceki sayfa"
-                                               href="?page={{ page_obj.previous_page_number }}">
-                                                <span class="fas fa-angle-left"></span>
-                                            </a>
-                                        </li>
-
-                                    {% endif %}
-                                    {% for number in page_obj.paginator.page_range %}
-                                        {% if page_obj.number == number %}
-                                            <li class="page-item active">
-                                                <a class="page-link" href="#">{{ number }}</a>
+                            <div class="mt-5">
+                                <nav aria-label="Blog page navigation">
+                                    <ul class="pagination">
+                                        {% if page_obj.has_previous %}
+                                            <li class="page-item">
+                                                <a class="page-link" aria-label="ilk sayfa" title="ilk sayfa"
+                                                   href="?page=1">
+                                                    <span class="fas fa-angle-double-left"></span>
+                                                </a>
                                             </li>
+
+                                            <li class="page-item">
+                                                <a class="page-link rounded" aria-label="önceki sayfa"
+                                                   title="önceki sayfa"
+                                                   href="?page={{ page_obj.previous_page_number }}">
+                                                    <span class="fas fa-angle-left"></span>
+                                                </a>
+                                            </li>
+
+                                        {% endif %}
+                                        {% for number in page_obj.paginator.page_range %}
+                                            {% if page_obj.number == number %}
+                                                <li class="page-item active">
+                                                    <a class="page-link" href="#">{{ number }}</a>
+                                                </li>
+                                            {% else %}
+                                                <li class="page-item">
+                                                    <a class="page-link" href="?page={{ number }}">{{ number }}</a>
+                                                </li>
+                                            {% endif %}
+                                        {% endfor %}
+                                        {% if page_obj.has_next %}
+                                            <li class="page-item">
+                                                <a class="page-link rounded" aria-label="first link"
+                                                   title="sonraki sayfa"
+                                                   href="?page={{ page_obj.next_page_number }}">
+                                                    <span class="fas fa-angle-right"></span>
+                                                </a>
+                                            </li>
+                                            <li class="page-item">
+                                                <a class="page-link" aria-label="first link" title="son sayfa"
+                                                   href="?page={{ page_obj.paginator.num_pages }}">
+                                                    <span class="fas fa-angle-double-right"></span>
+                                                </a>
+                                            </li>
+
                                         {% else %}
                                             <li class="page-item">
-                                                <a class="page-link" href="?page={{ number }}">{{ number }}</a>
+                                                <a class="page-link" aria-label="first link"
+                                                   href="#">
+                                                    <span class="fas fa-angle-double-right"></span>
+                                                </a>
                                             </li>
                                         {% endif %}
-                                    {% endfor %}
-                                    {% if page_obj.has_next %}
-                                        <li class="page-item">
-                                            <a class="page-link rounded" aria-label="first link"
-                                               title="sonraki sayfa"
-                                               href="?page={{ page_obj.next_page_number }}">
-                                                <span class="fas fa-angle-right"></span>
-                                            </a>
-                                        </li>
-                                        <li class="page-item">
-                                            <a class="page-link" aria-label="first link" title="son sayfa"
-                                               href="?page={{ page_obj.paginator.num_pages }}">
-                                                <span class="fas fa-angle-double-right"></span>
-                                            </a>
-                                        </li>
-
-                                    {% else %}
-                                        <li class="page-item">
-                                            <a class="page-link" aria-label="first link"
-                                               href="#">
-                                                <span class="fas fa-angle-double-right"></span>
-                                            </a>
-                                        </li>
-                                    {% endif %}
-                                </ul>
-                            </nav>
+                                    </ul>
+                                </nav>
+                            </div>
                         </div>
-                    </div>
                     </div>
                 </div>
             </section>
@@ -264,7 +264,13 @@
 
         <div class="section section-md">
             <div class="container">
-                <div class="row justify-content-center">
+                {% if request.user.is_anonymous %}
+                    <div class="row justify-content-center">
+                    <div class="col-12 col-md-10 mb-5 text-center">
+                        <h2>İletişim için giriş yapın</h2>
+                    </div>
+                {% else %}
+                    <div class="row justify-content-center">
                     <div class="col-12 col-md-10 mb-5 text-center"><h2>İletişim</h2>
                     </div>
                     <div class="col-12 col-lg-8">
@@ -281,9 +287,10 @@
                             </div>
                         </form>
                     </div>
+                {% endif %}
+                </div>
                 </div>
             </div>
-        </div>
     </main>
 
 {% endblock %}

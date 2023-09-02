@@ -18,7 +18,6 @@ urlpatterns = [
     path('fasta-add/', views.fasta_add, name="fasta_add"),
     path('fasta-combine/', views.fasta_file_combine, name="fasta_file_combine"),
     path('genbank-read/', views.genbank_read, name="genbank_read"),
-
     path('fasta-protein-download/', views.fasta_protein_download, name="fasta_protein_download"),
     path('genbank-region/', views.GenBankResultView.as_view(), name="genbank_region"),
     path('genome-diagram/', views.genome_diagram, name="genome_diagram"),
