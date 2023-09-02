@@ -14,6 +14,7 @@ from django.core.paginator import Paginator
 from blog.forms.contact import BlogContactForm
 from django.core.mail import send_mail
 
+
 class CategoriesView(generic.ListView, generic.FormView):
     template_name = 'blog/pages/category.html'
     model = Category
@@ -149,8 +150,6 @@ class PostDetailView(HitCountDetailView, generic.DetailView, generic.FormView):
             comment.save()
 
             messages.success(request, "Yorumunuz başarılı bir şekilde eklendi")
-
-
 
         return HttpResponseRedirect(self.request.build_absolute_uri())
 
@@ -422,7 +421,6 @@ def profile_view(request, username, pk):
             sender = request.user
 
             if sender.username == receiver.username:
-
                 messages.error(request, "Kendi kendinize mesaj attınız")
 
                 return HttpResponseRedirect(request.build_absolute_uri())
@@ -432,7 +430,8 @@ def profile_view(request, username, pk):
 
             send_mail(
                 "Mesajınız var.",
-                f" Gönderen : {sender} \n\n\n Başlık: {title} \n\n\n Email: {contact_email} \n\n\n Yazdığı mesaj : \n\n {content}",
+                f" Gönderen : {sender} \n\n\n Başlık: {title} \n\n\n ,"
+                        f"Email: {contact_email} \n\n\n Yazdığı mesaj : \n\n\n {content}",
                 "bioblogdestek@gmail.com",
                 [receiver.email],
                 fail_silently=False,
@@ -515,7 +514,6 @@ def blog_contact(request):
 
 
 def about(request):
-
     if request.method == "POST":
         email = request.POST.get('email_sub')
 

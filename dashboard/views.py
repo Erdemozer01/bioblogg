@@ -185,6 +185,7 @@ def profile_update(request, pk, username):
     if request.method == "POST":
 
         if user_edit_form.is_valid():
+
             user_edit_form.save()
             messages.success(request, 'Kullanıcı bilgileriniz başarılı bir şekilde güncellendi')
             return redirect(request.META['HTTP_REFERER'])
