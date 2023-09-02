@@ -13,6 +13,7 @@ from django.contrib.auth.models import User
 from django.core.paginator import Paginator
 from blog.forms.contact import BlogContactForm
 from django.core.mail import send_mail
+from dashboard.models import Notifications
 
 
 class CategoriesView(generic.ListView, generic.FormView):
@@ -147,9 +148,21 @@ class PostDetailView(HitCountDetailView, generic.DetailView, generic.FormView):
             comment = Comments(comment=request.POST.get('comment'),
                                commentator=self.request.user,
                                post=self.get_object())
+            send_mail(
+                "Gönderinize yorum yapıldı",
+                f"{self.request.user} isimli kullanıcı {comment.post.title} başlıklı gönderinize yorum yaptı.\n\n\n"
+                f"Yorum: \n\n {comment.comment}."
+                f"\n\n {redirect(self.request.build_absolute_uri()).url}",
+                "bioblogdestek@gmail.com",
+                [comment.post.author.email],
+                fail_silently=False,
+            )
             comment.save()
 
             messages.success(request, "Yorumunuz başarılı bir şekilde eklendi")
+
+            Notifications.objects.create(user=comment.post.author,
+                                         name=f"{comment.commentator} {comment.post.title} başlıklı gönderinize yorum yaptı", url=redirect(self.request.build_absolute_uri()).url)
 
         return HttpResponseRedirect(self.request.build_absolute_uri())
 
@@ -312,9 +325,18 @@ def like_post(request, pk, slug):
     if request.user.is_anonymous:
         messages.error(request, "Gönderiyi beğenmek için giriş yapınız!")
         return redirect('%s?next=/blog/' % (settings.LOGIN_URL))
+
     post = get_object_or_404(Posts, pk=pk, slug=slug)
     post.likes.add(request.user)
     messages.success(request, f"{post.title} başlıklı gönderiyi beğendiniz")
+    Notifications.objects.create(user=post.author, name=f"{request.user}, {post.title} başlıklı gönderinizi beğendi.")
+    send_mail(
+        f"{request.user} gönderinizi beğendi",
+        f"{request.user} isimli kullanıcı {post.title} başlıklı gönderinizi beğendi.",
+        "bioblogdestek@gmail.com",
+        [post.author.email],
+        fail_silently=False,
+    )
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 
@@ -431,7 +453,7 @@ def profile_view(request, username, pk):
             send_mail(
                 "Mesajınız var.",
                 f" Gönderen : {sender} \n\n\n Başlık: {title} \n\n\n ,"
-                        f"Email: {contact_email} \n\n\n Yazdığı mesaj : \n\n\n {content}",
+                f"Email: {contact_email} \n\n\n Yazdığı mesaj : \n\n\n {content}",
                 "bioblogdestek@gmail.com",
                 [receiver.email],
                 fail_silently=False,

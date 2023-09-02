@@ -96,7 +96,7 @@
                         </a>
                         <ul class="dropdown-menu notif-box animated fadeIn" aria-labelledby="notifDropdown">
                             <li>
-                                <div class="dropdown-title">You have 4 new notification</div>
+                                <div class="dropdown-title">4 bildiriminiz var.</div>
                             </li>
                             <li>
                                 <div class="notif-scroll scrollbar-outer">
@@ -105,16 +105,16 @@
                                             <div class="notif-icon notif-primary"><i class="fa fa-user-plus"></i></div>
                                             <div class="notif-content">
 													<span class="block">
-														New user registered
+														{{ new_user.username }} isimli kullanıcı kayıt oldu
 													</span>
-                                                <span class="time">5 minutes ago</span>
+                                                <span class="time">{{ new_user.date_joined|timesince }}</span>
                                             </div>
                                         </a>
                                         <a href="#">
                                             <div class="notif-icon notif-success"><i class="fa fa-comment"></i></div>
                                             <div class="notif-content">
 													<span class="block">
-														Rahmad commented on Admin
+														{{ post_last.title }} başlıklı yeni gönderi eklendi
 													</span>
                                                 <span class="time">12 minutes ago</span>
                                             </div>

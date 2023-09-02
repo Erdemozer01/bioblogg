@@ -6,7 +6,6 @@ app_name = "dashboard"
 urlpatterns = [
     path('users-dashboard/<user>/', DashBoardView.as_view(), name="anasayfa"),
     path('user-posts/<user>/<int:pk>/', MyPostList.as_view(), name="user_posts"),
-    path('profile/<user>/', ProfileListView.as_view(), name="profile_dash"),
     path('social_media/<user>/', SocialMediaListView.as_view(), name="social_dash"),
     path('messages/<user>/', MessagesListView.as_view(), name="messages_list"),
     path('profile-update/<username>/<pk>/', profile_update, name="profile_update"),

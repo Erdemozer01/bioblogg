@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.views import generic
-from blog.models import Posts
-from blog.forms import ProfileModelForm, SocialMediaModelForm
+from blog.models import Posts, Comments
+from blog.forms import SocialMediaModelForm
 from dash import html, dcc
 from django_plotly_dash import DjangoDash
 import plotly.express as px
@@ -16,6 +16,8 @@ from accounts.forms import UserEditForm, ProfileEditForm, DeleteAccountForm
 from django.http import HttpResponseRedirect
 from django.contrib.auth.forms import PasswordChangeForm
 from accounts.forms import ContactMessagesReplyForm, UserMessagesForm
+from django.contrib.auth import update_session_auth_hash
+from .models import Notifications
 
 
 class DashBoardView(generic.ListView):
@@ -29,9 +31,11 @@ class DashBoardView(generic.ListView):
             return redirect('%s?next=/blog/' % (settings.LOGIN_URL))
 
         post_graph = DjangoDash('PostGraph')
+
         post_table = DjangoDash('PostTable')
 
         users_table = DjangoDash('ProfileTable')
+
         users_graph = DjangoDash('ProfileGraph')
 
         post_data = OrderedDict(
@@ -142,27 +146,9 @@ class DashBoardView(generic.ListView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['messages_list'] = ContactModel.objects.filter(receiver=self.request.user.pk)
-        context['messages_count'] = ContactModel.objects.filter(receiver=self.request.user.pk, is_read=False).count()
-        return context
+        context['new_user'] = User.objects.last()
+        context['post_last'] = Posts.objects.last()
 
-
-class ProfileListView(generic.ListView):
-    template_name = 'dashboard/pages/index.html'
-    model = Profile
-
-    def get(self, request, *args, **kwargs):
-        if not self.request.user.is_staff:
-            messages.error(request, "Yetkili girişi yapınız!")
-            return redirect('%s?next=/blog/' % (settings.LOGIN_URL))
-        return super().get(request, *args, **kwargs)
-
-    def get_queryset(self):
-        return Profile.objects.filter(user=self.request.user.pk)
-
-    def get_context_data(self, *, object_list=None, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['user_post_list'] = Posts.objects.filter(author=self.request.user)
         context['messages_list'] = ContactModel.objects.filter(receiver=self.request.user.pk)
         context['messages_count'] = ContactModel.objects.filter(receiver=self.request.user.pk, is_read=False).count()
         return context
@@ -196,7 +182,7 @@ def profile_update(request, pk, username):
             return redirect(request.META['HTTP_REFERER'])
 
         elif password_form.is_valid():
-            from django.contrib.auth import update_session_auth_hash
+
             update_session_auth_hash(request, password_form.user)
             password_form.save()
             messages.success(request, 'Kullanıcı şifreniz başarılı bir şekilde güncellendi')
@@ -216,7 +202,6 @@ def profile_update(request, pk, username):
                   {'user_edit_form': user_edit_form, 'profile_edit_form': profile_edit_form,
                    'password_form': password_form, 'delete_account_form': delete_account_form,
                    'messages_list': messages_list, 'messages_count': messages_count})
-
 
 
 class MessagesListView(generic.ListView):
@@ -365,7 +350,9 @@ class SocialMediaUpdateView(generic.UpdateView):
 
 
 def user_reply_message(request, pk, username, user_pk):
-
+    if not request.user.is_staff:
+        messages.error(request, "Yetkili girişi yapınız!")
+        return redirect('%s?next=/blog/' % (settings.LOGIN_URL))
     form = ContactMessagesReplyForm(request.POST or None)
     contact_object = ContactModel.objects.get(pk=pk)
     receiver = User.objects.get(pk=user_pk)
@@ -392,8 +379,10 @@ def user_reply_message(request, pk, username, user_pk):
 
 
 def user_sent_message(request, pk, username):
+    if not request.user.is_staff:
+        messages.error(request, "Yetkili girişi yapınız!")
+        return redirect('%s?next=/blog/' % (settings.LOGIN_URL))
     form = UserMessagesForm(request.POST or None)
-
     messages_list = ContactModel.objects.filter(receiver=request.user.pk)
     messages_count = ContactModel.objects.filter(receiver=request.user.pk, is_read=False).count()
 
@@ -446,3 +435,10 @@ class MyPostList(generic.ListView):
         context['messages_list'] = ContactModel.objects.filter(receiver=self.request.user.pk)
         context['messages_count'] = ContactModel.objects.filter(receiver=self.request.user.pk, is_read=False).count()
         return context
+
+
+def notifications(request):
+    posts_list_navbar = Posts.objects.filter(author=request.user)
+    comments_list_navbar = Comments.objects.filter(post__author=request.user)
+    user_list_navbar = User.objects.latest()
+    return render(request, "dashboard/pages/notifications.html", {"user_list_navbar": user_list_navbar})

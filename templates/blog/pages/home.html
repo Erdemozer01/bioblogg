@@ -47,7 +47,7 @@
                         <h3 class="h4 card-title mb-3">{{ latest.title }}</h3>
                         <span class="card-text small">
                                     <span class="far fa-calendar-alt mr-2"></span>{{ latest.created }}</span>
-                        <p class="card-text mt-4">{{ latest.text|safe|truncatechars_html:100 }}</p>
+                        <p class="card-text mt-4">{{ latest.title }}</p>
                         <div class="d-flex align-items-center">
                             <a href="{% url "blog:post_detail" latest.category.title.lower|slugify latest.slug latest.pk latest.author latest.author.id latest.created.date %}"
                                class="btn btn-primary btn-sm mr-3 animate-right-2">Ayrıntılar &raquo;</a>
@@ -104,7 +104,6 @@
                                     {{ post.author }}
                                 </a>
                                 <h3 class="h5 card-title my-4">{{ post.title }}</h3>
-                                <p class="card-text mb-4">{{ post.text|safe|truncatechars_html:100 }}</p>
                                 <a href="{% url "blog:post_detail" post.category.title.lower|slugify post.slug post.pk post.author post.author.id post.created.date %}"
                                    class="btn btn-primary btn-sm">Ayrıntılar &raquo;</a>
                             </div>
@@ -142,7 +141,7 @@
                                         </div>
                                     </div>
                                     <h3 class="h5 card-title mt-4">{{ object.title }}</h3>
-                                    <p class="card-text">{{ object.text|safe|truncatechars_html:150 }}</p>
+
                                     <a href="{% url "blog:post_detail" object.category.title.lower|slugify object.slug object.pk object.author object.author.id object.created.date %}"
                                        class="btn btn-primary btn-sm">Ayrıntılar &raquo;</a>
                                     {% if object.author.username == request.user.username %}
