@@ -88,67 +88,54 @@
                         </ul>
                     </li>
 
+
                     <li class="nav-item dropdown hidden-caret">
                         <a class="nav-link dropdown-toggle" href="#" id="notifDropdown" role="button"
                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             <i class="fa fa-bell"></i>
-                            <span class="notification">4</span>
+                            <span class="notification">{{ notifications.count }}</span>
                         </a>
+
                         <ul class="dropdown-menu notif-box animated fadeIn" aria-labelledby="notifDropdown">
                             <li>
-                                <div class="dropdown-title">4 bildiriminiz var.</div>
+                                <div class="dropdown-title">{{ notifications.count }} bildiriminiz var.</div>
                             </li>
+
                             <li>
                                 <div class="notif-scroll scrollbar-outer">
                                     <div class="notif-center">
-                                        <a href="#">
-                                            <div class="notif-icon notif-primary"><i class="fa fa-user-plus"></i></div>
-                                            <div class="notif-content">
-													<span class="block">
-														{{ new_user.username }} isimli kullanıcı kayıt oldu
+                                        {% for notification in notifications %}
+                                            <a href="#">
+                                                {% if notification.type == "yorum" %}
+                                                    <div class="notif-icon notif-success text-small"><i class="fa fa-comment"></i>
+                                                    </div>
+                                                {% elif notification.type == "like_post" %}
+                                                    <div class="notif-icon notif-danger"><i class="fa fa-heart"></i>
+                                                    </div>
+                                                {% elif notification.type == "dislike_post" %}
+                                                    <div class="notif-icon notif-danger"><i class="fa fa-heartbeat"></i>
+                                                    </div>
+                                                {% endif %}
+
+                                                <div class="notif-content">
+													<span class="text-small">
+														{{ notification.title }}
 													</span>
-                                                <span class="time">{{ new_user.date_joined|timesince }}</span>
-                                            </div>
-                                        </a>
-                                        <a href="#">
-                                            <div class="notif-icon notif-success"><i class="fa fa-comment"></i></div>
-                                            <div class="notif-content">
-													<span class="block">
-														{{ post_last.title }} başlıklı yeni gönderi eklendi
-													</span>
-                                                <span class="time">12 minutes ago</span>
-                                            </div>
-                                        </a>
-                                        <a href="#">
-                                            <div class="notif-img">
-                                                <img src="/static/dashboard/assets/img/profile2.jpg" alt="Img Profile">
-                                            </div>
-                                            <div class="notif-content">
-													<span class="block">
-														Reza send messages to you
-													</span>
-                                                <span class="time">12 minutes ago</span>
-                                            </div>
-                                        </a>
-                                        <a href="#">
-                                            <div class="notif-icon notif-danger"><i class="fa fa-heart"></i></div>
-                                            <div class="notif-content">
-													<span class="block">
-														Farrah liked Admin
-													</span>
-                                                <span class="time">17 minutes ago</span>
-                                            </div>
-                                        </a>
+                                                    <span class="time">{{ notification.created|timesince }}</span>
+                                                </div>
+                                            </a>
+                                        {% endfor %}
                                     </div>
                                 </div>
                             </li>
                             <li>
-                                <a class="see-all" href="javascript:void(0);">See all notifications
+                                <a class="see-all" href="javascript:void(0);">Tüm bildirimleri gör.
                                     <i class="fa fa-angle-right"></i>
                                 </a>
                             </li>
                         </ul>
                     </li>
+
 
                     <li class="nav-item dropdown hidden-caret">
                         <a class="nav-link" data-toggle="dropdown" href="#" aria-expanded="false">
@@ -176,7 +163,7 @@
                                         <a class="col-6 col-md-4 p-0" href="{% url "admin:index" %}blog/posts/add/">
                                             <div class="quick-actions-item">
                                                 <i class="flaticon-pen"></i>
-                                                <span class="text">Yeni Gönderi</span>
+                                                <span class="text">Yeni Gönderi oluştur</span>
                                             </div>
                                         </a>
                                         <a class="col-6 col-md-4 p-0"

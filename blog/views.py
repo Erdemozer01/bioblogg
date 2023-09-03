@@ -401,9 +401,9 @@ def dislike_post(request, pk, title):
     post = get_object_or_404(Posts, pk=pk, title=title)
     post.dislike.add(request.user)
     messages.error(request, f"{post.title} başlıklı gönderiyi beğenmediniz")
-    if Notifications.objects.get(user=post.author,
+    if not Notifications.objects.filter(user=post.author,
                                  title=f"{request.user}, {post.title} başlıklı gönderinizi beğenmedi.",
-                                 type="dislike_post").DoesNotExist:
+                                 type="dislike_post"):
         Notifications.objects.create(user=post.author,
                                      title=f"{request.user}, {post.title} başlıklı gönderinizi beğenmedi.",
                                      type="dislike_post")

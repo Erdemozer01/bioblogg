@@ -146,9 +146,8 @@ class DashBoardView(generic.ListView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['new_user'] = User.objects.last()
-        context['post_last'] = Posts.objects.last()
-
+        context['notifications'] = Notifications.objects.filter(user=self.request.user, is_read=False).order_by(
+            "-created")
         context['messages_list'] = ContactModel.objects.filter(receiver=self.request.user.pk)
         context['messages_count'] = ContactModel.objects.filter(receiver=self.request.user.pk, is_read=False).count()
         return context
@@ -164,7 +163,7 @@ def profile_update(request, pk, username):
     profile_edit_form = ProfileEditForm(request.POST or None, request.FILES or None, instance=request.user.profile)
     password_form = PasswordChangeForm(request.user, data=request.POST or None)
     delete_account_form = DeleteAccountForm(request.POST or None)
-
+    notifications = Notifications.objects.filter(user=request.user, is_read=False).order_by("-created")
     messages_list = ContactModel.objects.filter(receiver=request.user.pk)
     messages_count = ContactModel.objects.filter(receiver=request.user.pk, is_read=False).count()
 
@@ -201,7 +200,7 @@ def profile_update(request, pk, username):
     return render(request, 'dashboard/pages/update.html',
                   {'user_edit_form': user_edit_form, 'profile_edit_form': profile_edit_form,
                    'password_form': password_form, 'delete_account_form': delete_account_form,
-                   'messages_list': messages_list, 'messages_count': messages_count})
+                   'messages_list': messages_list, 'messages_count': messages_count, 'notifications': notifications})
 
 
 class MessagesListView(generic.ListView):
@@ -214,6 +213,8 @@ class MessagesListView(generic.ListView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['notifications'] = Notifications.objects.filter(user=self.request.user, is_read=False).order_by(
+            "-created")
         context['messages_count'] = ContactModel.objects.filter(receiver=self.request.user.pk, is_read=False).count()
         return context
 
@@ -228,6 +229,8 @@ class MessagesDetailView(generic.DetailView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['notifications'] = Notifications.objects.filter(user=self.request.user, is_read=False).order_by(
+            "-created")
         context['messages_list'] = ContactModel.objects.filter(receiver=self.request.user.pk)
         context['messages_count'] = ContactModel.objects.filter(receiver=self.request.user.pk, is_read=False).count()
         return context
@@ -279,6 +282,8 @@ class SocialMediaListView(generic.ListView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['notifications'] = Notifications.objects.filter(user=self.request.user, is_read=False).order_by(
+            "-created")
         context['messages_list'] = ContactModel.objects.filter(receiver=self.request.user.pk)
         context['messages_count'] = ContactModel.objects.filter(receiver=self.request.user.pk, is_read=False).count()
         return context
@@ -314,6 +319,8 @@ class SocialMediaCreateView(generic.CreateView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['notifications'] = Notifications.objects.filter(user=self.request.user, is_read=False).order_by(
+            "-created")
         context['messages_list'] = ContactModel.objects.filter(receiver=self.request.user.pk)
         context['messages_count'] = ContactModel.objects.filter(receiver=self.request.user.pk, is_read=False).count()
         return context
@@ -344,6 +351,8 @@ class SocialMediaUpdateView(generic.UpdateView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['notifications'] = Notifications.objects.filter(user=self.request.user, is_read=False).order_by(
+            "-created")
         context['messages_list'] = ContactModel.objects.filter(receiver=self.request.user.pk)
         context['messages_count'] = ContactModel.objects.filter(receiver=self.request.user.pk, is_read=False).count()
         return context
@@ -353,10 +362,12 @@ def user_reply_message(request, pk, username, user_pk):
     if not request.user.is_staff:
         messages.error(request, "Yetkili girişi yapınız!")
         return redirect('%s?next=/blog/' % (settings.LOGIN_URL))
+
     form = ContactMessagesReplyForm(request.POST or None)
     contact_object = ContactModel.objects.get(pk=pk)
     receiver = User.objects.get(pk=user_pk)
 
+    notifications = Notifications.objects.filter(user=request.user, is_read=False).order_by("-created")
     messages_list = ContactModel.objects.filter(receiver=request.user.pk)
     messages_count = ContactModel.objects.filter(receiver=request.user.pk, is_read=False).count()
 
@@ -373,9 +384,12 @@ def user_reply_message(request, pk, username, user_pk):
         else:
             form = ContactMessagesReplyForm()
 
-    return render(request, 'dashboard/pages/messages.html', {'form': form, 'contact_object': contact_object,
-                                                             'messages_list': messages_list,
-                                                             'messages_count': messages_count})
+    return render(request, 'dashboard/pages/messages.html', {
+        'form': form, 'contact_object': contact_object,
+        'messages_list': messages_list,
+        'messages_count': messages_count,
+        'notifications': notifications
+    })
 
 
 def user_sent_message(request, pk, username):
@@ -383,6 +397,8 @@ def user_sent_message(request, pk, username):
         messages.error(request, "Yetkili girişi yapınız!")
         return redirect('%s?next=/blog/' % (settings.LOGIN_URL))
     form = UserMessagesForm(request.POST or None)
+
+    notifications = Notifications.objects.filter(user=request.user, is_read=False).order_by("-created")
     messages_list = ContactModel.objects.filter(receiver=request.user.pk)
     messages_count = ContactModel.objects.filter(receiver=request.user.pk, is_read=False).count()
 
@@ -412,7 +428,8 @@ def user_sent_message(request, pk, username):
                   {
                       'form': form,
                       'messages_list': messages_list,
-                      'messages_count': messages_count
+                      'messages_count': messages_count,
+                      'notifications': notifications
                   })
 
 
@@ -432,13 +449,21 @@ class MyPostList(generic.ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['notifications'] = Notifications.objects.filter(user=self.request.user, is_read=False).order_by(
+            "-created")
         context['messages_list'] = ContactModel.objects.filter(receiver=self.request.user.pk)
         context['messages_count'] = ContactModel.objects.filter(receiver=self.request.user.pk, is_read=False).count()
         return context
 
 
-def notifications(request):
-    posts_list_navbar = Posts.objects.filter(author=request.user)
-    comments_list_navbar = Comments.objects.filter(post__author=request.user)
-    user_list_navbar = User.objects.latest()
-    return render(request, "dashboard/pages/notifications.html", {"user_list_navbar": user_list_navbar})
+class NotificationsListView(generic.ListView):
+    template_name = "dashboard/pages/notifications.html"
+    model = Notifications
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['notifications'] = Notifications.objects.filter(user=self.request.user, is_read=False).order_by(
+            "-created")
+        context['messages_list'] = ContactModel.objects.filter(receiver=self.request.user.pk)
+        context['messages_count'] = ContactModel.objects.filter(receiver=self.request.user.pk, is_read=False).count()
+        return context

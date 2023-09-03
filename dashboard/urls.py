@@ -18,4 +18,5 @@ urlpatterns = [
     path('report_message/<pk>/', report_message, name="report_message"),
     path('user-reply-message/<int:pk>/<username>/<int:user_pk>/', user_reply_message, name="user_reply_message"),
     path('user-sent-message/<int:pk>/<username>/', user_sent_message, name="user_sent_message"),
+    path('notifications/<username>/<int:pk>/', NotificationsListView.as_view(), name="notifications"),
 ]
