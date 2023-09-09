@@ -32,7 +32,7 @@
                     </div>
 
                     <div class="col-12 col-md-6 col-lg-4 mb-5">
-                        <a href="{% url 'bioinformatic:sequence_analiz' %}">
+                        <a href="{% url 'bioinformatic:dna_seq_read' %}">
                             <div class="card bg-primary border-light shadow-soft">
                                 <img src="{% static 'blog/assets/img/bioinformatik/sequence.jpg' %}"
                                      class="card-img-top rounded-top"
@@ -45,7 +45,7 @@
                     </div>
 
                     <div class="col-12 col-md-6 col-lg-4">
-                        <a href="{% url 'bioinformatic:translation' %}">
+                        <a href="{% url 'bioinformatic:dna_seq_translate' %}">
                             <div class="card bg-primary border-light shadow-soft">
                                 <img src="{% static 'blog/assets/img/bioinformatik/3d-representation-dna.jpg' %}"
                                      class="card-img-top rounded-top"
@@ -71,39 +71,39 @@
                     <div class="container">
                         <div class="row mb-1 ">
                             <div class="col-12 col-md-8 col-lg-7">
-                                <h1 class="display-4 mb-4 text-left border-bottom border-light">FASTA DOSYASI İŞLEMLERİ</h1>
+                                <h1 class="display-4 mb-4 text-left border-bottom border-light">DOSYA İŞLEMLERİ</h1>
                             </div>
                         </div>
                     </div>
 
                     <div class="col-12 col-md-6 col-lg-4 mb-5">
-                        <a href="{% url 'bioinformatic:fasta_reading' %}">
+                        <a href="{% url 'bioinformatic:file_reading' request.user %}">
                             <div class="card bg-primary border-light shadow-soft">
                                 <img src="{% static 'blog/assets/img/bioinformatik/protein.jpg' %}"
                                      class="card-img-top rounded-top"
                                      alt="PROTEİN SENTEZİ">
                                 <div class="card-body">
-                                    <h3 class="h5 card-title mt-3">FASTA DOSYASI OKUMA</h3>
+                                    <h3 class="h5 card-title mt-3">DOSYA OKUMA</h3>
                                 </div>
                             </div>
                         </a>
                     </div>
 
                     <div class="col-12 col-md-6 col-lg-4 mb-5">
-                        <a href="{% url 'bioinformatic:fasta_writing' %}">
+                        <a href="#">
                             <div class="card bg-primary border-light shadow-soft">
                                 <img src="{% static 'blog/assets/img/bioinformatik/3810087.jpg' %}"
                                      class="card-img-top rounded-top"
                                      alt="FASTA DOSYASI YAZMA">
                                 <div class="card-body">
-                                    <h3 class="h5 card-title mt-3">FASTA DOSYASI YAZMA</h3>
+                                    <h3 class="h5 card-title mt-3">DOSYA YAZMA</h3>
                                 </div>
                             </div>
                         </a>
                     </div>
 
                     <div class="col-12 col-md-6 col-lg-4 mb-5">
-                        <a href="{% url 'bioinformatic:fasta_file_translate' %}">
+                        <a href="#">
                             <div class="card bg-primary border-light shadow-soft">
 
                                 <img src="{% static 'blog/assets/img/bioinformatik/5103530.jpg' %}"

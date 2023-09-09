@@ -41,9 +41,16 @@
                         </table>
                     </div>
 
-                    {% plotly_app name="sekans" ratio=0.5 %}
+                    {% plotly_app name="bar" ratio=0.5 %}
 
+                    <a href="{% url 'bioinformatic:home' %}" class="mt-2">
+                        <button type="button" class="btn btn-primary">&laquo; Anasayfa</button>
+                    </a>
+                    <a href="{% url 'bioinformatic:dna_sekans_okuması' %}" class="mt-2 float-right">
+                        <button type="button" class="btn btn-primary"> Yeni İşlem &raquo;</button>
+                    </a>
                 </div>
+
             </div>
         </div>
     </div>

@@ -5,6 +5,7 @@ from .forms import UserRegistrationForm
 from django.urls import reverse_lazy
 from django.core.mail import send_mail
 
+
 class UserRegister(generic.CreateView):
     template_name = "registration/sign-up.html"
     form_class = UserRegistrationForm

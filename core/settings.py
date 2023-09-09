@@ -42,7 +42,6 @@ INSTALLED_APPS = [
     'dpd_components',
 ]
 
-
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -52,6 +51,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django_plotly_dash.middleware.BaseMiddleware',
+    'django_plotly_dash.middleware.ExternalRedirectionMiddleware',
     'django_auto_logout.middleware.auto_logout',
 ]
 
@@ -119,7 +119,7 @@ USE_TZ = True
 STATIC_URL = 'static/'
 
 STATICFILES_DIRS = [
-    BASE_DIR / "static"
+    BASE_DIR / "static/"
 ]
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
@@ -136,7 +136,7 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
 EMAIL_HOST_USER = 'bioblogdestek@gmail.com'
-EMAIL_HOST_PASSWORD = 'sjtxedogsracahcb'
+EMAIL_HOST_PASSWORD = 'izcberolyvhwuvol'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -147,9 +147,22 @@ X_FRAME_OPTIONS = 'SAMEORIGIN'
 AUTO_LOGOUT = {'IDLE_TIME': 86400}
 
 PLOTLY_COMPONENTS = [
-    'dpd_static_support'
+
+    # Common components (ie within dash itself) are automatically added
+
+    # django-plotly-dash components
+    'dpd_components',
+    # static support if serving local assets
+    'dpd_static_support',
+
+    # Other components, as needed
+    'dash_bootstrap_components',
 ]
 
+FILE_UPLOAD_HANDLERS = [
+    "django.core.files.uploadhandler.MemoryFileUploadHandler",
+    "django.core.files.uploadhandler.TemporaryFileUploadHandler",
+]
 CKEDITOR_CONFIGS = {
     'default': {
         'toolbar': 'full',
@@ -158,7 +171,7 @@ CKEDITOR_CONFIGS = {
     },
     'blog': {
         'height': 'auto',
-        'width': 'auto',
+        'width': '%100',
         'toolbar_Basic': [
             ['Source', '-', 'Bold', 'Italic']
         ],

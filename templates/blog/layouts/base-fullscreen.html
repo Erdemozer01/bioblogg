@@ -45,7 +45,9 @@
     <meta name="theme-color" content="#ffffff">
 
     <!-- Fontawesome -->
-    <link type="text/css" href="{% static "blog/assets/vendor/@fortawesome/fontawesome-free/css/all.min.css" %}?{% now "U" %}" rel="stylesheet">
+    <link type="text/css"
+          href="{% static "blog/assets/vendor/@fortawesome/fontawesome-free/css/all.min.css" %}?{% now "U" %}"
+          rel="stylesheet">
 
     <!-- Pixel CSS -->
     <link type="text/css" href="{% static "blog/assets/css/neumorphism.css" %}" rel="stylesheet">
@@ -55,7 +57,7 @@
 </head>
 
 <body>
-
+{% block navbar %}{% endblock %}
 <main>
 
     {% block content %}{% endblock %}

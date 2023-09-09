@@ -1,0 +1,68 @@
+{% extends "blog/layouts/base-fullscreen.html" %}
+{% load django_bootstrap5 %}
+{% load plotly_dash %}
+
+{% block title %} {{ object.description }} {% endblock %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}{% endblock %}
+
+{% block content %}
+    <!-- Section -->
+    <section class="min-vh-50 d-flex bg-primary align-items-center mt-4">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-12 col-md-8 col-lg-12 justify-content-center">
+                    <div class="card bg-primary shadow-soft border-light p-4">
+                        <div class="card-header pb-0">
+                            <h2 class="h5">{{ object.molecule_id }}</h2>
+                            {% if messages %}
+                                {% for message in messages %}
+                                    {% if message.tags == 'error' %}
+                                        <div class="alert alert-danger alert-dismissible shadow-soft fade show"
+                                             role="alert">
+                                    {% else %}
+                                        <div class="alert alert-{{ message.tags }} alert-dismissible shadow-soft fade show"
+                                             role="alert">
+                                    {% endif %}
+
+                                <span class="alert-inner--icon">
+                                    {% if message.tags == 'error' %}
+                                        <span class="far fa-thumbs-down"></span>
+                                    {% elif message.tags == 'success' %}
+                                        <span class="far fa-thumbs-up"></span>
+                                    {% else %}
+
+                                    {% endif %}
+                                </span>
+
+                                <span class="alert-inner--text"><strong>{{ message }}</strong> </span>
+
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                                </div>
+                                {% endfor %}
+                            {% endif %}
+
+                        </div>
+                        <div class="card-body">
+                            <p>Laborant : {{ object.user }}</p>
+                            <p>Tanımı : {{ object.description }}</p>
+                            <p>Sekans : <p style="text-align: justify">{{ object.seq }}</p></p>
+                            <p >Sekans uzunluk : {{ object.seq_len }}</p>
+                            {% if object.pro_seq %}
+                                <p>Protein : {{ object.pro_seq }}</p>
+                                <p>Protein uzunluk : {{ object.pro_seq_len }}</p>
+                            {% endif %}
+                            <p>%GC : {{ object.gc }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}{% endblock %}

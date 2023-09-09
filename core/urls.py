@@ -6,8 +6,6 @@ from django.conf.urls.static import static
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from blog.views import ArchiveView
 
-admin.AdminSite.site_header = "BioBlog"
-
 urlpatterns = [
                   path('admin/', admin.site.urls),
                   path('accounts/', include('django.contrib.auth.urls')),

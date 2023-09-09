@@ -1,0 +1,156 @@
+{% extends "blog/layouts/base-fullscreen.html" %}
+{% load django_bootstrap5 %}
+{% load plotly_dash %}
+
+{% block title %} {{ title }} {% endblock %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}{% endblock %}
+
+{% block navbar %}
+	{% include 'blog/includes/navigation.html' %}
+{% endblock %}
+
+{% block content %}
+    <!-- Section -->
+    <div class="section bg-primary text-dark section-lg mt-4">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-12">
+                    <div class="mb-2">
+                        <span class="h5">{{ format|title }} Dosyası okuma sonuçları</span>
+                    </div>
+
+                    <form action="" method="get">
+                        <div class="form-group"><label>Arama</label>
+                            <div class="input-group mb-4">
+                                <div class="input-group-prepend"><span class="input-group-text"><span
+                                        class="fas fa-search"></span></span>
+                                </div>
+
+                                <input class="form-control" id="organizma_id" placeholder="Organizma ara" type="text"
+                                       name="search" value="{{ request.GET.search }}">
+
+                            </div>
+                        </div>
+                    </form>
+
+                    <div class="mb-2">
+
+                        <table class="table table-hover shadow-soft rounded-lg text-center">
+                            <tr>
+                                <th class="border-1" scope="col" id="class">ORGANİZMA</th>
+                                <th class="border-0" scope="col" id="class">DNA SEKANS UZUNLUĞU</th>
+
+                                {% if protein %}
+                                    <th class="border-0" scope="col" id="class">PROTEİN SEKANS UZUNLUĞU</th>
+                                {% endif %}
+
+                                <th class="border-0" scope="col" id="class">%GC</th>
+                            </tr>
+                            {% for object in object_list %}
+                                <tr>
+                                    <td id="Bolter" headers="{{ object.description }}">
+                                        <a href="{% url 'bioinformatic:file_reading_detail' request.user object.pk object.description|slugify %}">
+                                            {{ object.description }}
+                                        </a>
+                                    </td>
+                                    <td id="Bolter" headers="{{ object.seq_len }}">{{ object.seq_len }}</td>
+                                    {% if object.pro_seq_len %}
+                                        <td id="Bolter" headers="{{ object.pro_seq_len }}">{{ object.pro_seq_len }}</td>
+                                    {% endif %}
+                                    <td id="Bolter" headers="{{ object.gc }}">{{ object.gc }}</td>
+                                </tr>
+                            {% endfor %}
+                        </table>
+
+                        {% if protein %}
+                            {% if to_stop == True %}
+                                <p class="text-info ml-2">Not: Stop Kodonları dahil edilmiştir.</p>
+                            {% else %}
+                                <p class="text-info ml-2">Not: Stop Kodonları dahil edilmemiştir.</p>
+                            {% endif %}
+                        {% endif %}
+
+                        <!-- Pagination -->
+                        <div class="d-flex justify-content-center w-100">
+                            <div class="mt-1">
+                                <nav aria-label="Products page navigation">
+                                    <ul class="pagination">
+                                        {% if page_obj.has_previous %}
+                                            <li class="page-item">
+                                                <a class="page-link" aria-label="ilk sayfa" title="ilk sayfa"
+                                                   href="?page=1">
+                                                    <span class="fas fa-angle-double-left"></span>
+                                                </a>
+                                            </li>
+
+                                            <li class="page-item">
+                                                <a class="page-link rounded" aria-label="önceki sayfa"
+                                                   title="önceki sayfa"
+                                                   href="?page={{ page_obj.previous_page_number }}">
+                                                    <span class="fas fa-angle-left"></span>
+                                                </a>
+                                            </li>
+
+                                        {% endif %}
+                                        {% for number in page_obj.paginator.page_range %}
+                                            {% if page_obj.number == number %}
+                                                <li class="page-item active">
+                                                    <a class="page-link" href="#">{{ number }}</a>
+                                                </li>
+                                            {% else %}
+                                                <li class="page-item">
+                                                    <a class="page-link"
+                                                       href="?page={{ number }}">{{ number }}</a>
+                                                </li>
+                                            {% endif %}
+                                        {% endfor %}
+                                        {% if page_obj.has_next %}
+                                            <li class="page-item">
+                                                <a class="page-link rounded" aria-label="first link"
+                                                   title="sonraki sayfa"
+                                                   href="?page={{ page_obj.next_page_number }}">
+                                                    <span class="fas fa-angle-right"></span>
+                                                </a>
+                                            </li>
+                                            <li class="page-item">
+                                                <a class="page-link" aria-label="first link" title="son sayfa"
+                                                   href="?page={{ page_obj.paginator.num_pages }}">
+                                                    <span class="fas fa-angle-double-right"></span>
+                                                </a>
+                                            </li>
+
+                                        {% else %}
+                                            <li class="page-item">
+                                                <a class="page-link" aria-label="first link"
+                                                   href="#">
+                                                    <span class="fas fa-angle-double-right"></span>
+                                                </a>
+                                            </li>
+                                        {% endif %}
+                                    </ul>
+                                </nav>
+                            </div>
+                        </div>
+
+                        {% if not protein %}
+                            <a href="{% url 'bioinformatic:file_reading_pick_protein' request.user %}">
+                                <button class="btn btn-primary float-right">Proteinleri topla</button>
+                            </a>
+                        {% endif %}
+
+                        <a href="{% url 'bioinformatic:stats' request.user %}">
+                            <button class="btn btn-primary float-right mr-2">İstatislik veriler</button>
+                        </a>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}{% endblock %}
