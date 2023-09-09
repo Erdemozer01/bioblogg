@@ -158,7 +158,6 @@ def file_reading(request, user):
             if molecule == "DNA":
 
                 for file_content in file_read:
-                    file_content.dbxrefs
 
                     BioinformaticAnalizModel.objects.create(
                         user=request.user,
