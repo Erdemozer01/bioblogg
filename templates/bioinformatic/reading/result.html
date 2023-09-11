@@ -46,21 +46,27 @@
                                 <th class="border-0" scope="col" id="class">%GC</th>
                             </tr>
                             {% for object in object_list %}
+
                                 <tr>
+
                                     <td id="Bolter" headers="{{ object.description }}">
                                         <a href="{% url 'bioinformatic:file_reading_detail' object.user object.pk object.description|slugify %}">
                                             {{ object.description }}
                                         </a>
                                     </td>
+
+
                                     <td id="Bolter" headers="{{ object.organism }}">{{ object.organism }}</td>
 
                                     <td id="Bolter" headers="{{ object.seq_len }}">{{ object.seq_len }}</td>
 
                                     {% if object.pro_seq_len %}
-                                        <td id="Bolter" headers="{{ object.pro_seq_len }}">{{ object.pro_seq_len }}</td>
+                                        <td id="Bolter"
+                                            headers="{{ object.pro_seq_len }}">{{ object.pro_seq_len }}</td>
                                     {% else %}
                                         <td id="Bolter" headers="{{ object.pro_seq_len }}">-----</td>
                                     {% endif %}
+
                                     <td id="Bolter" headers="{{ object.gc }}">{{ object.gc }}</td>
                                 </tr>
                             {% endfor %}
@@ -137,7 +143,7 @@
 
                         {% if protein == "protein yok" %}
                             <a href="{% url 'bioinformatic:file_reading_pick_protein' request.user %}">
-                                <button class="btn btn-primary float-right">Proteinleri topla</button>
+                                <button class="btn-sm btn-primary float-right">Proteinleri topla</button>
                             </a>
                         {% else %}
 
@@ -145,11 +151,11 @@
                         {% endif %}
 
                         <a href="{% url 'bioinformatic:stats' request.user %}">
-                            <button class="btn btn-primary float-right mr-2">İstatislik veriler &raquo;</button>
+                            <button class="btn-sm btn-primary float-right mr-2">İstatislik veriler &raquo;</button>
                         </a>
 
                         <a href="{% url 'bioinformatic:file_reading' request.user %}">
-                            <button class="btn btn-primary float-left ml-2">&laquo; Dosya Okuma</button>
+                            <button class="btn-sm btn-primary float-left ml-2">&laquo; Dosya Okuma</button>
                         </a>
 
                     </div>

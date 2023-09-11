@@ -69,6 +69,12 @@ FILE_FORMAT = [
     ("xdna", "xdna".upper()),
 ]
 
+ALIGNMENT_MODE = (
+    ('', '------------'),
+    ('local', 'LOCAL'),
+    ('global', 'GLOBAL'),
+)
+
 MATRIS = (
     ('', '------------'),
     ('BENNER22', 'BENNER22'),
@@ -132,3 +138,4 @@ PALM_TOOLS = (
     ('basemlg', 'BASEMLG'),
     ('codeml', 'CODEML'),
 )
+

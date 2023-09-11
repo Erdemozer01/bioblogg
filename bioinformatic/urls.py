@@ -14,4 +14,5 @@ urlpatterns = [
          name="file_reading_detail"),
     path('file-reading/<user>/protein/', views.FileReadingView.ProteinPickView, name="file_reading_pick_protein"),
     path('istatistik-verileri/<user>/', views.FileReadingView.stats_view, name="stats"),
+    path('alignment-score/<user>/', views.FileReadingView.alignment_score, name="alignment_score"),
 ]

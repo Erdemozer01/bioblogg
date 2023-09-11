@@ -1,11 +1,10 @@
 import os
 
-from django.core.paginator import Paginator
 from django.db.models import Q
 from django.shortcuts import *
 from django.views import generic
 from django.contrib import messages
-from bioinformatic.forms import FileReadingForm, TranslateForm
+from bioinformatic.forms import FileReadingForm, TranslateForm, FileResulSelect, AlignResultForm, AlignmentForm
 from bioinformatic.models import BioinformaticAnalizModel
 from Bio import SeqIO
 from Bio.SeqUtils import GC
@@ -13,17 +12,45 @@ import pandas as pd
 import plotly.express as px
 from django_plotly_dash import DjangoDash
 from dash import html, dcc
-import dash_table
 from pathlib import Path
 from Bio.Seq import Seq
-from Bio import motifs
-import dash_bio as dashbio
-from better_elided_pagination.paginators import BetterElidedPaginator
+from Bio import Align
+from Bio.Align import substitution_matrices
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-def linear_regression(request):
-    return f"django_plotly_dash/app/linear_regression_{request.user}/"
+
+def alignment_score(request, user):
+
+    if request.user.is_anonymous:
+        from django.conf import settings
+        messages.error(request, "Lütfen Giriş Yapınız")
+        return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
+
+    form = AlignmentForm(request.POST or None)
+
+    aligner = Align.PairwiseAligner()
+
+    if request.method == "POST":
+
+        if form.is_valid():
+
+            seq1 = form.cleaned_data['seq1']
+
+            seq2 = form.cleaned_data['seq2']
+
+            aligner.mode = form.cleaned_data['mode']
+
+            aligner.substitution_matrix = substitution_matrices.load(form.cleaned_data['matrix'])
+
+            alignments = aligner.align(seq1, seq2)
+
+            return render(request, "bioinformatic/form.html", {'form': AlignResultForm(initial=alignments)})
+
+        else:
+            form = AlignmentForm()
+
+    return render(request, "bioinformatic/form.html", {'form': form, 'title': 'Alignment'})
 
 
 def stats_view(request, user):
@@ -92,6 +119,7 @@ class FileReadingResultView(generic.ListView):
     template_name = "bioinformatic/reading/result.html"
     model = BioinformaticAnalizModel
     paginate_by = 10
+    form_class = FileResulSelect
 
     def get(self, request, *args, **kwargs):
         if request.user.is_anonymous:

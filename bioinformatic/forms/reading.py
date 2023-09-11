@@ -1,6 +1,6 @@
 from django import forms
 from bioinformatic.models import BioinformaticAnalizModel
-
+from bioinformatic.choices import ALIGNMENT_MODE, MATRIS
 
 class FileReadingForm(forms.ModelForm):
     class Meta:
@@ -29,3 +29,24 @@ class TranslateForm(forms.ModelForm):
                     'class': 'custom-select'
                 })
         }
+
+
+class FileResulSelect(forms.ModelForm):
+    class Meta:
+        model = BioinformaticAnalizModel
+        fields = ["select"]
+        labels = {
+            'select': ""
+        }
+
+
+class AlignResultForm(forms.Form):
+    align = forms.Textarea()
+
+
+class AlignmentForm(forms.Form):
+    mode = forms.Select(choices=ALIGNMENT_MODE)
+    matrix = forms.Select(choices=MATRIS)
+    seq1 = forms.Textarea()
+    seq2 = forms.Textarea()
+

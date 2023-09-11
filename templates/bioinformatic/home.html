@@ -44,7 +44,7 @@
                         </a>
                     </div>
 
-                    <div class="col-12 col-md-6 col-lg-4">
+                    <div class="col-12 col-md-6 col-lg-4 mb-5">
                         <a href="{% url 'bioinformatic:dna_seq_translate' %}">
                             <div class="card bg-primary border-light shadow-soft">
                                 <img src="{% static 'bioinformatic/5138210.jpg' %}"
@@ -52,6 +52,19 @@
                                      alt="PROTEİN SENTEZİ">
                                 <div class="card-body">
                                     <h3 class="h5 card-title mt-3">PROTEİN SENTEZİ</h3>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <a href="{% url 'bioinformatic:alignment_score' request.user %}">
+                            <div class="card bg-primary border-light shadow-soft">
+                                <img src="{% static 'bioinformatic/5138210.jpg' %}"
+                                     class="card-img-top rounded-top"
+                                     alt="PROTEİN SENTEZİ">
+                                <div class="card-body">
+                                    <h3 class="h5 card-title mt-3">Alignment Score</h3>
                                 </div>
                             </div>
                         </a>
@@ -81,7 +94,7 @@
                             <div class="card bg-primary border-light shadow-soft">
                                 <img src="{% static 'bioinformatic/file_read.jpg' %}"
                                      class="card-img-top rounded-top"
-                                     alt="PROTEİN SENTEZİ">
+                                     alt="DOSYA OKUMA">
                                 <div class="card-body">
                                     <h3 class="h5 card-title mt-3">DOSYA OKUMA</h3>
                                 </div>
@@ -94,7 +107,7 @@
                             <div class="card bg-primary border-light shadow-soft">
                                 <img src="{% static 'blog/assets/img/bioinformatik/3810087.jpg' %}"
                                      class="card-img-top rounded-top"
-                                     alt="FASTA DOSYASI YAZMA">
+                                     alt="DOSYA YAZMA">
                                 <div class="card-body">
                                     <h3 class="h5 card-title mt-3">DOSYA YAZMA</h3>
                                 </div>
@@ -107,8 +120,7 @@
                             <div class="card bg-primary border-light shadow-soft">
 
                                 <img src="{% static 'bioinformatic/5103530.jpg' %}"
-                                     class="card-img-top rounded-top"
-                                     alt="FASTA DOSYASI YAZMA">
+                                     class="card-img-top rounded-top">
 
                                 <div class="card-body">
                                     <h3 class="h5 card-title mt-3">DNA'dan Proteine</h3>
