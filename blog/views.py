@@ -122,6 +122,10 @@ class BlogHomeView(generic.ListView, generic.FormView):
         context['popular_posts'] = Posts.objects.order_by('-hit_count__hits')[:2]
         context['popular_post_side'] = Posts.objects.order_by('-hit_count__hits')[2:10]
         context['archives'] = Posts.objects.dates('created', 'month', 'DESC')
+        page = context['page_obj']
+        paginator = page.paginator
+        pagelist = paginator.get_elided_page_range(page.number, on_each_side=2, on_ends=2)
+        context['pagelist'] = pagelist
         return context
 
 

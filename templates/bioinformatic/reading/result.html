@@ -8,7 +8,7 @@
 {% block stylesheets %}{% endblock %}
 
 {% block navbar %}
-	{% include 'blog/includes/navigation.html' %}
+    {% include 'blog/includes/navigation.html' %}
 {% endblock %}
 
 {% block content %}
@@ -39,25 +39,27 @@
 
                         <table class="table table-hover shadow-soft rounded-lg text-center">
                             <tr>
-                                <th class="border-1" scope="col" id="class">ORGANİZMA</th>
+                                <th class="border-1" scope="col" id="class">KAYIT ({{ count }} kayıt bulundu)</th>
+                                <th class="border-0" scope="col" id="class">ORGANİZMA</th>
                                 <th class="border-0" scope="col" id="class">DNA SEKANS UZUNLUĞU</th>
-
-                                {% if protein %}
-                                    <th class="border-0" scope="col" id="class">PROTEİN SEKANS UZUNLUĞU</th>
-                                {% endif %}
-
+                                <th class="border-0" scope="col" id="class">PROTEİN SEKANS UZUNLUĞU</th>
                                 <th class="border-0" scope="col" id="class">%GC</th>
                             </tr>
                             {% for object in object_list %}
                                 <tr>
                                     <td id="Bolter" headers="{{ object.description }}">
-                                        <a href="{% url 'bioinformatic:file_reading_detail' request.user object.pk object.description|slugify %}">
+                                        <a href="{% url 'bioinformatic:file_reading_detail' object.user object.pk object.description|slugify %}">
                                             {{ object.description }}
                                         </a>
                                     </td>
+                                    <td id="Bolter" headers="{{ object.organism }}">{{ object.organism }}</td>
+
                                     <td id="Bolter" headers="{{ object.seq_len }}">{{ object.seq_len }}</td>
+
                                     {% if object.pro_seq_len %}
                                         <td id="Bolter" headers="{{ object.pro_seq_len }}">{{ object.pro_seq_len }}</td>
+                                    {% else %}
+                                        <td id="Bolter" headers="{{ object.pro_seq_len }}">-----</td>
                                     {% endif %}
                                     <td id="Bolter" headers="{{ object.gc }}">{{ object.gc }}</td>
                                 </tr>
@@ -74,8 +76,8 @@
 
                         <!-- Pagination -->
                         <div class="d-flex justify-content-center w-100">
-                            <div class="mt-1">
-                                <nav aria-label="Products page navigation">
+                            <div class="mt-2">
+                                <nav aria-label="Blog page navigation">
                                     <ul class="pagination">
                                         {% if page_obj.has_previous %}
                                             <li class="page-item">
@@ -94,15 +96,14 @@
                                             </li>
 
                                         {% endif %}
-                                        {% for number in page_obj.paginator.page_range %}
+                                        {% for number in pagelist %}
                                             {% if page_obj.number == number %}
                                                 <li class="page-item active">
                                                     <a class="page-link" href="#">{{ number }}</a>
                                                 </li>
                                             {% else %}
                                                 <li class="page-item">
-                                                    <a class="page-link"
-                                                       href="?page={{ number }}">{{ number }}</a>
+                                                    <a class="page-link" href="?page={{ number }}">{{ number }}</a>
                                                 </li>
                                             {% endif %}
                                         {% endfor %}
@@ -134,14 +135,21 @@
                             </div>
                         </div>
 
-                        {% if not protein %}
+                        {% if protein == "protein yok" %}
                             <a href="{% url 'bioinformatic:file_reading_pick_protein' request.user %}">
                                 <button class="btn btn-primary float-right">Proteinleri topla</button>
                             </a>
+                        {% else %}
+
+
                         {% endif %}
 
                         <a href="{% url 'bioinformatic:stats' request.user %}">
-                            <button class="btn btn-primary float-right mr-2">İstatislik veriler</button>
+                            <button class="btn btn-primary float-right mr-2">İstatislik veriler &raquo;</button>
+                        </a>
+
+                        <a href="{% url 'bioinformatic:file_reading' request.user %}">
+                            <button class="btn btn-primary float-left ml-2">&laquo; Dosya Okuma</button>
                         </a>
 
                     </div>

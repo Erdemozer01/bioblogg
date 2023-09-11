@@ -1,5 +1,6 @@
 import os
 
+from django.core.paginator import Paginator
 from django.db.models import Q
 from django.shortcuts import *
 from django.views import generic
@@ -16,8 +17,13 @@ import dash_table
 from pathlib import Path
 from Bio.Seq import Seq
 from Bio import motifs
+import dash_bio as dashbio
+from better_elided_pagination.paginators import BetterElidedPaginator
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
+
+def linear_regression(request):
+    return f"django_plotly_dash/app/linear_regression_{request.user}/"
 
 
 def stats_view(request, user):
@@ -40,40 +46,38 @@ def stats_view(request, user):
             }
         )
 
-        scatter_map = DjangoDash("Linear_Regression", suppress_callback_exceptions=True)
+        scatter_map = DjangoDash(f"l{request.user}r")
 
         scatter_map.layout = html.Div([
-                dcc.Graph(
-                    figure=px.scatter(
-                        data_frame=df, x="DNA", y="PROTEİN",
-                        title="DNA - PROTEİN Lineer Regrasyon", trendline="ols",
-                        labels={
-                            "dna_seq_len": "DNA SEKANS UZUNLUĞU",
-                            "pro_seq_len": "PROTEİN SEKANS UZUNLUĞU",
-                            'name': 'Canlı'
-                        },
-                    )),
-            ])
+            dcc.Graph(
+                figure=px.scatter(
+                    data_frame=df, x="DNA", y="PROTEİN",
+                    title="DNA - PROTEİN Lineer Regrasyon", trendline="ols",
+                    labels={
+                        "dna_seq_len": "DNA SEKANS UZUNLUĞU",
+                        "pro_seq_len": "PROTEİN SEKANS UZUNLUĞU",
+                        'name': 'Canlı'
+                    },
+                )),
+        ])
 
         context = {
 
-            'stat': df.describe().to_html(
+            'stat': df.describe().round(3).to_html(
                 classes="table table-hover shadow-soft rounded-lg text-center",
                 border=False, header="İstatistik", justify="center"
             ),
 
-            'table_cov': df.cov().to_html(
+            'table_cov': df.cov().round(3).to_html(
                 classes="table table-hover shadow-soft rounded-lg text-center",
                 border=False, header="Kovaryans", justify="center"
             ),
 
-            'table_cor': df.corr().to_html(
+            'table_cor': df.corr().round(3).to_html(
                 classes="table table-hover shadow-soft rounded-lg text-center",
                 border=False, header="Korelasyon", justify="center"
 
             ),
-
-            "url": redirect(f"django_plotly_dash/app/linear_{request.user}").url,
 
         }
 
@@ -90,12 +94,10 @@ class FileReadingResultView(generic.ListView):
     paginate_by = 10
 
     def get(self, request, *args, **kwargs):
-
         if request.user.is_anonymous:
             from django.conf import settings
             messages.error(request, "Lütfen Giriş Yapınız")
             return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
-
         return super().get(request, *args, **kwargs)
 
     def get_queryset(self):
@@ -113,11 +115,20 @@ class FileReadingResultView(generic.ListView):
             file_format = [i.file_format]
             protein = [i.pro_seq]
             to_stop = [i.to_stop]
+
         context["title"] = "Sonuçlar"
-        if protein[0] == "":
-            pass
+        context["count"] = BioinformaticAnalizModel.objects.filter(user=self.request.user, tool="okuma").count()
+
+        if protein[0] == '':
+            context["protein"] = "protein yok"
         else:
-            context["protein"] = "protein"
+            context["protein"] = "protein var"
+
+        page = context['page_obj']
+        paginator = page.paginator
+        pagelist = paginator.get_elided_page_range(page.number, on_each_side=2, on_ends=2)
+        context['pagelist'] = pagelist
+
         return context
 
 
@@ -158,7 +169,6 @@ def file_reading(request, user):
             if molecule == "DNA":
 
                 for file_content in file_read:
-
                     BioinformaticAnalizModel.objects.create(
                         user=request.user,
                         file_format=file_format,
@@ -179,23 +189,28 @@ def file_reading(request, user):
 
                     for feature in record.features:
 
+                        print(feature)
+
                         if feature.type == "CDS":
 
                             if feature.qualifiers.get('translation') is not None:
+
+                                print(feature.qualifiers.get('organism'))
 
                                 BioinformaticAnalizModel.objects.create(
                                     user=request.user,
                                     tool="okuma",
                                     file_format=file_format,
                                     molecule=molecule,
+                                    seq=record.seq,
+                                    seq_len=len(record.seq),
                                     pro_seq=feature.qualifiers.get('translation')[0],
                                     molecule_id=feature.qualifiers.get('protein_id')[0],
                                     pro_seq_len=len(feature.qualifiers.get('translation')[0]),
-                                    seq=record.seq,
-                                    seq_len=len(record.seq),
-                                    organism=record.annotations['organism'],
+                                    organism=feature.qualifiers.get('organism'),
                                     taxonomy=record.annotations['taxonomy'],
                                     description=record.description,
+                                    gc=GC(record.seq).__round__(2),
                                 )
 
                             else:
@@ -244,7 +259,7 @@ class FileReadDetailView(generic.DetailView):
     model = BioinformaticAnalizModel
 
     def get_queryset(self):
-        return BioinformaticAnalizModel.objects.filter(user=self.request.user)
+        return BioinformaticAnalizModel.objects.filter(user=self.request.user, tool="okuma")
 
     def get(self, request, *args, **kwargs):
         if request.user.is_anonymous:
@@ -252,6 +267,14 @@ class FileReadDetailView(generic.DetailView):
             messages.error(request, "Lütfen Giriş Yapınız")
             return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
         return super().get(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['A'] = self.object.seq.count("A")
+        context['T'] = self.object.seq.count("T")
+        context['G'] = self.object.seq.count("G")
+        context['C'] = self.object.seq.count("C")
+        return context
 
 
 def ProteinPickView(request, user):

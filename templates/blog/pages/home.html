@@ -128,7 +128,8 @@
                                 <div class="card-body pt-2">
                                     <div class="media d-flex align-items-center justify-content-between">
                                         <div class="post-group">
-                                            <a href="{% url 'blog:profile' object.author object.author.pk %}" data-toggle="tooltip"
+                                            <a href="{% url 'blog:profile' object.author object.author.pk %}"
+                                               data-toggle="tooltip"
                                                data-placement="top" title="{{ object.author }}">
                                                 <img class="avatar-sm mr-2 img-fluid rounded-circle"
                                                      src="/static/blog/assets/img/no_user.png"
@@ -175,7 +176,7 @@
                     {% endfor %}
                     <!-- Pagination -->
                     <div class="d-flex justify-content-center w-100">
-                        <div class="mt-5">
+                        <div class="mt-2">
                             <nav aria-label="Blog page navigation">
                                 <ul class="pagination">
                                     {% if page_obj.has_previous %}
@@ -195,7 +196,7 @@
                                         </li>
 
                                     {% endif %}
-                                    {% for number in page_obj.paginator.page_range %}
+                                    {% for number in pagelist %}
                                         {% if page_obj.number == number %}
                                             <li class="page-item active">
                                                 <a class="page-link" href="#">{{ number }}</a>
