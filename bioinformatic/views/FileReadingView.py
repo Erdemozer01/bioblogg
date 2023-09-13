@@ -210,68 +210,76 @@ def file_reading(request, user):
             )
 
             if read_file.size > 5242880:
-                os.remove(obj.read_file.path)
+                obj.delete()
                 messages.error(request, "Dosya boyutu 5mb dan büyüktür.")
                 return redirect(request.META['HTTP_REFERER'])
 
-            if file_format == 'gzip':
-                import gzip
-                file_read = SeqIO.parse(gzip.open(obj.read_file.path, 'rt'), file_format)
+            file_read = SeqIO.parse(obj.read_file.path, file_format)
 
-            elif file_format == 'bz2':
-                import bz2
-                file_read = SeqIO.parse(bz2.open(obj.read_file.path, 'rt'), file_format)
+            try:
 
-            else:
+                if molecule == "DNA":
 
-                file_read = SeqIO.parse(obj.read_file.path, file_format)
+                    for file_content in file_read:
+                        BioinformaticAnalizModel.objects.create(
+                            user=request.user,
+                            file_format=file_format,
+                            tool="okuma",
+                            molecule=molecule,
+                            molecule_id=file_content.id,
+                            seq=file_content.seq,
+                            annotations=file_content.annotations,
+                            description=file_content.description,
+                            features=file_content.features,
+                            gc=GC(file_content.seq).__round__(2),
+                            seq_len=len(file_content.seq),
+                            organism=file_content.name
+                        )
 
-            if molecule == "DNA":
+                elif molecule == "protein":
 
-                for file_content in file_read:
-                    BioinformaticAnalizModel.objects.create(
-                        user=request.user,
-                        file_format=file_format,
-                        tool="okuma",
-                        molecule=molecule,
-                        molecule_id=file_content.id,
-                        seq=file_content.seq,
-                        annotations=file_content.annotations,
-                        description=file_content.description,
-                        features=file_content.features,
-                        gc=GC(file_content.seq).__round__(2),
-                        seq_len=len(file_content.seq)
-                    )
+                    for record in file_read:
 
-            elif molecule == "protein":
+                        for feature in record.features:
 
-                for record in file_read:
+                            print(feature)
 
-                    for feature in record.features:
+                            if feature.type == "CDS":
 
-                        print(feature)
+                                if feature.qualifiers.get('translation') is not None:
 
-                        if feature.type == "CDS":
+                                    print(feature.qualifiers.get('organism'))
 
-                            if feature.qualifiers.get('translation') is not None:
+                                    BioinformaticAnalizModel.objects.create(
+                                        user=request.user,
+                                        tool="okuma",
+                                        file_format=file_format,
+                                        molecule=molecule,
+                                        seq=record.seq,
+                                        seq_len=len(record.seq),
+                                        pro_seq=feature.qualifiers.get('translation')[0],
+                                        molecule_id=feature.qualifiers.get('protein_id')[0],
+                                        pro_seq_len=len(feature.qualifiers.get('translation')[0]),
+                                        organism=feature.qualifiers.get('organism'),
+                                        taxonomy=record.annotations['taxonomy'],
+                                        description=record.description,
+                                        gc=GC(record.seq).__round__(2),
+                                    )
 
-                                print(feature.qualifiers.get('organism'))
+                                else:
 
-                                BioinformaticAnalizModel.objects.create(
-                                    user=request.user,
-                                    tool="okuma",
-                                    file_format=file_format,
-                                    molecule=molecule,
-                                    seq=record.seq,
-                                    seq_len=len(record.seq),
-                                    pro_seq=feature.qualifiers.get('translation')[0],
-                                    molecule_id=feature.qualifiers.get('protein_id')[0],
-                                    pro_seq_len=len(feature.qualifiers.get('translation')[0]),
-                                    organism=feature.qualifiers.get('organism'),
-                                    taxonomy=record.annotations['taxonomy'],
-                                    description=record.description,
-                                    gc=GC(record.seq).__round__(2),
-                                )
+                                    BioinformaticAnalizModel.objects.create(
+                                        user=request.user,
+                                        tool="okuma",
+                                        molecule=molecule,
+                                        file_format=file_format,
+                                        organism=record.annotations['organism'],
+                                        taxonomy=record.annotations['taxonomy'],
+                                        description=record.description,
+                                        seq=record.seq,
+                                        seq_len=len(record.seq),
+                                        gc=GC(record.seq).__round__(2),
+                                    )
 
                             else:
 
@@ -288,20 +296,9 @@ def file_reading(request, user):
                                     gc=GC(record.seq).__round__(2),
                                 )
 
-                        else:
-
-                            BioinformaticAnalizModel.objects.create(
-                                user=request.user,
-                                tool="okuma",
-                                molecule=molecule,
-                                file_format=file_format,
-                                organism=record.annotations['organism'],
-                                taxonomy=record.annotations['taxonomy'],
-                                description=record.description,
-                                seq=record.seq,
-                                seq_len=len(record.seq),
-                                gc=GC(record.seq).__round__(2),
-                            )
+            except UnicodeDecodeError:
+                BioinformaticAnalizModel.objects.get(user=request.user, tool="").delete()
+                return render(request, "exception/page-404.html", {'msg': 'Hatalı dosya türü', 'url': request.path})
 
             BioinformaticAnalizModel.objects.get(user=request.user, tool="").delete()
 
