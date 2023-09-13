@@ -1,10 +1,5 @@
 from django.contrib import admin
-from .models import Profile, SocialMedia, ContactModel, PasswordModel
-
-
-@admin.register(PasswordModel)
-class PasswordModelAdmin(admin.ModelAdmin):
-    list_display = ['name', 'created']
+from .models import Profile, SocialMedia, ContactModel
 
 
 @admin.register(ContactModel)

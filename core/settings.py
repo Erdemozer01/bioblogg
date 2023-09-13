@@ -3,10 +3,6 @@ from pathlib import Path
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.core.management.utils import get_random_secret_key
-from accounts.models import PasswordModel
-
-db = PasswordModel.objects.filter(name='db').latest()
-email = PasswordModel.objects.filter(name='email').latest()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -141,7 +137,7 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
 EMAIL_HOST_USER = 'bioblogdestek@gmail.com'
-EMAIL_HOST_PASSWORD = f'{email.password}'
+EMAIL_HOST_PASSWORD = 'izcberolyvhwuvol'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
