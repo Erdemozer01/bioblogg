@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
+from django.core.management.utils import get_random_secret_key
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -10,7 +11,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-_*6$iz2emf&x(*^w5#)^j7o7cyx^@d%z+2_@%e0(#(qh786$*_'
+SECRET_KEY = f'django-insecure-_{get_random_secret_key()}_'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -163,6 +164,8 @@ FILE_UPLOAD_HANDLERS = [
     "django.core.files.uploadhandler.MemoryFileUploadHandler",
     "django.core.files.uploadhandler.TemporaryFileUploadHandler",
 ]
+
+
 CKEDITOR_CONFIGS = {
     'default': {
         'toolbar': 'full',
