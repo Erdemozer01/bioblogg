@@ -67,6 +67,8 @@ FILE_FORMAT = [
     ("twobit", "twobit".upper()),
     ("uniprot-xml", "uniprot-xml".upper()),
     ("xdna", "xdna".upper()),
+    ("gzip", "gzip".upper()),
+    ("bz2", "bz2".upper()),
 ]
 
 ALIGNMENT_MODE = (

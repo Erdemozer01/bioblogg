@@ -33,7 +33,6 @@ def alignment_score(request, user):
         if form.is_valid():
 
             try:
-
                 aligner = Align.PairwiseAligner()
 
                 seq1 = form.cleaned_data['seq1'].replace("\n", "").replace("\r", "")
@@ -59,7 +58,7 @@ def alignment_score(request, user):
                 app.layout = html.Div([
                     dcc.Textarea(
                         id='textarea-example',
-                        value=f'\nBoşluk : {count.gaps},Benzerlik : {count.identities}, Eşleşmeyen: {count.mismatches},\n\n {alignment.substitutions} \n\nMatriks: {matrix} \n\nMOD: {mod} \n\nScore: {alignment.score} \n\n' + "Alignment: \n\n" + f"{alignment}",
+                        value=f'\nBoşluk : {count.gaps}, Benzerlik : {count.identities}, Eşleşmeyen: {count.mismatches},\n\n {alignment.substitutions} \n\nMatriks: {matrix} \n\nMOD: {mod} \n\nScore: {alignment.score} \n\n' + "Alignment: \n\n" + f"{alignment}",
                         style={'width': '100%', 'height': 300},
                         className="form-control mb-2",
                     ),
@@ -215,7 +214,17 @@ def file_reading(request, user):
                 messages.error(request, "Dosya boyutu 5mb dan büyüktür.")
                 return redirect(request.META['HTTP_REFERER'])
 
-            file_read = SeqIO.parse(obj.read_file.path, file_format)
+            if file_format == 'gzip':
+                import gzip
+                file_read = SeqIO.parse(gzip.open(obj.read_file.path, 'rt'), file_format)
+
+            elif file_format == 'bz2':
+                import bz2
+                file_read = SeqIO.parse(bz2.open(obj.read_file.path, 'rt'), file_format)
+
+            else:
+
+                file_read = SeqIO.parse(obj.read_file.path, file_format)
 
             if molecule == "DNA":
 

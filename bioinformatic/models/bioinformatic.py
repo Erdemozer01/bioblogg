@@ -9,6 +9,9 @@ def read_file(instance, filename):
     return 'laboratory/reading/{username}/{username}_{filename}'.format(
         username=instance.user.username, filename=filename)
 
+def alignment_file(instance, filename):
+    return 'laboratory/alignment/{username}/{username}_{filename}'.format(
+        username=instance.user.username, filename=filename)
 
 class BioinformaticAnalizModel(models.Model):
     user = models.ForeignKey('auth.User', on_delete=models.CASCADE, verbose_name='Laborant', blank=True)
@@ -38,6 +41,7 @@ class BioinformaticAnalizModel(models.Model):
     pro_seq = models.TextField(verbose_name="PROTEİN Sekans", blank=True)
     pro_seq_len = models.IntegerField(verbose_name="PROTEİN Sekans Uzunluğu", blank=True, null=True)
     alignment = models.TextField(verbose_name="Alignment", blank=True)
+    alignment_file = models.FileField(verbose_name="Alignment Dosyası", upload_to=alignment_file, blank=True)
     out_file_fasta = models.FileField(verbose_name="Sonuç Fasta", upload_to="laboratory/file/fasta/", blank=True)
     out_file_genbank = models.FileField(verbose_name="Sonuç Genbank", upload_to="laboratory/file/genbank/", blank=True)
     out_file_xml = models.FileField(verbose_name="Sonuç XML", upload_to="laboratory/file/xml/", blank=True)
