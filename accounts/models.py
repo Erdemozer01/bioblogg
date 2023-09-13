@@ -2,6 +2,19 @@ from django.db import models
 from django.contrib.auth.models import User
 
 
+class PasswordModel(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    password = models.CharField(max_length=2000, unique=True)
+    created = models.DateTimeField(auto_now=True, verbose_name='Oluşturulma Tarihi', blank=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = 'Password'
+        verbose_name_plural = 'Password'
+
+
 def avatar(instance, filename):
     return 'users/avatar/{0}/{1}'.format(instance.user.profile, filename)
 
@@ -79,6 +92,3 @@ class ContactModel(models.Model):
         verbose_name = 'Mesajlar'
         verbose_name_plural = 'Mesajlar'
         ordering = ['-created']
-
-
-
