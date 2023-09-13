@@ -59,7 +59,7 @@ def alignment_score(request, user):
                 app.layout = html.Div([
                     dcc.Textarea(
                         id='textarea-example',
-                        value=f'\nBoşluk : {count.gaps},Benzerlik : {count.identities}, Eşleşmeyen: {count.mismatches},\n\n {alignment.substitutions} \n\nMatriks: {matrix} \n\nMOD: {mod} \n\nScore: {alignment.score} \n\n' + "Alignment: \n\n" + f"{alignment.shape}",
+                        value=f'\nBoşluk : {count.gaps},Benzerlik : {count.identities}, Eşleşmeyen: {count.mismatches},\n\n {alignment.substitutions} \n\nMatriks: {matrix} \n\nMOD: {mod} \n\nScore: {alignment.score} \n\n' + "Alignment: \n\n" + f"{alignment}",
                         style={'width': '100%', 'height': 300},
                         className="form-control mb-2",
                     ),
