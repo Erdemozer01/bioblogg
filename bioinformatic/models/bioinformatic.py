@@ -37,7 +37,7 @@ class BioinformaticAnalizModel(models.Model):
     gc = models.FloatField(verbose_name="%GC", blank=True, null=True)
     pro_seq = models.TextField(verbose_name="PROTEİN Sekans", blank=True)
     pro_seq_len = models.IntegerField(verbose_name="PROTEİN Sekans Uzunluğu", blank=True, null=True)
-    ex_seq = models.TextField(verbose_name="Extra Sekans", blank=True)
+    alignment = models.TextField(verbose_name="Alignment", blank=True)
     out_file_fasta = models.FileField(verbose_name="Sonuç Fasta", upload_to="laboratory/file/fasta/", blank=True)
     out_file_genbank = models.FileField(verbose_name="Sonuç Genbank", upload_to="laboratory/file/genbank/", blank=True)
     out_file_xml = models.FileField(verbose_name="Sonuç XML", upload_to="laboratory/file/xml/", blank=True)

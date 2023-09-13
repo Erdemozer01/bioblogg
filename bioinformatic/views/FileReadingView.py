@@ -4,14 +4,14 @@ from django.db.models import Q
 from django.shortcuts import *
 from django.views import generic
 from django.contrib import messages
-from bioinformatic.forms import FileReadingForm, TranslateForm, FileResulSelect, AlignResultForm, AlignmentForm
+from bioinformatic.forms import FileReadingForm, TranslateForm, FileResulSelect, AlignmentForm
 from bioinformatic.models import BioinformaticAnalizModel
 from Bio import SeqIO
 from Bio.SeqUtils import GC
 import pandas as pd
 import plotly.express as px
 from django_plotly_dash import DjangoDash
-from dash import html, dcc
+from dash import html, dcc, Input, Output, callback
 from pathlib import Path
 from Bio.Seq import Seq
 from Bio import Align
@@ -21,7 +21,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 
 def alignment_score(request, user):
-
     if request.user.is_anonymous:
         from django.conf import settings
         messages.error(request, "Lütfen Giriş Yapınız")
@@ -29,23 +28,47 @@ def alignment_score(request, user):
 
     form = AlignmentForm(request.POST or None)
 
-    aligner = Align.PairwiseAligner()
-
     if request.method == "POST":
 
         if form.is_valid():
 
-            seq1 = form.cleaned_data['seq1']
+            try:
 
-            seq2 = form.cleaned_data['seq2']
+                aligner = Align.PairwiseAligner()
 
-            aligner.mode = form.cleaned_data['mode']
+                seq1 = form.cleaned_data['seq1'].replace("\n", "").replace("\r", "")
 
-            aligner.substitution_matrix = substitution_matrices.load(form.cleaned_data['matrix'])
+                seq2 = form.cleaned_data['seq2'].replace("\n", "").replace("\r", "")
 
-            alignments = aligner.align(seq1, seq2)
+                aligner.mode = form.cleaned_data['mode']
 
-            return render(request, "bioinformatic/form.html", {'form': AlignResultForm(initial=alignments)})
+                aligner.substitution_matrix = substitution_matrices.load(form.cleaned_data['matrix'])
+
+                mod = form.cleaned_data['mode']
+
+                matrix = form.cleaned_data['matrix']
+
+                alignments = aligner.align(seq1, seq2)
+
+                alignment = alignments[0]
+
+                count = alignment.counts()
+
+                app = DjangoDash('alignment')
+
+                app.layout = html.Div([
+                    dcc.Textarea(
+                        id='textarea-example',
+                        value=f'\nBoşluk : {count.gaps},Benzerlik : {count.identities}, Eşleşmeyen: {count.mismatches},\n\n {alignment.substitutions} \n\nMatriks: {matrix} \n\nMOD: {mod} \n\nScore: {alignment.score} \n\n' + "Alignment: \n\n" + f"{alignment.shape}",
+                        style={'width': '100%', 'height': 300},
+                        className="form-control mb-2",
+                    ),
+                ])
+
+            except ValueError:
+                return render(request, "exception/page-404.html", {'msg': 'Sekansınızı kontrol ediniz.'})
+
+            return render(request, "bioinformatic/reading/alignment.html")
 
         else:
             form = AlignmentForm()

@@ -1,6 +1,7 @@
 from django import forms
 from bioinformatic.models import BioinformaticAnalizModel
 from bioinformatic.choices import ALIGNMENT_MODE, MATRIS
+from ckeditor.widgets import CKEditorWidget
 
 class FileReadingForm(forms.ModelForm):
     class Meta:
@@ -40,13 +41,13 @@ class FileResulSelect(forms.ModelForm):
         }
 
 
-class AlignResultForm(forms.Form):
-    align = forms.Textarea()
-
 
 class AlignmentForm(forms.Form):
-    mode = forms.Select(choices=ALIGNMENT_MODE)
-    matrix = forms.Select(choices=MATRIS)
-    seq1 = forms.Textarea()
-    seq2 = forms.Textarea()
-
+    mode = forms.ChoiceField(choices=ALIGNMENT_MODE, widget=forms.Select(attrs={
+        'class': 'custom-select'
+    }))
+    matrix = forms.ChoiceField(choices=MATRIS, widget=forms.Select(attrs={
+        'class': 'custom-select'
+    }))
+    seq1 = forms.CharField(widget=forms.Textarea(attrs={'placeholder': 'Sekans 1'}), label="Sekans 1")
+    seq2 = forms.CharField(widget=forms.Textarea(attrs={'placeholder': 'Sekans 2'}), label="Sekans 2")

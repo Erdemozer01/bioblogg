@@ -1,0 +1,28 @@
+{% extends "blog/layouts/base-fullscreen.html" %}
+{% load django_bootstrap5 %}
+{% load plotly_dash %}
+
+{% block title %} Alignment {% endblock %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}{% endblock %}
+
+{% block content %}
+    <!-- Section -->
+    <h2 class="h4 mt-3 text-center "> Alignment </h2>
+    <p>{% plotly_app name="alignment" ratio=0.3 %}</p>
+
+    <div>
+        <a href="{% url 'bioinformatic:home' %}">
+            <button type="button" class="btn btn-primary float-left ml-3">&laquo; ANASAYFA</button>
+        </a>
+
+        <a href="{% url 'bioinformatic:alignment_score' request.user %}">
+            <button type="button" class="btn btn-primary float-right mr-3"> Alignment &raquo;</button>
+        </a>
+    </div>
+
+{% endblock %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}{% endblock %}
