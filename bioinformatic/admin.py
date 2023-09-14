@@ -7,7 +7,7 @@ admin.AdminSite.site_header = "BioBlog"
 
 @admin.register(BioinformaticAnalizModel)
 class BioinformaticModelAdmin(admin.ModelAdmin):
-    list_display = ['user', 'tool', "molecule", 'file_format', 'created']
+    list_display = ['user', 'tool', "molecule", 'reading_file_format', 'created']
     list_filter = ['tool', 'created']
     search_fields = ['tool', 'file_format']
 

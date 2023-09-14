@@ -16,13 +16,15 @@ def alignment_file(instance, filename):
 class BioinformaticAnalizModel(models.Model):
     user = models.ForeignKey('auth.User', on_delete=models.CASCADE, verbose_name='Laborant', blank=True)
     tool = models.CharField(max_length=100, verbose_name="İşlem", blank=True)
-    file_format = models.CharField(choices=FILE_FORMAT, max_length=100, verbose_name="Dosya Formatı", blank=True)
+    reading_file_format = models.CharField(choices=FILE_FORMAT, max_length=100, verbose_name="Dosya Formatı", blank=True)
+    writing_file_format = models.CharField(choices=WRITE_FILE_FORMAT, max_length=100, verbose_name="Dosya Formatı", blank=True)
     molecule = models.CharField(choices=MOLECULE_TYPE, max_length=100, verbose_name="Molekül", blank=True)
     read_file = models.FileField(verbose_name="Dosya", upload_to=read_file, blank=True,
                                  help_text="Not : Max. dosya boyutu 5mb olmalıdır.")
     trans_table = models.CharField(choices=TRANS_TABLE, max_length=100, verbose_name="Dönüşüm Tablosu", blank=True)
     to_stop = models.BooleanField(verbose_name="Stop kodonları dahil et.", default=False)
     molecule_id = models.CharField(verbose_name="İD", max_length=100, blank=True)
+    name = models.CharField(verbose_name="Adı", max_length=100, blank=True)
     description = models.CharField(verbose_name="Tanım", max_length=100, blank=True)
     organism = models.CharField(verbose_name="Organizma", max_length=100, blank=True, null=True)
     taxonomy = models.CharField(verbose_name="Taksonomi", max_length=100, blank=True)

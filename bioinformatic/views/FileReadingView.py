@@ -162,7 +162,7 @@ class FileReadingResultView(generic.ListView):
         global file_format, protein, to_stop
         context = super().get_context_data(**kwargs)
         for i in BioinformaticAnalizModel.objects.filter(user=self.request.user, tool="okuma"):
-            file_format = [i.file_format]
+            file_format = [i.reading_file_format]
             protein = [i.pro_seq]
             to_stop = [i.to_stop]
 
@@ -198,7 +198,7 @@ def file_reading(request, user):
     if request.method == "POST":
         if form.is_valid():
 
-            file_format = form.cleaned_data["file_format"]
+            file_format = form.cleaned_data["reading_file_format"]
             read_file = form.cleaned_data["read_file"]
             molecule = form.cleaned_data["molecule"]
 

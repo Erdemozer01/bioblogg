@@ -1,14 +1,14 @@
 from django import forms
 from bioinformatic.models import BioinformaticAnalizModel
 from bioinformatic.choices import ALIGNMENT_MODE, MATRIS
-from ckeditor.widgets import CKEditorWidget
+
 
 class FileReadingForm(forms.ModelForm):
     class Meta:
         model = BioinformaticAnalizModel
-        fields = ["file_format", 'molecule', "read_file"]
+        fields = ["reading_file_format", 'molecule', "read_file"]
         widgets = {
-            'file_format': forms.Select(
+            'reading_file_format': forms.Select(
                 attrs={
                     'class': 'custom-select'
                 }),
@@ -39,7 +39,6 @@ class FileResulSelect(forms.ModelForm):
         labels = {
             'select': ""
         }
-
 
 
 class AlignmentForm(forms.Form):
