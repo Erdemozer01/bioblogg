@@ -23,9 +23,8 @@
                             <div class="mb-2">
                                 <p>Başlangıç: {{ start }} </p>
                                 <p>Bitiş: {{ stop }} </p>
-                                <p>Bölge: {{ result }} </p>
-                                {% plotly_app name="seq_slice" ratio=0.32 %}
-
+                                <p>Bölge: <span class="text-small"> {{ result }} </span> </p>
+                                {% plotly_app name="seq_slice" ratio=0.38 %}
                             </div>
 
                             <button type="button" onclick="window.print()" class="btn btn-primary float-right mr-3"><i
