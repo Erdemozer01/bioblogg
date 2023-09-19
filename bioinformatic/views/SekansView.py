@@ -182,14 +182,11 @@ def SequenceSlicing(request):
 
             my_seq = Seq(sekans)
 
-            print(start)
-            print(stop)
-
             result = my_seq[start:stop+1]
 
             df = pd.DataFrame({
                 'Sekans': [seq for seq in sekans]
-            }, index=None)
+            })
 
             pd.set_option('display.max_rows', None)
 
