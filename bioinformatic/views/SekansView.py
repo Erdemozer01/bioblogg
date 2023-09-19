@@ -1,5 +1,4 @@
 import datetime
-import os.path
 from pathlib import Path
 
 import Bio
@@ -7,15 +6,11 @@ import pandas as pd
 import plotly.express as px
 from Bio.Seq import Seq
 from Bio.SeqUtils import GC
-from Bio.SeqRecord import SeqRecord
-from Bio import SeqIO
 from dash import html, dcc, Input, Output, callback
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from django_plotly_dash import DjangoDash
 from bioinformatic.forms import DNASekansForm, TranslationForm, SequenceSlicingForm
-import dash_bio as dashbio
-from dash_bio.utils import protein_reader
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -124,7 +119,6 @@ def translation(request):
             transcribe = Seq(sequence).transcribe()
 
             try:
-
                 if to_stop is True:
                     translate = Seq(sequence).translate(table=table)
                 else:
@@ -182,7 +176,7 @@ def SequenceSlicing(request):
 
             my_seq = Seq(sekans)
 
-            result = my_seq[start:stop+1]
+            result = my_seq[start:stop + 1]
 
             df = pd.DataFrame({
                 'Sekans': [seq for seq in sekans]

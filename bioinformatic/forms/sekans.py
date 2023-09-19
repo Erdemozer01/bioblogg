@@ -7,5 +7,5 @@ class DNASekansForm(forms.Form):
 
 class SequenceSlicingForm(forms.Form):
     seq = forms.CharField(label="SEKANS", widget=forms.Textarea(attrs={'placeholder': 'SEKANS GİRİNİZ'}))
-    start = forms.IntegerField(label="Başlangıç")
-    finish = forms.IntegerField(label="Bitiş")
+    start = forms.IntegerField(label="Başlangıç", min_value=1)
+    finish = forms.IntegerField(label="Bitiş", min_value=1)
