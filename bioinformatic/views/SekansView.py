@@ -6,7 +6,7 @@ import pandas as pd
 import plotly.express as px
 from Bio.Seq import Seq
 from Bio.SeqUtils import GC
-from dash import html, dcc, Input, Output, callback
+from dash import html, dcc
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from django_plotly_dash import DjangoDash
@@ -150,8 +150,11 @@ def translation(request):
 
 
 def SequenceSlicing(request):
+
     form = SequenceSlicingForm(request.POST or None)
+
     if request.method == "POST":
+
         if form.is_valid():
 
             start = form.cleaned_data['start']
@@ -200,6 +203,7 @@ def SequenceSlicing(request):
             return render(request, "bioinformatic/sekans/slice.html", {'result': result, 'start': start, 'stop': stop})
 
         else:
+
             form = SequenceSlicingForm()
 
     return render(request, "bioinformatic/form.html", {'form': form})
