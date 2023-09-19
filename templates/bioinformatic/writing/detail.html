@@ -1,0 +1,50 @@
+{% extends "blog/layouts/base-fullscreen.html" %}
+{% load django_bootstrap5 %}
+
+{% block title %} {{ object.molecule_id }} {% endblock %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}{% endblock %}
+
+{% block navbar %}
+	{% include 'blog/includes/navigation.html' %}
+{% endblock %}
+
+{% block content %}
+    <!-- Section -->
+    <section class="min-vh-100 d-flex bg-primary align-items-center mt-7">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-12 col-md-12 col-lg-12 justify-content-center">
+                    <div class="card bg-primary shadow-soft border-light p-2">
+                        <div class="card-body">
+                            <div class="mb-2">
+                                <p>Ekleyen : {{ object.user }}</p>
+                                <p>Tarih : {{ object.created }}</p>
+                                <p>MOLEKÜL : {{ object.molecule.upper }}</p>
+                                <p>İD : {{ object.molecule_id }}</p>
+                                <p>TANIM : {{ object.description }}</p>
+                                <p>ORGANİZMA : {{ object.organism }}</p>
+                                <p>SEKANS :
+                                <p style="text-align: justify;">{{ object.seq }}</p>
+                                <p>SEKANS UZUNLUĞU : {{ object.seq|length }} </p>
+                            </div>
+                            <button type="button" onclick="window.print()" class="btn btn-primary float-right mr-3"><i
+                                    class="fas fa-print mr-2"></i>YAZDIR
+                            </button>
+                            <a href="{% url 'bioinformatic:file_writing_list' object.writing_file_format request.user %}">
+                                <button type="button" class="btn btn-primary">
+                                    <i class="fas fa-arrow-left mr-2"></i>KAYITLAR
+                                </button>
+                            </a>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}{% endblock %}

@@ -32,7 +32,7 @@ TRANS_TABLE = (
     ("33", "Cephalodiscidae Mitokondriyal UAA-Tyr Kodu"),
 )
 
-FILE_FORMAT = [
+READ_FILE_FORMAT = [
     ("abi", "ABİ"),
     ("abi-trim", "abi-trim".upper()),
     ("ace", "ace".upper()),

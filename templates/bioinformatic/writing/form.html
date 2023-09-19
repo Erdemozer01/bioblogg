@@ -12,13 +12,18 @@
 
 {% block content %}
     <!-- Section -->
-    <section class="min-vh-50 d-flex bg-primary align-items-center mt-7">
+    <section class="min-vh-100 d-flex bg-primary align-items-center mt-7 mb-3">
         <div class="container">
             <div class="row justify-content-center">
-                <div class="col-12 col-md-8 col-lg-6 justify-content-center">
+                <div class="col-12 col-md-12 col-lg-12 justify-content-center">
                     <div class="card bg-primary shadow-soft border-light p-4">
-                        <div class="card-header text-center pb-0">
-                            <h2 class="h4"> {{ title }} </h2>
+                        <div class="card-header pb-0">
+                            {% if format == "gb" %}
+                                <h2 class="h4"> GENBANK {{ title }} </h2>
+                            {% else %}
+                                <h2 class="h4"> {{ title }} </h2>
+                            {% endif %}
+
                             {% if messages %}
                                 {% for message in messages %}
                                     {% if message.tags == 'error' %}
@@ -28,16 +33,15 @@
                                         <div class="alert alert-{{ message.tags }} alert-dismissible shadow-soft fade show"
                                              role="alert">
                                     {% endif %}
-
                                 <span class="alert-inner--icon">
-                                    {% if message.tags == 'error' %}
-                                        <span class="far fa-thumbs-down"></span>
-                                    {% elif message.tags == 'success' %}
-                                        <span class="far fa-thumbs-up"></span>
-                                    {% else %}
+                                        {% if message.tags == 'error' %}
+                                            <span class="far fa-thumbs-down"></span>
+                                        {% elif message.tags == 'success' %}
+                                            <span class="far fa-thumbs-up"></span>
+                                        {% else %}
 
-                                    {% endif %}
-                                </span>
+                                        {% endif %}
+                                    </span>
 
                                 <span class="alert-inner--text"><strong>{{ message }}</strong> </span>
 
@@ -48,17 +52,18 @@
                                 {% endfor %}
                             {% endif %}
                             </div>
+
                             <div class="card-body">
                                 <form method="post" enctype="multipart/form-data">
                                     {% csrf_token %}
                                     {% bootstrap_form form %}
-                                    <button type="submit" class="btn btn-primary float-right"> ANALİZ &raquo;
-                                    </button>
+                                    <button type="submit" class="btn btn-primary float-right"> KAYDET</button>
+
+                                    <a href="{% url 'bioinformatic:file_writing_list' format request.user %}">
+                                        <button type="button" class="btn btn-primary float-left"> KAYITLAR</button>
+                                    </a>
                                 </form>
                                 <!-- End of Form -->
-                                <a href="{% url 'bioinformatic:home' %}">
-                                    <button type="button" class="btn btn-primary float-left">&laquo; ANASAYFA</button>
-                                </a>
                             </div>
                         </div>
                     </div>

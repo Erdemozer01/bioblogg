@@ -190,8 +190,8 @@ def file_reading(request, user):
         messages.error(request, "Lütfen Giriş Yapınız")
         return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
 
-    if BioinformaticAnalizModel.objects.filter(user=request.user).exists():
-        BioinformaticAnalizModel.objects.filter(user=request.user).delete()
+    if BioinformaticAnalizModel.objects.filter(user=request.user, tool="DOSYA OKUMA").exists():
+        BioinformaticAnalizModel.objects.filter(user=request.user, tool="DOSYA OKUMA").delete()
 
     form = FileReadingForm(request.POST or None, request.FILES or None)
 
@@ -224,7 +224,7 @@ def file_reading(request, user):
                         BioinformaticAnalizModel.objects.create(
                             user=request.user,
                             file_format=file_format,
-                            tool="okuma",
+                            tool="DOSYA OKUMA",
                             molecule=molecule,
                             molecule_id=file_content.id,
                             seq=file_content.seq,
@@ -252,7 +252,7 @@ def file_reading(request, user):
 
                                     BioinformaticAnalizModel.objects.create(
                                         user=request.user,
-                                        tool="okuma",
+                                        tool="DOSYA OKUMA",
                                         file_format=file_format,
                                         molecule=molecule,
                                         seq=record.seq,
@@ -270,7 +270,7 @@ def file_reading(request, user):
 
                                     BioinformaticAnalizModel.objects.create(
                                         user=request.user,
-                                        tool="okuma",
+                                        tool="DOSYA OKUMA",
                                         molecule=molecule,
                                         file_format=file_format,
                                         organism=record.annotations['organism'],
@@ -285,7 +285,7 @@ def file_reading(request, user):
 
                                 BioinformaticAnalizModel.objects.create(
                                     user=request.user,
-                                    tool="okuma",
+                                    tool="DOSYA OKUMA",
                                     molecule=molecule,
                                     file_format=file_format,
                                     organism=record.annotations['organism'],

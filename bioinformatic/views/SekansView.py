@@ -1,19 +1,26 @@
 import datetime
+import os.path
+from pathlib import Path
 
 import Bio
 import pandas as pd
 import plotly.express as px
 from Bio.Seq import Seq
 from Bio.SeqUtils import GC
-from dash import html, dcc
+from Bio.SeqRecord import SeqRecord
+from Bio import SeqIO
+from dash import html, dcc, Input, Output, callback
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from django_plotly_dash import DjangoDash
-from bioinformatic.forms import DNASekansForm, TranslationForm
+from bioinformatic.forms import DNASekansForm, TranslationForm, SequenceSlicingForm
+import dash_bio as dashbio
+from dash_bio.utils import protein_reader
+
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 
 def sequence_analiz(request):
-
     if request.user.is_anonymous:
         from django.conf import settings
         messages.error(request, "Lütfen Giriş Yapınız")
@@ -82,7 +89,6 @@ def sequence_analiz(request):
 
 
 def translation(request):
-
     if request.user.is_anonymous:
         from django.conf import settings
         messages.error(request, "Lütfen Giriş Yapınız")
@@ -147,3 +153,58 @@ def translation(request):
             form = TranslationForm()
 
     return render(request, 'bioinformatic/form.html', {'form': form, 'title': "DNA SEKANS TRASLASYON"})
+
+
+def SequenceSlicing(request):
+    form = SequenceSlicingForm(request.POST or None)
+    if request.method == "POST":
+        if form.is_valid():
+
+            start = form.cleaned_data['start']
+            stop = form.cleaned_data['finish']
+
+            sekans = form.cleaned_data['seq'].upper()
+
+            sekans = sekans.replace(" ", "")
+            sekans = sekans.replace("\n", "")
+            sekans = sekans.replace("\t", "")
+            sekans = sekans.replace("\r", "")
+            sekans = sekans.replace("0", "")
+            sekans = sekans.replace("1", "")
+            sekans = sekans.replace("2", "")
+            sekans = sekans.replace("3", "")
+            sekans = sekans.replace("4", "")
+            sekans = sekans.replace("5", "")
+            sekans = sekans.replace("6", "")
+            sekans = sekans.replace("7", "")
+            sekans = sekans.replace("8", "")
+            sekans = sekans.replace("9", "")
+
+            my_seq = Seq(sekans)
+
+            result = my_seq[start:stop]
+
+            df = pd.DataFrame({
+                'seq': [j for j in sekans]
+            })
+
+            df.index += 1
+
+            pd.set_option('display.max_rows', None)
+
+            app = DjangoDash("seq_slice")
+
+            app.layout = html.Div([
+                dcc.Textarea(
+                    id='textarea-example',
+                    value=f'{df["seq"]}',
+                    style={'width': '100%', 'height': 300},
+                ),
+            ])
+
+            return render(request, "bioinformatic/sekans/slice.html", {'result': result, 'start': start, 'stop': stop})
+
+        else:
+            form = SequenceSlicingForm()
+
+    return render(request, "bioinformatic/form.html", {'form': form})
