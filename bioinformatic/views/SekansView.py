@@ -194,13 +194,16 @@ def SequenceSlicing(request):
 
             app = DjangoDash("seq_slice")
 
-            app.layout = html.Div([
-                dcc.Textarea(
-                    id='textarea-example',
-                    value=f'{df["seq"]}',
-                    style={'width': '100%', 'height': 300},
-                ),
-            ])
+            app.layout = html.Div(
+                [
+                    html.P('Sekans Pozisyonları'),
+                    dcc.Textarea(
+                        id='textarea-example',
+                        value=f'{df["seq"]}',
+                        style={'width': '100%', 'height': 300},
+                    ),
+                ]
+            )
 
             return render(request, "bioinformatic/sekans/slice.html", {'result': result, 'start': start, 'stop': stop})
 
