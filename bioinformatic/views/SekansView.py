@@ -182,13 +182,14 @@ def SequenceSlicing(request):
 
             my_seq = Seq(sekans)
 
-            result = my_seq[start:stop]
+            print(start)
+            print(stop)
+
+            result = my_seq[start:stop+1]
 
             df = pd.DataFrame({
-                'seq': [j for j in sekans]
-            })
-
-            df.index += 1
+                'Sekans': [seq for seq in sekans]
+            }, index=None)
 
             pd.set_option('display.max_rows', None)
 
@@ -199,7 +200,7 @@ def SequenceSlicing(request):
                     html.P('Sekans Pozisyonları'),
                     dcc.Textarea(
                         id='textarea-example',
-                        value=f'{df["seq"]}',
+                        value=f'{df}',
                         style={'width': '100%', 'height': 300},
                     ),
                 ]
