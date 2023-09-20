@@ -1,3 +1,3 @@
 from .labhome import LabSlideModel
-from .bioinformatic import BioinformaticAnalizModel, BioinformaticDatabaseModel, CreateDatabaseModel
+from .bioinformatic import FileModel, BioinformaticModel, RecordModel
 from .bio_resource import BiologicalResourcesDatabases

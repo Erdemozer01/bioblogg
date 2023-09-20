@@ -1,3 +1,3 @@
-from .sekans import DNASekansForm,SequenceSlicingForm
+from .sekans import DNASekansForm, SequenceSlicingForm
 from .translation import TranslationForm
-from .reading import FileReadingForm, TranslateForm, FileResulSelect,AlignmentForm
+from .reading import FileReadingForm, TranslateForm, AlignmentForm

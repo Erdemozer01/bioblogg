@@ -4,7 +4,7 @@ from django.shortcuts import *
 from pathlib import Path
 from django.contrib import messages
 from bioinformatic.forms.writing import SelectWritingForm, FileWritingForm
-from bioinformatic.models.bioinformatic import BioinformaticAnalizModel
+from bioinformatic.models.bioinformatic import BioinformaticModel
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 from Bio import SeqIO
@@ -19,8 +19,8 @@ def file_writing_format_select(request, user):
         messages.error(request, "Lütfen Giriş Yapınız")
         return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
 
-    if BioinformaticAnalizModel.objects.filter(user=request.user, tool="DOSYA YAZMA").exists():
-        BioinformaticAnalizModel.objects.filter(user=request.user, tool="DOSYA YAZMA").delete()
+    if BioinformaticModel.objects.filter(user=request.user, tool="DOSYA YAZMA").exists():
+        BioinformaticModel.objects.filter(user=request.user, tool="DOSYA YAZMA").delete()
 
     form = SelectWritingForm(request.POST or None)
 
@@ -30,14 +30,14 @@ def file_writing_format_select(request, user):
             file_format = form.cleaned_data['writing_file_format']
             if file_format == "fasta":
 
-                BioinformaticAnalizModel.objects.create(
+                BioinformaticModel.objects.create(
                     user=request.user,
                     tool='DOSYA YAZMA',
                     writing_file_format=file_format,
                 )
 
             else:
-                BioinformaticAnalizModel.objects.create(
+                BioinformaticModel.objects.create(
                     user=request.user,
                     tool='DOSYA YAZMA',
                     writing_file_format=file_format,
@@ -51,7 +51,7 @@ def file_writing_format_select(request, user):
 
 class FileWritingListView(generic.ListView):
     template_name = "bioinformatic/writing/list.html"
-    model = BioinformaticAnalizModel
+    model = BioinformaticModel
     paginate_by = 10
 
     def get(self, request, *args, **kwargs):
@@ -62,18 +62,19 @@ class FileWritingListView(generic.ListView):
         return super().get(request, *args, **kwargs)
 
     def get_queryset(self):
-        return BioinformaticAnalizModel.objects.filter(user=self.request.user, tool="DOSYA YAZMA")[1:]
+        return BioinformaticModel.objects.filter(user=self.request.user, tool="DOSYA YAZMA")[1:]
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         context['count'] = self.object_list.count()
-        context['format'] = BioinformaticAnalizModel.objects.filter(user=self.request.user,
+        context['format'] = BioinformaticModel.objects.filter(user=self.request.user,
                                                                     tool="DOSYA YAZMA").last().writing_file_format
         context['title'] = f"{context['format'].upper()} KAYITLARI"
         return context
 
 
 def FileWritingView(request, format, user):
+
     if request.user.is_anonymous:
         from django.conf import settings
         messages.error(request, "Lütfen Giriş Yapınız")
@@ -85,7 +86,7 @@ def FileWritingView(request, format, user):
 
         if form.is_valid():
 
-            BioinformaticAnalizModel.objects.create(
+            BioinformaticModel.objects.create(
                 user=request.user,
                 tool="DOSYA YAZMA",
                 writing_file_format=format,
@@ -121,7 +122,7 @@ def FileWritingView(request, format, user):
 
 
 def CreateFileView(request, user, format):
-    obj_list = BioinformaticAnalizModel.objects.filter(
+    obj_list = BioinformaticModel.objects.filter(
         user=request.user,
         tool='DOSYA YAZMA',
         writing_file_format=format
@@ -160,9 +161,9 @@ def CreateFileView(request, user, format):
 
 class RecordDetailView(generic.DetailView):
     template_name = "bioinformatic/writing/detail.html"
-    model = BioinformaticAnalizModel
+    model = BioinformaticModel
 
 
 def RecordDeleteView(request, pk):
-    BioinformaticAnalizModel.objects.get(pk=pk).delete()
+    BioinformaticModel.objects.get(pk=pk).delete()
     return redirect(request.META['HTTP_REFERER'])

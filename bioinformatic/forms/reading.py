@@ -1,12 +1,14 @@
 from django import forms
-from bioinformatic.models import BioinformaticAnalizModel
+from bioinformatic.models import BioinformaticModel
 from bioinformatic.choices import ALIGNMENT_MODE, MATRIS
 
 
 class FileReadingForm(forms.ModelForm):
+    file = forms.FileField()
+
     class Meta:
-        model = BioinformaticAnalizModel
-        fields = ["reading_file_format", 'molecule', "read_file"]
+        model = BioinformaticModel
+        fields = ["reading_file_format", 'molecule', "file"]
         widgets = {
             'reading_file_format': forms.Select(
                 attrs={
@@ -22,22 +24,13 @@ class FileReadingForm(forms.ModelForm):
 
 class TranslateForm(forms.ModelForm):
     class Meta:
-        model = BioinformaticAnalizModel
+        model = BioinformaticModel
         fields = ["trans_table", 'to_stop']
         widgets = {
             'trans_table': forms.Select(
                 attrs={
                     'class': 'custom-select'
                 })
-        }
-
-
-class FileResulSelect(forms.ModelForm):
-    class Meta:
-        model = BioinformaticAnalizModel
-        fields = ["select"]
-        labels = {
-            'select': ""
         }
 
 

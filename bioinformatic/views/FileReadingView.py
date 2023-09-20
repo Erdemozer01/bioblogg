@@ -4,8 +4,8 @@ from django.db.models import Q
 from django.shortcuts import *
 from django.views import generic
 from django.contrib import messages
-from bioinformatic.forms import FileReadingForm, TranslateForm, FileResulSelect, AlignmentForm
-from bioinformatic.models import BioinformaticAnalizModel
+from bioinformatic.forms import FileReadingForm, TranslateForm, AlignmentForm
+from bioinformatic.models import BioinformaticModel, RecordModel
 from Bio import SeqIO
 from Bio.SeqUtils import GC
 import pandas as pd
@@ -21,6 +21,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 
 def alignment_score(request, user):
+
     if request.user.is_anonymous:
         from django.conf import settings
         messages.error(request, "Lütfen Giriş Yapınız")
@@ -70,6 +71,7 @@ def alignment_score(request, user):
             return render(request, "bioinformatic/reading/alignment.html")
 
         else:
+
             form = AlignmentForm()
 
     return render(request, "bioinformatic/form.html", {'form': form, 'title': 'Alignment'})
@@ -82,7 +84,7 @@ def stats_view(request, user):
         messages.error(request, "Lütfen Giriş Yapınız")
         return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
 
-    object_list = BioinformaticAnalizModel.objects.filter(user=request.user, tool="okuma")
+    object_list = RecordModel.objects.filter(user=request.user, tool="DOSYA OKUMA")
 
     if object_list.exists():
 
@@ -139,9 +141,8 @@ def stats_view(request, user):
 
 class FileReadingResultView(generic.ListView):
     template_name = "bioinformatic/reading/result.html"
-    model = BioinformaticAnalizModel
+    model = RecordModel
     paginate_by = 10
-    form_class = FileResulSelect
 
     def get(self, request, *args, **kwargs):
         if request.user.is_anonymous:
@@ -153,21 +154,22 @@ class FileReadingResultView(generic.ListView):
     def get_queryset(self):
         search = self.request.GET.get('search', False)
         if search:
-            return BioinformaticAnalizModel.objects.filter(
-                Q(description__icontains=search, user=self.request.user, tool="okuma"))
+            return RecordModel.objects.filter(
+                Q(description__icontains=search, records__user=self.request.user, records__tool="DOSYA OKUMA"))
         else:
-            return BioinformaticAnalizModel.objects.filter(user=self.request.user, tool="okuma")
+            return RecordModel.objects.filter(records__user=self.request.user, records__tool="DOSYA OKUMA")
 
     def get_context_data(self, *, object_list=None, **kwargs):
         global file_format, protein, to_stop
         context = super().get_context_data(**kwargs)
-        for i in BioinformaticAnalizModel.objects.filter(user=self.request.user, tool="okuma"):
+        for i in BioinformaticModel.objects.filter(user=self.request.user, tool="DOSYA OKUMA"):
             file_format = [i.reading_file_format]
-            protein = [i.pro_seq]
+            protein = [j.protein_sequence for j in
+                       i.record_content.filter(records__user=self.request.user, records__tool="DOSYA OKUMA")]
             to_stop = [i.to_stop]
 
         context["title"] = "Sonuçlar"
-        context["count"] = BioinformaticAnalizModel.objects.filter(user=self.request.user, tool="okuma").count()
+        context["count"] = RecordModel.objects.filter(records__user=self.request.user, records__tool="DOSYA OKUMA").count()
 
         if protein[0] == '':
             context["protein"] = "protein yok"
@@ -177,6 +179,7 @@ class FileReadingResultView(generic.ListView):
         page = context['page_obj']
         paginator = page.paginator
         pagelist = paginator.get_elided_page_range(page.number, on_each_side=2, on_ends=2)
+
         context['pagelist'] = pagelist
 
         return context
@@ -190,8 +193,8 @@ def file_reading(request, user):
         messages.error(request, "Lütfen Giriş Yapınız")
         return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
 
-    if BioinformaticAnalizModel.objects.filter(user=request.user, tool="DOSYA OKUMA").exists():
-        BioinformaticAnalizModel.objects.filter(user=request.user, tool="DOSYA OKUMA").delete()
+    if BioinformaticModel.objects.filter(user=request.user, tool="DOSYA OKUMA").exists():
+        BioinformaticModel.objects.filter(user=request.user, tool="DOSYA OKUMA").delete()
 
     form = FileReadingForm(request.POST or None, request.FILES or None)
 
@@ -199,14 +202,18 @@ def file_reading(request, user):
         if form.is_valid():
 
             file_format = form.cleaned_data["reading_file_format"]
-            read_file = form.cleaned_data["read_file"]
+            read_file = form.cleaned_data["file"]
             molecule = form.cleaned_data["molecule"]
 
-            obj = BioinformaticAnalizModel.objects.create(
+            obj = BioinformaticModel.objects.create(
                 user=request.user,
-                read_file=read_file,
                 molecule=molecule,
-                file_format=file_format
+                reading_file_format=file_format,
+                tool="DOSYA OKUMA"
+            )
+
+            file_obj = obj.records_files.create(
+                file=read_file
             )
 
             if read_file.size > 5242880:
@@ -214,93 +221,82 @@ def file_reading(request, user):
                 messages.error(request, "Dosya boyutu 5mb dan büyüktür.")
                 return redirect(request.META['HTTP_REFERER'])
 
-            file_read = SeqIO.parse(obj.read_file.path, file_format)
+            file_read = SeqIO.parse(file_obj.file.path, file_format)
 
             try:
 
-                if molecule == "DNA":
-
-                    for file_content in file_read:
-                        BioinformaticAnalizModel.objects.create(
-                            user=request.user,
-                            file_format=file_format,
-                            tool="DOSYA OKUMA",
-                            molecule=molecule,
-                            molecule_id=file_content.id,
-                            seq=file_content.seq,
-                            annotations=file_content.annotations,
-                            description=file_content.description,
-                            features=file_content.features,
-                            gc=GC(file_content.seq).__round__(2),
-                            seq_len=len(file_content.seq),
-                            organism=file_content.name
-                        )
-
-                elif molecule == "protein":
+                if file_format == "gb" or "genbank" or "genbank-cds":
 
                     for record in file_read:
 
                         for feature in record.features:
 
-                            print(feature)
-
                             if feature.type == "CDS":
 
                                 if feature.qualifiers.get('translation') is not None:
 
-                                    print(feature.qualifiers.get('organism'))
-
-                                    BioinformaticAnalizModel.objects.create(
-                                        user=request.user,
-                                        tool="DOSYA OKUMA",
-                                        file_format=file_format,
-                                        molecule=molecule,
-                                        seq=record.seq,
+                                    obj.records.create(
+                                        record_id=record.id,
+                                        name=record.name,
+                                        sequence=record.seq,
                                         seq_len=len(record.seq),
-                                        pro_seq=feature.qualifiers.get('translation')[0],
-                                        molecule_id=feature.qualifiers.get('protein_id')[0],
-                                        pro_seq_len=len(feature.qualifiers.get('translation')[0]),
                                         organism=feature.qualifiers.get('organism'),
+                                        gene=feature.qualifiers.get('gene'),
+                                        dbxrefs=feature.qualifiers.get('db_xref'),
+                                        source=feature.qualifiers.get('source'),
                                         taxonomy=record.annotations['taxonomy'],
+                                        keywords=record.annotations['keywords'],
                                         description=record.description,
                                         gc=GC(record.seq).__round__(2),
                                     )
 
                                 else:
 
-                                    BioinformaticAnalizModel.objects.create(
-                                        user=request.user,
-                                        tool="DOSYA OKUMA",
-                                        molecule=molecule,
-                                        file_format=file_format,
-                                        organism=record.annotations['organism'],
-                                        taxonomy=record.annotations['taxonomy'],
+                                    obj.records.create(
+                                        organism=feature.qualifiers.get('organism'),
+                                        gene=feature.qualifiers.get('gene'),
+                                        dbxrefs=feature.qualifiers.get('db_xref'),
+                                        source=feature.qualifiers.get('source'),
+                                        protein_sequence=feature.qualifiers.get('translation')[0],
+                                        protein_id=feature.qualifiers.get('protein_id')[0],
+                                        pro_seq_len=len(feature.qualifiers.get('translation')[0]),
                                         description=record.description,
-                                        seq=record.seq,
+                                        sequence=record.seq,
                                         seq_len=len(record.seq),
                                         gc=GC(record.seq).__round__(2),
                                     )
 
                             else:
 
-                                BioinformaticAnalizModel.objects.create(
-                                    user=request.user,
-                                    tool="DOSYA OKUMA",
-                                    molecule=molecule,
-                                    file_format=file_format,
-                                    organism=record.annotations['organism'],
-                                    taxonomy=record.annotations['taxonomy'],
-                                    description=record.description,
-                                    seq=record.seq,
+                                obj.records.create(
+                                    record_id=record.id,
+                                    name=record.name,
+                                    sequence=record.seq,
                                     seq_len=len(record.seq),
+                                    taxonomy=record.annotations['taxonomy'],
+                                    keywords=record.annotations['keywords'],
+                                    description=record.description,
                                     gc=GC(record.seq).__round__(2),
                                 )
 
-            except UnicodeDecodeError:
-                BioinformaticAnalizModel.objects.get(user=request.user, tool="").delete()
-                return render(request, "exception/page-404.html", {'msg': 'Hatalı dosya türü', 'url': request.path})
+                else:
 
-            BioinformaticAnalizModel.objects.get(user=request.user, tool="").delete()
+                    for record in file_read:
+                        obj.records.create(
+                            record_id=record.id,
+                            name=record.name,
+                            description=record.description,
+                            sequence=record.seq,
+                            dbxrefs=record.dbxrefs,
+                            annotations=record.annotations,
+                            features=record.features,
+                            gc=GC(record.seq).__round__(2),
+                            seq_len=len(record.seq),
+                        )
+
+            except UnicodeDecodeError:
+                BioinformaticModel.objects.get(user=request.user, tool="").delete()
+                return render(request, "exception/page-404.html", {'msg': 'Hatalı dosya türü', 'url': request.path})
 
             return HttpResponseRedirect(reverse("bioinformatic:file_reading_results", kwargs={'user': request.user}))
 
@@ -313,10 +309,10 @@ def file_reading(request, user):
 
 class FileReadDetailView(generic.DetailView):
     template_name = "bioinformatic/reading/detail.html"
-    model = BioinformaticAnalizModel
+    model = RecordModel
 
     def get_queryset(self):
-        return BioinformaticAnalizModel.objects.filter(user=self.request.user, tool="okuma")
+        return RecordModel.objects.filter(records__user=self.request.user, records__tool="DOSYA OKUMA")
 
     def get(self, request, *args, **kwargs):
         if request.user.is_anonymous:
@@ -327,18 +323,21 @@ class FileReadDetailView(generic.DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['A'] = self.object.seq.count("A")
-        context['T'] = self.object.seq.count("T")
-        context['G'] = self.object.seq.count("G")
-        context['C'] = self.object.seq.count("C")
+        context['A'] = self.object.sequence.count("A")
+        context['T'] = self.object.sequence.count("T")
+        context['G'] = self.object.sequence.count("G")
+        context['C'] = self.object.sequence.count("C")
         return context
 
 
 def ProteinPickView(request, user):
     form = TranslateForm(request.POST or None)
-    object_list = BioinformaticAnalizModel.objects.filter(user=request.user, tool="okuma")
+    object_list = BioinformaticModel.objects.filter(user=request.user, tool="okuma")
+
     if request.method == "POST":
+
         if form.is_valid():
+
             trans_table = form.cleaned_data["trans_table"]
             to_stop = form.cleaned_data["to_stop"]
 
@@ -348,6 +347,7 @@ def ProteinPickView(request, user):
                     object.pro_seq = Seq(object.seq).translate(table=trans_table)
                     object.pro_seq_len = len(Seq(object.seq).translate(table=trans_table))
                     object.save()
+
             else:
                 for object in object_list:
                     object.to_stop = to_stop

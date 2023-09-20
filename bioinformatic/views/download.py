@@ -2,13 +2,13 @@ import mimetypes
 import os
 from django.http.response import HttpResponse
 from pathlib import Path
-from bioinformatic.models.bioinformatic import BioinformaticAnalizModel
+from bioinformatic.models.bioinformatic import BioinformaticModel
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 
 def download_file(request):
-    obj = BioinformaticAnalizModel.objects.filter(user=request.user)
+    obj = BioinformaticModel.objects.filter(user=request.user)
     format = [j.writing_file_format for j in obj][0]
     # Define text file name
     filename = f'{request.user}_{format}_file.{format}'
