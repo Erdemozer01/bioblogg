@@ -1,11 +1,11 @@
 /*
 
 =========================================================
-* Neumorphism UI Kit Pro - v1.0.0
+* Neumorphism UI - v1.0.0
 =========================================================
 
-* Product Page: https://themesberg.com/product/ui-kits/neumorphism-ui-pro
-* Copyright 2020 Themesberg (https://www.themesberg.com/licensing)
+* Product Page: https://themesberg.com/product/ui-kits/neumorphism-ui
+* Copyright 2020 Themesberg MIT LICENSE (https://www.themesberg.com/licensing#mit)
 
 * Coded by https://themesberg.com
 
@@ -225,162 +225,6 @@ $(document).ready(function () {
                 triggerOnce: true,
                 offset: '60%'
             });
-    });
-
-    //Owl Carousel
-
-     $('.basic-carousel').owlCarousel({
-        loop: true,
-        margin: 10,
-        nav: true,
-        dots: false,
-        navElement: 'button type="button" aria-label="navigation button link" role="presentation"',
-        responsive: {
-            0: {
-                items: 1
-            },
-            600: {
-                items: 2
-            },
-            1000: {
-                items: 3
-            }
-        },
-        navText: [
-			'<span class="fas fa-chevron-left"</span>',
-			'<span class="fas fa-chevron-right"</span>'
-		],
-    });
-
-    $('.autoplay-carousel').owlCarousel({
-        loop: true,
-        margin: 10,
-        nav: false,
-        dots: false,
-        items: 3,
-        autoplay: true,
-        navElement: 'button type="button" aria-label="github social link" role="presentation"',
-        autoplayTimeout: 3000,
-        responsive: {
-            0: {
-                items: 1
-            },
-            600: {
-                items: 2
-            },
-            1000: {
-                items: 3
-            }
-        },
-		navText: [
-			'<span aria-label="' + 'Previous' + '">&#x2039;</span>',
-			'<span aria-label="' + 'Next' + '">&#x203a;</span>'
-		],
-    });
-
-    $('.news-carousel').owlCarousel({
-        loop: true,
-        margin: 10,
-        nav: true,
-        dots: false,
-        navElement: 'button type="button" aria-label="navigation button link" role="presentation"',
-        items: 1,
-        navText: [
-            '<span class="fas fa-caret-left"></span>',
-            '<span class="fas fa-caret-right"></span>'
-        ]
-    });
-
-    $('.pricing-carousel').owlCarousel({
-        loop: true,
-        margin: 10,
-        nav: true,
-        dots: false,
-        navElement: 'button type="button" aria-label="github social link" role="presentation"',
-        responsive: {
-            0: {
-                items: 1
-            },
-            600: {
-                items: 2
-            },
-            1000: {
-                items: 4
-            }
-        },
-        navText: [
-            '<span class="fas fa-angle-left"></span>',
-            '<span class="fas fa-angle-right"></span>'
-        ]
-    });
-
-    $('.clients-carousel').owlCarousel({
-        loop: true,
-        margin: 10,
-        nav: true,
-        navElement: 'button type="button" aria-label="github social link" role="presentation"',
-        dots: false,
-        responsive: {
-            0: {
-                items: 1
-            },
-            600: {
-                items: 3
-            },
-            1000: {
-                items: 5
-            }
-        },
-        navText: [
-            '<span class="fas fa-chevron-left"></span>',
-            '<span class="fas fa-chevron-right"></span>'
-        ]
-    });
-
-    $('.blog-carousel').owlCarousel({
-        loop: true,
-        margin: 10,
-        nav: true,
-        dots: false,
-        navElement: 'button type="button" aria-label="github social link" role="presentation"',
-        responsive: {
-            0: {
-                items: 1
-            },
-            600: {
-                items: 1
-            },
-            1000: {
-                items: 2
-            }
-        },
-        navText: [
-            '<span aria-hidden="true" class="fas fa-chevron-left"></span>',
-            '<span aria-hidden="true" class="fas fa-chevron-right"></span>'
-        ]
-    });
-
-    $('.testimonial-carousel').owlCarousel({
-        loop: true,
-        margin: 8,
-        nav: true,
-        dots: false,
-        navElement: 'button type="button" aria-label="github social link" role="presentation"',
-        responsive: {
-            0: {
-                items: 1
-            },
-            600: {
-                items: 2
-            },
-            1000: {
-                items: 3
-            }
-        },
-        navText: [
-            '<span class="fas fa-angle-left"></span>',
-            '<span class="fas fa-angle-right"></span>'
-        ]
     });
 
     // When in viewport
