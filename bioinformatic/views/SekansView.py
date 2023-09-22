@@ -178,9 +178,11 @@ def Kmer_SeqSlicing(request):
                               style={'marginLeft': '2px'}),
                     dcc.Input(id="nuc_pos", type="number", placeholder="Nükleotit pozisyonu", minLength=1,
                               style={'marginLeft': '2px'}),
-                    dcc.Input(id="start", type="number", placeholder="Sekans başlangıcı", minLength=1,
+                    dcc.Input(id="start", type="number", placeholder="Sekans başlangıcı", min=0,
                               style={'marginLeft': '2px'}),
-                    dcc.Input(id="stop", type="number", placeholder="Sekans bitişi", minLength=1,
+                    dcc.Input(id="stop", type="number", placeholder="Sekans bitişi", min=0,
+                              style={'marginLeft': '2px'}),
+                    dcc.Input(id="discard", type="text", placeholder="İstenmeyen Sekans dizisi",
                               style={'marginLeft': '2px'}),
                 ]
             ),
@@ -196,8 +198,10 @@ def Kmer_SeqSlicing(request):
         Input("nuc_pos", "value"),
         Input("start", "value"),
         Input("stop", "value"),
+        Input("discard", "value"),
     )
-    def update_output(sekans, kmer, nuc_pos, start, stop):
+    def update_output(sekans, kmer, nuc_pos, start, stop, discard):
+        print(discard)
         sekans = sekans.replace(' ', '')
         sekans = sekans.replace("\n", "")
         sekans = sekans.replace("\t", "")
@@ -212,6 +216,7 @@ def Kmer_SeqSlicing(request):
         sekans = sekans.replace("7", "")
         sekans = sekans.replace("8", "")
         sekans = sekans.replace("9", "")
+        sekans = sekans.replace(str(discard), "")
         sekans = sekans[start:stop].upper()
 
         def getKmers(sequence, size, step=4):
