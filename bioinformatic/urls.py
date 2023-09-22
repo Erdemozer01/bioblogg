@@ -7,7 +7,7 @@ urlpatterns = [
     # Sekans
     path('anasayfa/', views.BioinformaticHomeView.as_view(), name="home"),
     path('dna-sekans-okuması/', views.SekansView.sequence_analiz, name="dna_seq_read"),
-    path('dna-sekans-kesme/', views.SekansView.SequenceSlicing, name="dna_seq_slice"),
+    path('dna-sekans-kesme/', views.SekansView.Kmer_SeqSlicing, name="dna_seq_slice"),
     path('dna-sekans-translate/', views.SekansView.translation, name="dna_seq_translate"),
 
     # Reading

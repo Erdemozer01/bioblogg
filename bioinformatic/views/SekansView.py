@@ -150,13 +150,15 @@ def translation(request):
     return render(request, 'bioinformatic/form.html', {'form': form, 'title': "DNA SEKANS TRASLASYON"})
 
 
-def SequenceSlicing(request):
+def Kmer_SeqSlicing(request):
     external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
-    seq_input = DjangoDash('seq_input', external_stylesheets=external_stylesheets)
+    seq_input = DjangoDash('kmer_seq_slicing', external_stylesheets=external_stylesheets)
 
     seq_input.layout = html.Div(
 
         [
+
+            html.H4('Kmer ve Sekans Kesme'),
 
             html.A('BİYOİNFORMATİK ANASAYFA', href=HttpResponseRedirect(reverse("bioinformatic:home")).url,
                    style={'float': 'right'}),
@@ -226,7 +228,7 @@ def SequenceSlicing(request):
         kmer_list = []
 
         for km in getKmers(sekans, kmer):
-            if km.count(nuc_position) > 0:
+            if km.count(str(nuc_position)) > 0:
                 kmer_list.append(km)
 
         df_kmer = pd.DataFrame(
@@ -239,8 +241,8 @@ def SequenceSlicing(request):
 
         return html.Div([
             html.P(
-                f"SEKANS UZUNLUĞU: {len(sekans)}, %GC: {GC(sekans).__round__(2)}",
-                style={'marginTop': '10px'}
+                f"SEKANS UZUNLUĞU: {len(sekans)}, %GC: {GC(sekans).__round__(2)}, Nükleotid Pozisyonu : {nuc_position}",
+                style={'marginTop': '20px'}
 
             ),
 
@@ -253,9 +255,6 @@ def SequenceSlicing(request):
                 )
             ]),
 
-            html.P(
-                f"Nükleotid Pozisyonu : {nuc_position.upper()}"
-            ),
             html.Label("Kmerler", style={'text': 'bold'}),
 
             html.Div(
@@ -278,4 +277,4 @@ def SequenceSlicing(request):
             ])
         ])
 
-    return HttpResponseRedirect("/django_plotly_dash/app/seq_input/")
+    return HttpResponseRedirect("/laboratory/bioinformatic/app/kmer_seq_slicing/")
