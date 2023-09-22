@@ -2,16 +2,15 @@ import datetime
 from pathlib import Path
 
 import Bio
-import dash_bootstrap_components.themes
 import pandas as pd
 import plotly.express as px
 from Bio.Seq import Seq
 from Bio.SeqUtils import GC
-from dash import html, dcc, Input, Output, callback, Dash
+from dash import html, dcc, Input, Output
 from django.contrib import messages
 from django.shortcuts import *
 from django_plotly_dash import DjangoDash
-from bioinformatic.forms import DNASekansForm, TranslationForm, SequenceSlicingForm
+from bioinformatic.forms import DNASekansForm, TranslationForm
 import dash_ag_grid as dag
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -158,6 +157,9 @@ def SequenceSlicing(request):
     seq_input.layout = html.Div(
 
         [
+            html.Div([
+                "Saat:\t", datetime.datetime.now().second
+            ]),
             html.A('BİYOİNFORMATİK ANASAYFA', href=HttpResponseRedirect(reverse("bioinformatic:home")).url,
                    style={'float': 'right'}),
 
