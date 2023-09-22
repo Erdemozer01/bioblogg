@@ -174,15 +174,15 @@ def Kmer_SeqSlicing(request):
 
             html.Div(
                 [
-                    dcc.Input(id="kmer", type="number", placeholder="Kmer Uzunluğu", minLength=1,
-                              style={'marginLeft': '2px'}),
-                    dcc.Input(id="nuc_pos", type="number", placeholder="Nükleotit pozisyonu", minLength=1,
-                              style={'marginLeft': '2px'}),
                     dcc.Input(id="start", type="number", placeholder="Sekans başlangıcı", min=0,
                               style={'marginLeft': '2px'}),
                     dcc.Input(id="stop", type="number", placeholder="Sekans bitişi", min=0,
                               style={'marginLeft': '2px'}),
-                    dcc.Input(id="discard", type="text", placeholder="İstenmeyen Sekans dizisi",
+                    dcc.Input(id="kmer", type="number", placeholder="Kmer Uzunluğu", minLength=1,
+                              style={'marginLeft': '2px'}),
+                    dcc.Input(id="nuc_pos", type="number", placeholder="Nükleotit pozisyonu", minLength=1,
+                              style={'marginLeft': '2px'}),
+                    dcc.Input(id="discard", type="text", placeholder="İstenmeyen sekans dizisi",
                               style={'marginLeft': '2px'}),
                 ]
             ),
@@ -194,14 +194,13 @@ def Kmer_SeqSlicing(request):
     @seq_input.callback(
         Output("output", "children"),
         Input("sekans", "value"),
-        Input("kmer", "value"),
-        Input("nuc_pos", "value"),
         Input("start", "value"),
         Input("stop", "value"),
+        Input("kmer", "value"),
+        Input("nuc_pos", "value"),
         Input("discard", "value"),
     )
-    def update_output(sekans, kmer, nuc_pos, start, stop, discard):
-        print(discard)
+    def update_output(sekans, start, stop, kmer, nuc_pos, discard):
         sekans = sekans.replace(' ', '')
         sekans = sekans.replace("\n", "")
         sekans = sekans.replace("\t", "")
@@ -216,7 +215,7 @@ def Kmer_SeqSlicing(request):
         sekans = sekans.replace("7", "")
         sekans = sekans.replace("8", "")
         sekans = sekans.replace("9", "")
-        sekans = sekans.replace(str(discard), "")
+        sekans = sekans.replace(str(discard).upper(), "")
         sekans = sekans[start:stop].upper()
 
         def getKmers(sequence, size, step=4):
@@ -232,9 +231,11 @@ def Kmer_SeqSlicing(request):
 
         kmer_list = []
 
-        for km in getKmers(sekans, kmer):
-            if km.count(str(nuc_position)) > 0:
-                kmer_list.append(km)
+        if kmer:
+
+            for km in getKmers(sekans, kmer):
+                if km.count(str(nuc_position)) > 0:
+                    kmer_list.append(km)
 
         df_kmer = pd.DataFrame(
             {
