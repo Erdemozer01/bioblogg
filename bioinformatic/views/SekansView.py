@@ -157,9 +157,7 @@ def SequenceSlicing(request):
     seq_input.layout = html.Div(
 
         [
-            html.Div([
-                "Saat:\t", datetime.datetime.now().second
-            ]),
+
             html.A('BİYOİNFORMATİK ANASAYFA', href=HttpResponseRedirect(reverse("bioinformatic:home")).url,
                    style={'float': 'right'}),
 
@@ -234,13 +232,14 @@ def SequenceSlicing(request):
         df_kmer = pd.DataFrame(
             {
                 f'{nuc_position} Sayısı': [i.count(nuc_position) for i in kmer_list],
-                'kmer': kmer_list
+                'kmer': kmer_list,
+                '%gc': [GC(gc).__round__(2) for gc in kmer_list]
             }
         )
 
         return html.Div([
             html.P(
-                f"SEKANS UZUNLUĞU: {len(sekans)}",
+                f"SEKANS UZUNLUĞU: {len(sekans)}, %GC: {GC(sekans).__round__(2)}",
                 style={'marginTop': '10px'}
 
             ),
@@ -268,6 +267,7 @@ def SequenceSlicing(request):
                         columnDefs=[
                             {'field': f'{nuc_position} Sayısı'},
                             {'field': 'kmer', 'headerName': 'KMERS', 'filter': True},
+                            {'field': '%gc', 'headerName': '%GC', 'filter': True},
                         ]
                     ),
                 ],
