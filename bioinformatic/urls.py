@@ -14,7 +14,7 @@ urlpatterns = [
     path('file-reading/<user>/', views.FileReadingView.file_reading, name="file_reading"),
     path('file-reading/<user>/sonuçlar/', views.FileReadingView.FileReadingResultView.as_view(),
          name="file_reading_results"),
-    path('file-reading-detail/<slug:user>/<pk>/', views.FileReadingView.FileReadDetailView.as_view(),
+    path('file-reading-detail/<slug:user>/<pk>/<description>/', views.FileReadingView.FileReadDetailView.as_view(),
          name="file_reading_detail"),
     path('file-reading/<user>/protein/', views.FileReadingView.ProteinPickView, name="file_reading_pick_protein"),
     path('istatistik-verileri/<user>/', views.FileReadingView.stats_view, name="stats"),
@@ -26,7 +26,7 @@ urlpatterns = [
     path('dosya-oluşturma/<format>/<user>/', views.FileWritingView.FileWritingView, name="file_writing"),
     path('file-writing-list/<format>/<user>/', views.FileWritingListView.as_view(), name="file_writing_list"),
     path('download/<user>/<format>/', views.CreateFileView, name='create_and_download'),
-    path('record-detail/<pk>/<user>/<format>/', views.RecordDetailView.as_view(), name='record_detail'),
+    path('record-detail/<pk>/<user>/<description>/', views.RecordDetailView.as_view(), name='record_detail'),
     path('delete/<pk>/', views.RecordDeleteView, name='delete_record'),
 
     # Download

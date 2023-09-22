@@ -7,12 +7,14 @@ admin.AdminSite.site_header = "BioBlog"
 
 class CreateDatabaseModelInline(admin.StackedInline):
     model = RecordModel
-    extra = 1
+    extra = 0
+    classes = ['collapse', 'start-open']
 
 
 class FileModelModelInline(admin.StackedInline):
     model = FileModel
-    extra = 1
+    extra = 0
+    classes = ['collapse', 'start-open']
 
 
 @admin.register(BioinformaticModel)

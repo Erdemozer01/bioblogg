@@ -43,19 +43,26 @@ class FileModel(models.Model):
 
 class RecordModel(models.Model):
     records = models.ForeignKey(BioinformaticModel, on_delete=models.CASCADE, blank=True, related_name="record_content")
-    record_id = models.CharField(max_length=100, blank=True)
+
+    molecule = models.CharField(max_length=100, blank=True, verbose_name="Molekül")
+    molecule_id = models.CharField(max_length=100, blank=True, verbose_name="Molekül İD")
     name = models.CharField(max_length=100, blank=True)
     description = models.CharField(max_length=100, blank=True)
     taxonomy = models.CharField(max_length=100, blank=True)
     annotations = models.CharField(max_length=100, blank=True)
-    db_xrefs = models.CharField(max_length=100, blank=True)
-    features = models.CharField(max_length=100, blank=True)
-    sequence = models.TextField(blank=True, verbose_name="Sekans")
+    db_xrefs = models.CharField(max_length=100, blank=True, null=True)
+    features = models.CharField(max_length=100, blank=True, null=True)
+    gene = models.CharField(max_length=100, blank=True, null=True)
+    accession = models.CharField(max_length=100, blank=True, null=True)
+    keywords = models.CharField(max_length=100, blank=True, null=True)
+    source = models.CharField(max_length=100, blank=True, null=True)
+    organism = models.CharField(max_length=100, blank=True, null=True)
+
+    sequence = models.TextField(verbose_name="Sekans", blank=True)
     seq_len = models.IntegerField(verbose_name="Sekans Uzunluğu", blank=True, null=True)
-    protein_sequence = models.TextField(blank=True, verbose_name="Protein Sekans")
+    protein_sequence = models.TextField(verbose_name="Protein Sekans", blank=True)
     pro_seq_len = models.IntegerField(verbose_name="PROTEİN SEKANS UZUNLUĞU", blank=True, null=True)
     gc = models.FloatField(verbose_name="%GC", blank=True, null=True)
-    protein_id = models.CharField(max_length=100, blank=True)
 
     class Meta:
         verbose_name = "Biyoinformatik Kayıt"

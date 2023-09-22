@@ -36,17 +36,17 @@
                                         </tr>
                                         {% for object in object_list %}
                                             <tr>
-                                                <td id="Bolter" headers="{{ object.molecule_id }}">
-                                                    <a href="{% url 'bioinformatic:record_detail' object.pk object.user object.writing_file_format %}">
-                                                        {{ object.molecule_id }}
+                                                <td id="Bolter" headers="{{ object.description }}">
+                                                    <a href="{% url 'bioinformatic:record_detail' object.pk object.records.user object.description|slugify %}">
+                                                        {{ object.description }}
                                                     </a>
                                                 </td>
 
                                                 <td id="Bolter"
-                                                    headers="{{ object.writing_file_format }}">{{ object.writing_file_format.upper }}</td>
+                                                    headers="{{ object.records.writing_file_format }}">{{ object.records.writing_file_format.upper }}</td>
 
                                                 <td id="Bolter"
-                                                    headers="{{ object.created }}">{{ object.created }}</td>
+                                                    headers="{{ object.records.created }}">{{ object.records.created }}</td>
 
                                                 <td id="Bolter"><a
                                                         href="{% url 'bioinformatic:delete_record' object.pk %}"
@@ -58,11 +58,18 @@
                                     <p class="ml-2">Toplam {{ count }} kayıt bulundu.</p>
 
                                     <p>
-                                        <a href="{% url 'bioinformatic:create_and_download' request.user format  %}"
+                                        <a href="{% url 'bioinformatic:create_and_download' request.user format %}"
                                            class="float-right">
                                              <button type="button" class="btn btn-info"> DOSYAYI OLUŞTUR </button>
                                         </a>
                                     </p>
+
+                                    <p>
+                                        <a href="{% url 'bioinformatic:home' %}" class="float-left">
+                                             <button type="button" class="btn btn-primary"> ANASAYFA </button>
+                                        </a>
+                                    </p>
+
                                     {% if object_list.count > 5 %}
                                         <!-- Pagination -->
                                         <div class="d-flex justify-content-center w-100">

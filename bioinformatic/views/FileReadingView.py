@@ -21,7 +21,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 
 def alignment_score(request, user):
-
     if request.user.is_anonymous:
         from django.conf import settings
         messages.error(request, "Lütfen Giriş Yapınız")
@@ -84,13 +83,13 @@ def stats_view(request, user):
         messages.error(request, "Lütfen Giriş Yapınız")
         return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
 
-    object_list = RecordModel.objects.filter(user=request.user, tool="DOSYA OKUMA")
+    object_list = RecordModel.objects.filter(records__user=request.user, records__tool="DOSYA OKUMA")
 
     if object_list.exists():
 
         df = pd.DataFrame(
             {
-                "name": [dna.molecule_id for dna in object_list],
+                "name": [dna.name for dna in object_list],
                 "DNA": [dna.seq_len for dna in object_list],
                 "PROTEİN": [pro.pro_seq_len for pro in object_list],
                 "%GC": [gc.gc for gc in object_list],
@@ -163,18 +162,18 @@ class FileReadingResultView(generic.ListView):
         global file_format, protein, to_stop
         context = super().get_context_data(**kwargs)
         for i in BioinformaticModel.objects.filter(user=self.request.user, tool="DOSYA OKUMA"):
-            file_format = [i.reading_file_format]
-            protein = [j.protein_sequence for j in
-                       i.record_content.filter(records__user=self.request.user, records__tool="DOSYA OKUMA")]
             to_stop = [i.to_stop]
-
+        protein = [i.pro_seq_len for i in self.get_queryset()]
         context["title"] = "Sonuçlar"
-        context["count"] = RecordModel.objects.filter(records__user=self.request.user, records__tool="DOSYA OKUMA").count()
+        context["count"] = RecordModel.objects.filter(records__user=self.request.user,
+                                                      records__tool="DOSYA OKUMA").count()
+        context["to_stop"] = to_stop[0]
 
-        if protein[0] == '':
+        if None in protein:
             context["protein"] = "protein yok"
         else:
             context["protein"] = "protein var"
+
 
         page = context['page_obj']
         paginator = page.paginator
@@ -199,6 +198,7 @@ def file_reading(request, user):
     form = FileReadingForm(request.POST or None, request.FILES or None)
 
     if request.method == "POST":
+
         if form.is_valid():
 
             file_format = form.cleaned_data["reading_file_format"]
@@ -225,42 +225,39 @@ def file_reading(request, user):
 
             try:
 
-                if file_format == "gb" or "genbank" or "genbank-cds":
+                for record in file_read:
 
-                    for record in file_read:
+                    if record.features:
 
                         for feature in record.features:
 
                             if feature.type == "CDS":
 
-                                if feature.qualifiers.get('translation') is not None:
+                                if feature.qualifiers.get('translation') is None:
 
-                                    obj.records.create(
+                                    obj.record_content.create(
                                         record_id=record.id,
                                         name=record.name,
                                         sequence=record.seq,
                                         seq_len=len(record.seq),
-                                        organism=feature.qualifiers.get('organism'),
                                         gene=feature.qualifiers.get('gene'),
-                                        dbxrefs=feature.qualifiers.get('db_xref'),
-                                        source=feature.qualifiers.get('source'),
+                                        db_xrefs=feature.qualifiers.get('db_xref'),
                                         taxonomy=record.annotations['taxonomy'],
-                                        keywords=record.annotations['keywords'],
                                         description=record.description,
                                         gc=GC(record.seq).__round__(2),
                                     )
 
                                 else:
 
-                                    obj.records.create(
-                                        organism=feature.qualifiers.get('organism'),
-                                        gene=feature.qualifiers.get('gene'),
-                                        dbxrefs=feature.qualifiers.get('db_xref'),
-                                        source=feature.qualifiers.get('source'),
-                                        protein_sequence=feature.qualifiers.get('translation')[0],
-                                        protein_id=feature.qualifiers.get('protein_id')[0],
-                                        pro_seq_len=len(feature.qualifiers.get('translation')[0]),
+                                    obj.record_content.create(
+                                        record_id=record.id,
+                                        name=record.name,
+                                        taxonomy=record.annotations['taxonomy'],
                                         description=record.description,
+                                        gene=feature.qualifiers.get('gene'),
+                                        db_xrefs=feature.qualifiers.get('db_xref'),
+                                        protein_sequence=feature.qualifiers.get('translation')[0],
+                                        pro_seq_len=len(feature.qualifiers.get('translation')[0]),
                                         sequence=record.seq,
                                         seq_len=len(record.seq),
                                         gc=GC(record.seq).__round__(2),
@@ -268,36 +265,36 @@ def file_reading(request, user):
 
                             else:
 
-                                obj.records.create(
+                                obj.record_content.create(
                                     record_id=record.id,
                                     name=record.name,
                                     sequence=record.seq,
                                     seq_len=len(record.seq),
+                                    db_xrefs=record.dbxrefs,
                                     taxonomy=record.annotations['taxonomy'],
-                                    keywords=record.annotations['keywords'],
                                     description=record.description,
                                     gc=GC(record.seq).__round__(2),
                                 )
 
-                else:
+                    else:
 
-                    for record in file_read:
-                        obj.records.create(
-                            record_id=record.id,
-                            name=record.name,
-                            description=record.description,
-                            sequence=record.seq,
-                            dbxrefs=record.dbxrefs,
-                            annotations=record.annotations,
-                            features=record.features,
-                            gc=GC(record.seq).__round__(2),
-                            seq_len=len(record.seq),
-                        )
+                        for record in file_read:
+                            obj.record_content.create(
+                                record_id=record.id,
+                                name=record.name,
+                                description=record.description,
+                                sequence=record.seq,
+                                db_xrefs=record.dbxrefs,
+                                annotations=record.annotations,
+                                features=record.features,
+                                gc=GC(record.seq).__round__(2),
+                                seq_len=len(record.seq),
+                            )
 
             except UnicodeDecodeError:
-                BioinformaticModel.objects.get(user=request.user, tool="").delete()
+                BioinformaticModel.objects.filter(user=request.user).delete()
                 return render(request, "exception/page-404.html", {'msg': 'Hatalı dosya türü', 'url': request.path})
-
+            file_obj.delete()
             return HttpResponseRedirect(reverse("bioinformatic:file_reading_results", kwargs={'user': request.user}))
 
         else:
@@ -331,8 +328,14 @@ class FileReadDetailView(generic.DetailView):
 
 
 def ProteinPickView(request, user):
+    if request.user.is_anonymous:
+        from django.conf import settings
+        messages.error(request, "Lütfen Giriş Yapınız")
+        return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
+
     form = TranslateForm(request.POST or None)
-    object_list = BioinformaticModel.objects.filter(user=request.user, tool="okuma")
+    object_list = BioinformaticModel.objects.filter(user=request.user, tool="DOSYA OKUMA")
+    record_obj = RecordModel.objects.filter(records__user=request.user, records__tool="DOSYA OKUMA")
 
     if request.method == "POST":
 
@@ -342,18 +345,27 @@ def ProteinPickView(request, user):
             to_stop = form.cleaned_data["to_stop"]
 
             if to_stop is True:
+
                 for object in object_list:
                     object.to_stop = to_stop
-                    object.pro_seq = Seq(object.seq).translate(table=trans_table)
-                    object.pro_seq_len = len(Seq(object.seq).translate(table=trans_table))
+                    object.trans_table = trans_table
                     object.save()
+
+                for record in record_obj:
+                    record.protein_sequence = Seq(record.sequence).translate(table=trans_table)
+                    record.pro_seq_len = len(Seq(record.sequence).translate(table=trans_table))
+                    record.save()
 
             else:
                 for object in object_list:
                     object.to_stop = to_stop
-                    object.pro_seq = Seq(object.seq).translate(table=trans_table).replace("*", "")
-                    object.pro_seq_len = len(Seq(object.seq).translate(table=trans_table).replace("*", ""))
+                    object.trans_table = trans_table
                     object.save()
+
+                for record in record_obj:
+                    record.protein_sequence = Seq(record.sequence).translate(table=trans_table).replace("*", "")
+                    record.pro_seq_len = len(Seq(record.sequence).translate(table=trans_table).replace("*", ""))
+                    record.save()
 
             return HttpResponseRedirect(
                 reverse("bioinformatic:file_reading_results", kwargs={'user': request.user}))

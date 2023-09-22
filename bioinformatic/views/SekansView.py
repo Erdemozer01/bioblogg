@@ -2,15 +2,17 @@ import datetime
 from pathlib import Path
 
 import Bio
+import dash_bootstrap_components.themes
 import pandas as pd
 import plotly.express as px
 from Bio.Seq import Seq
 from Bio.SeqUtils import GC
-from dash import html, dcc
+from dash import html, dcc, Input, Output, callback, Dash
 from django.contrib import messages
-from django.shortcuts import render, redirect
+from django.shortcuts import *
 from django_plotly_dash import DjangoDash
 from bioinformatic.forms import DNASekansForm, TranslationForm, SequenceSlicingForm
+import dash_ag_grid as dag
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -150,60 +152,128 @@ def translation(request):
 
 
 def SequenceSlicing(request):
+    external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+    seq_input = DjangoDash('seq_input', external_stylesheets=external_stylesheets)
 
-    form = SequenceSlicingForm(request.POST or None)
+    seq_input.layout = html.Div(
 
-    if request.method == "POST":
+        [
+            html.A('BİYOİNFORMATİK ANASAYFA', href=HttpResponseRedirect(reverse("bioinformatic:home")).url,
+                   style={'float': 'right'}),
 
-        if form.is_valid():
+            html.P("Sekans"),
 
-            start = form.cleaned_data['start']
-            stop = form.cleaned_data['finish']
-
-            sekans = form.cleaned_data['seq'].upper()
-
-            sekans = sekans.replace(" ", "")
-            sekans = sekans.replace("\n", "")
-            sekans = sekans.replace("\t", "")
-            sekans = sekans.replace("\r", "")
-            sekans = sekans.replace("0", "")
-            sekans = sekans.replace("1", "")
-            sekans = sekans.replace("2", "")
-            sekans = sekans.replace("3", "")
-            sekans = sekans.replace("4", "")
-            sekans = sekans.replace("5", "")
-            sekans = sekans.replace("6", "")
-            sekans = sekans.replace("7", "")
-            sekans = sekans.replace("8", "")
-            sekans = sekans.replace("9", "")
-
-            my_seq = Seq(sekans)
-
-            result = my_seq[start:stop + 1]
-
-            df = pd.DataFrame({
-                'Sekans': [seq for seq in sekans]
-            })
-
-            pd.set_option('display.max_rows', None)
-
-            app = DjangoDash("seq_slice")
-
-            app.layout = html.Div(
+            html.Div(
                 [
-                    html.P('Sekans Pozisyonları'),
-                    dcc.Textarea(
-                        id='textarea-example',
-                        value=f'{df}',
-                        style={'width': '100%', 'height': 300},
-                    ),
+                    dcc.Textarea(id="sekans", placeholder="Sekans Giriniz",
+                                 style={'marginRight': '10px', 'width': '100%', 'height': '200px'}),
                 ]
-            )
+            ),
 
-            return render(request, "bioinformatic/sekans/slice.html", {'result': result, 'start': start, 'stop': stop})
+            html.Div(
+                [
+                    dcc.Input(id="kmer", type="number", placeholder="Kmer Uzunluğu", minLength=1,
+                              style={'marginLeft': '2px'}),
+                    dcc.Input(id="nuc_pos", type="number", placeholder="Nükleotit pozisyonu", minLength=1,
+                              style={'marginLeft': '2px'}),
+                    dcc.Input(id="start", type="number", placeholder="Sekans başlangıcı", minLength=1,
+                              style={'marginLeft': '2px'}),
+                    dcc.Input(id="stop", type="number", placeholder="Sekans bitişi", minLength=1,
+                              style={'marginLeft': '2px'}),
+                ]
+            ),
 
-        else:
+            html.Div(id="output"),
+        ], style={'marginTop': "2%"}
+    )
 
-            form = SequenceSlicingForm()
+    @seq_input.callback(
+        Output("output", "children"),
+        Input("sekans", "value"),
+        Input("kmer", "value"),
+        Input("nuc_pos", "value"),
+        Input("start", "value"),
+        Input("stop", "value"),
+    )
+    def update_output(sekans, kmer, nuc_pos, start, stop):
+        sekans = sekans.replace(' ', '')
+        sekans = sekans.replace("\n", "")
+        sekans = sekans.replace("\t", "")
+        sekans = sekans.replace("\r", "")
+        sekans = sekans.replace("0", "")
+        sekans = sekans.replace("1", "")
+        sekans = sekans.replace("2", "")
+        sekans = sekans.replace("3", "")
+        sekans = sekans.replace("4", "")
+        sekans = sekans.replace("5", "")
+        sekans = sekans.replace("6", "")
+        sekans = sekans.replace("7", "")
+        sekans = sekans.replace("8", "")
+        sekans = sekans.replace("9", "")
+        sekans = sekans[start:stop].upper()
 
-    return render(request, "bioinformatic/form.html", {'form': form})
+        def getKmers(sequence, size, step=4):
+            for x in range(0, len(sequence) - size, step):
+                yield sequence[x:x + size]
+
+        df = pd.DataFrame({
+            'index': [i for i in range(len(sekans))],
+            'seq': [k for k in sekans]
+        })
+
+        nuc_position = df.to_dict()['seq'].get(nuc_pos)
+
+        kmer_list = []
+
+        for km in getKmers(sekans, kmer):
+            if km.count(nuc_position) > 0:
+                kmer_list.append(km)
+
+        df_kmer = pd.DataFrame(
+            {
+                f'{nuc_position} Sayısı': [i.count(nuc_position) for i in kmer_list],
+                'kmer': kmer_list
+            }
+        )
+
+        return html.Div([
+            html.P(
+                f"SEKANS UZUNLUĞU: {len(sekans)}",
+                style={'marginTop': '10px'}
+
+            ),
+
+            html.Label("Sekanslar"),
+
+            html.Div([
+                dcc.Textarea(
+                    value=sekans,
+                    style={'width': '100%', 'height': '200px'}
+                )
+            ]),
+
+            html.P(
+                f"Nükleotid Pozisyonu : {nuc_position.upper()}"
+            ),
+            html.Label("Kmerler", style={'text': 'bold'}),
+
+            html.Div(
+                [
+                    dag.AgGrid(
+                        style={'width': '100%'},
+                        rowData=df_kmer.to_dict("records"),
+                        dashGridOptions={'pagination': True},
+                        columnDefs=[
+                            {'field': f'{nuc_position} Sayısı'},
+                            {'field': 'kmer', 'headerName': 'KMERS', 'filter': True},
+                        ]
+                    ),
+                ],
+            ),
+            html.Label("Grafik"),
+            html.Div([
+                dcc.Graph(figure=px.scatter(df_kmer, x=df_kmer[f'{nuc_position} Sayısı'], color=df_kmer['kmer']))
+            ])
+        ])
+
+    return HttpResponseRedirect("/django_plotly_dash/app/seq_input/")

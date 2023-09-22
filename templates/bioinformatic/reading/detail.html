@@ -47,10 +47,10 @@
 
                             </div>
                             <div class="card-body">
-                                <p>Laborant : {{ object.user }}</p>
-                                <p>İşlem Tarihi : {{ object.created }}</p>
+                                <p>Laborant : {{ object.records.user }}</p>
+                                <p>İşlem Tarihi : {{ object.records.created }}</p>
                                 <p>Tanımı : {{ object.description }}</p>
-                                {% if object.trans_table %}
+                                {% if object.records.trans_table %}
                                     {% if table == "1" %}
                                         <p>Tablo : Standart </p>
                                     {% endif %}
@@ -131,16 +131,24 @@
                                         <p>Tablo : Cephalodiscidae Mitokondriyal UAA-Tyr </p>
                                     {% endif %}
                                 {% endif %}
+
                                 <p>Taksonomi : {{ object.taxonomy }}</p>
-                                <p>Sekans :
-                                <p style="text-align: justify">{{ object.seq }}</p></p>
+
+                                <div>Sekans :
+                                    <p style="text-align: justify">{{ object.sequence }}</p>
+                                </div>
+
                                 <p>Sekans uzunluk : {{ object.seq_len }}</p>
+
                                 <p>A : {{ A }}, T : {{ T }}, G : {{ G }}, C : {{ C }}</p>
-                                {% if object.pro_seq %}
-                                    <p>Protein : {{ object.pro_seq }}</p>
+
+                                {% if object.protein_sequence %}
+                                    <p>Protein : {{ object.protein_sequence }}</p>
                                     <p>Protein uzunluk : {{ object.pro_seq_len }}</p>
                                 {% endif %}
-                                <p>%GC : {{ object.gc }}</p>
+
+                                <p> %GC : {{ object.gc }} </p>
+
                             </div>
                         </div>
                     </div>

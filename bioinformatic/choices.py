@@ -1,6 +1,7 @@
 TOOLS = (
     ('', '------------'),
-    ('dosya_okuma', 'DOSYA OKUMA'),
+    ('SEKANS İŞLEMLERİ', 'SEKANS İŞLEMLERİ'),
+    ('DOSYA İŞLEMLERİ', 'DOSYA İŞLEMLERİ'),
 )
 
 TRANS_TABLE = (

@@ -15,26 +15,7 @@
     <!-- Section -->
     <section class="min-vh-100 d-flex bg-primary align-items-center mt-7">
         <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-12 col-md-12 col-lg-12 justify-content-center">
-                    <div class="card bg-primary shadow-soft border-light p-2">
-                        <div class="card-body">
-                            <div class="mb-4"><span class="h5">DNA SEKANS KESME SONUÇLARI</span></div>
-                            <div class="mb-2">
-                                <p>Başlangıç: {{ start }} </p>
-                                <p>Bitiş: {{ stop }} </p>
-                                <div>Bölge: <small> {{ result }} </small> </div>
-                                {% plotly_app name="seq_slice" ratio=0.38 %}
-                            </div>
-
-                            <button type="button" onclick="window.print()" class="btn btn-primary float-right mr-3"><i
-                                    class="fas fa-print mr-2"></i>YAZDIR
-                            </button>
-
-                        </div>
-                    </div>
-                </div>
-            </div>
+            {% plotly_app name="seq_input" ratio=1 %}
         </div>
     </section>
 {% endblock %}
