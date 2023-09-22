@@ -178,9 +178,9 @@ def Kmer_SeqSlicing(request):
                               style={'marginLeft': '2px'}),
                     dcc.Input(id="stop", type="number", placeholder="Sekans bitişi", min=0,
                               style={'marginLeft': '2px'}),
-                    dcc.Input(id="kmer", type="number", placeholder="Kmer Uzunluğu", minLength=1,
+                    dcc.Input(id="kmer", type="number", placeholder="Kmer Uzunluğu", min=0,
                               style={'marginLeft': '2px'}),
-                    dcc.Input(id="nuc_pos", type="number", placeholder="Nükleotit pozisyonu", minLength=1,
+                    dcc.Input(id="nuc_pos", type="number", placeholder="Nükleotit pozisyonu", min=0,
                               style={'marginLeft': '2px'}),
                     dcc.Input(id="discard", type="text", placeholder="İstenmeyen sekans dizisi",
                               style={'marginLeft': '2px'}),
@@ -215,12 +215,12 @@ def Kmer_SeqSlicing(request):
         sekans = sekans.replace("7", "")
         sekans = sekans.replace("8", "")
         sekans = sekans.replace("9", "")
-        sekans = sekans.replace(str(discard).upper(), "")
-        sekans = sekans[start:stop].upper()
 
-        def getKmers(sequence, size, step=4):
-            for x in range(0, len(sequence) - size, step):
-                yield sequence[x:x + size]
+        if discard:
+            sekans = sekans.replace(str(discard).upper(), "")
+
+        if start or stop:
+            sekans = sekans[start:stop].upper()
 
         df = pd.DataFrame({
             'index': [i for i in range(len(sekans))],
@@ -232,6 +232,9 @@ def Kmer_SeqSlicing(request):
         kmer_list = []
 
         if kmer:
+            def getKmers(sequence, size, step=4):
+                for x in range(0, len(sequence) - size, step):
+                    yield sequence[x:x + size]
 
             for km in getKmers(sekans, kmer):
                 if km.count(str(nuc_position)) > 0:
