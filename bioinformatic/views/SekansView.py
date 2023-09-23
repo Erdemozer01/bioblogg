@@ -13,7 +13,7 @@ from django.shortcuts import *
 from django_plotly_dash import DjangoDash
 from bioinformatic.forms import DNASekansForm, TranslationForm
 import dash_ag_grid as dag
-from dash_bootstrap_components._components import Checkbox
+import plotly.figure_factory as ff
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -33,7 +33,7 @@ def sequence_analiz(request):
             html.A('BİYOİNFORMATİK ANASAYFA', href=HttpResponseRedirect(reverse("bioinformatic:home")).url,
                    style={'float': 'right'}),
 
-            html.P("Sekans"),
+            html.P("Sekans", style={'font-weight': 'bold'}),
 
             html.Div(
                 [
@@ -80,12 +80,17 @@ def sequence_analiz(request):
             sekans = sekans.replace(str(discard).upper(), "")
 
         if start or stop:
-            sekans = sekans[start:stop].upper()
+            sekans = sekans[start:stop]
 
         nuc_df = pd.DataFrame({
-            'positions': [pos for pos in range(len(sekans))],
-            'seq': [seq for seq in sekans]
+            'positions': [pos + 1 for pos in range(len(sekans))],
+            'nucleotit': [seq for seq in sekans]
         })
+
+        a = nuc_df[(nuc_df['nucleotit']) == "A"]
+        t = nuc_df[(nuc_df['nucleotit']) == "T"]
+        g = nuc_df[(nuc_df['nucleotit']) == "G"]
+        c = nuc_df[(nuc_df['nucleotit']) == "C"]
 
         return html.Div([
             html.Hr(),
@@ -98,20 +103,21 @@ def sequence_analiz(request):
 
             html.Hr(),
 
-            html.Label("Sekanslar"),
-
             html.Div([
-                dcc.Textarea(
-                    value=sekans,
-                    style={'width': '100%', 'height': '200px'}
-                )
-            ]),
 
-            html.Hr(),
-
-            html.Div([
                 html.Label("Grafik"),
-                dcc.Graph(figure=px.histogram(nuc_df, x="seq", y="positions", color="seq")),
+                dcc.Graph(
+                    figure=ff.create_distplot(
+                        [a['positions'], t['positions'], g['positions'], c['positions']],
+                        ['A', 'T', 'G', 'C'],
+                        bin_size=[.1, .25, .5, 1], show_hist=False,
+                        curve_type="normal",
+                    ).update_layout({'title': 'Nükleotit Dağılım GRAFİĞİ'})),
+
+                dcc.Graph(figure=px.histogram(
+                    nuc_df.to_dict("records"), x="nucleotit", color="nucleotit",
+                    title="Nükleotit Sayıları",
+                ).update_yaxes(title="Nükletotit Sayısı").update_xaxes(title="Nükleotit")),
             ])
         ])
 
