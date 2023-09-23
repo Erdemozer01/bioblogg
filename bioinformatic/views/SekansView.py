@@ -277,7 +277,7 @@ def Kmer_SeqSlicing(request):
 
         [
 
-            html.H4('Kmer ve Sekans Kesme'),
+            html.H4('Kmer oluşturma'),
 
             html.A('BİYOİNFORMATİK ANASAYFA', href=HttpResponseRedirect(reverse("bioinformatic:home")).url,
                    style={'float': 'right'}),
