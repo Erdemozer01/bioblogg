@@ -2,6 +2,7 @@ import datetime
 from pathlib import Path
 
 import Bio
+import dash_bootstrap_components.themes
 import pandas as pd
 import plotly.express as px
 from Bio.Seq import Seq
@@ -12,142 +13,254 @@ from django.shortcuts import *
 from django_plotly_dash import DjangoDash
 from bioinformatic.forms import DNASekansForm, TranslationForm
 import dash_ag_grid as dag
+from dash_bootstrap_components._components import Checkbox
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 
 def sequence_analiz(request):
-    if request.user.is_anonymous:
-        from django.conf import settings
-        messages.error(request, "Lütfen Giriş Yapınız")
-        return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
+    external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+    external_scripts = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js']
+    sequence_analiz = DjangoDash("sequence_analiz", external_stylesheets=external_stylesheets,
+                                 external_scripts=external_scripts)
 
-    form = DNASekansForm(request.POST or None)
+    sequence_analiz.layout = html.Div(
 
-    if request.method == "POST":
-        if form.is_valid():
+        [
 
-            sekans = form.cleaned_data['dna'].upper()
+            html.H4('Sekans Analiz'),
 
-            sekans = sekans.replace(" ", "")
-            sekans = sekans.replace("\n", "")
-            sekans = sekans.replace("\t", "")
-            sekans = sekans.replace("\r", "")
-            sekans = sekans.replace("0", "")
-            sekans = sekans.replace("1", "")
-            sekans = sekans.replace("2", "")
-            sekans = sekans.replace("3", "")
-            sekans = sekans.replace("4", "")
-            sekans = sekans.replace("5", "")
-            sekans = sekans.replace("6", "")
-            sekans = sekans.replace("7", "")
-            sekans = sekans.replace("8", "")
-            sekans = sekans.replace("9", "")
+            html.A('BİYOİNFORMATİK ANASAYFA', href=HttpResponseRedirect(reverse("bioinformatic:home")).url,
+                   style={'float': 'right'}),
 
-            my_seq = Seq("{}".format(sekans))
+            html.P("Sekans"),
 
-            protein = ['M', 'R', 'N', '	D', 'E', 'Q', 'H', 'L', 'K']
+            html.Div(
+                [
+                    dcc.Textarea(id="sekans", placeholder="Sekans Giriniz",
+                                 style={'marginRight': '10px', 'width': '100%', 'height': '200px'}),
+                    dcc.Input(id="start", type="number", placeholder="Sekans başlangıcı", min=0,
+                              style={'marginLeft': '2px'}),
+                    dcc.Input(id="stop", type="number", placeholder="Sekans bitişi", min=0,
+                              style={'marginLeft': '2px'}),
+                    dcc.Input(id="discard", type="text", placeholder="İstenmeyen sekans dizisi",
+                              style={'marginLeft': '2px'}),
+                ]
+            ),
 
-            for aa in protein:
-                for dna in my_seq:
-                    if aa in dna:
-                        return render(request, 'exception/page-404.html',
-                                      {'msg': 'Sekensda protein tespit edilmiştir.'})
+            html.Div(id="output"),
+        ], style={'marginTop': "2%"}
+    )
 
-            seq_dash = DjangoDash('bar')
+    @sequence_analiz.callback(
+        Output("output", "children"),
+        Input("sekans", "value"),
+        Input("start", "value"),
+        Input("stop", "value"),
+        Input("discard", "value"),
+    )
+    def update_output(sekans, start, stop, discard):
+        sekans = sekans.replace(' ', '')
+        sekans = sekans.replace("\n", "")
+        sekans = sekans.replace("\t", "")
+        sekans = sekans.replace("\r", "")
+        sekans = sekans.replace("0", "")
+        sekans = sekans.replace("1", "")
+        sekans = sekans.replace("2", "")
+        sekans = sekans.replace("3", "")
+        sekans = sekans.replace("4", "")
+        sekans = sekans.replace("5", "")
+        sekans = sekans.replace("6", "")
+        sekans = sekans.replace("7", "")
+        sekans = sekans.replace("8", "")
+        sekans = sekans.replace("9", "")
+        sekans = sekans.upper()
 
-            df = pd.DataFrame(
-                {
-                    'nükleotit': ["ADENİN", "TİMİN", "GUANİN", "SİTOZİN"],
-                    'len': [my_seq.count('A'), my_seq.count('T'), my_seq.count('G'), my_seq.count('C')],
-                }
-            )
+        if discard:
+            sekans = sekans.replace(str(discard).upper(), "")
 
-            seq_dash.layout = html.Div([
-                dcc.Graph(figure=px.bar(df, x="nükleotit", y="len", color="nükleotit", title="NÜKLEOTİT",
-                                        labels={
-                                            "nükleotit": "Nükleotit",
-                                            "len": "Uzunluk"
-                                        })),
+        if start or stop:
+            sekans = sekans[start:stop].upper()
+
+        nuc_df = pd.DataFrame({
+            'positions': [pos for pos in range(len(sekans))],
+            'seq': [seq for seq in sekans]
+        })
+
+        return html.Div([
+            html.Hr(),
+            html.P(
+                f"SEKANS UZUNLUĞU: {len(sekans)}, %GC: {GC(sekans).__round__(2)}," +
+                f"  A: {sekans.count('A')}, T: {sekans.count('T')}, G: {sekans.count('G')}, C: {sekans.count('C')}",
+                style={'marginTop': '20px'}
+
+            ),
+
+            html.Hr(),
+
+            html.Label("Sekanslar"),
+
+            html.Div([
+                dcc.Textarea(
+                    value=sekans,
+                    style={'width': '100%', 'height': '200px'}
+                )
+            ]),
+
+            html.Hr(),
+
+            html.Div([
+                html.Label("Grafik"),
+                dcc.Graph(figure=px.histogram(nuc_df, x="seq", y="positions", color="seq")),
             ])
+        ])
 
-            return render(request, 'bioinformatic/sekans/result.html',
-                          {
-                              'len': len(my_seq), 'A': my_seq.count('A'), 'G': my_seq.count('G'),
-                              'C': my_seq.count('C'), 'T': my_seq.count('T'),
-                              'GC': GC(my_seq).__round__(2),
-                          })
-
-        else:
-            form = DNASekansForm()
-
-    return render(request, 'bioinformatic/form.html', {'form': form, 'title': 'DNA SEKANS OKUMASI'})
+    return HttpResponseRedirect("/laboratory/bioinformatic/app/sequence_analiz/")
 
 
 def translation(request):
-    if request.user.is_anonymous:
-        from django.conf import settings
-        messages.error(request, "Lütfen Giriş Yapınız")
-        return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
+    external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+    external_scripts = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js']
+    translate_app = DjangoDash("translate_dna", external_stylesheets=external_stylesheets,
+                               external_scripts=external_scripts)
 
-    form = TranslationForm(request.POST or None)
+    translate_app.layout = html.Div(
 
-    if request.method == "POST":
+        [
 
-        if form.is_valid():
+            html.H4('PROTEİN SENTEZİ'),
 
-            table = form.cleaned_data['table']
-            sequence = form.cleaned_data['sequence'].upper()
-            to_stop = form.cleaned_data['to_stop']
+            html.A('BİYOİNFORMATİK ANASAYFA', href=HttpResponseRedirect(reverse("bioinformatic:home")).url,
+                   style={'float': 'right'}),
 
-            sequence = sequence.replace(" ", "")
-            sequence = sequence.replace("\n", "")
-            sequence = sequence.replace("\t", "")
-            sequence = sequence.replace("\r", "")
-            sequence = sequence.replace("0", "")
-            sequence = sequence.replace("1", "")
-            sequence = sequence.replace("2", "")
-            sequence = sequence.replace("3", "")
-            sequence = sequence.replace("4", "")
-            sequence = sequence.replace("5", "")
-            sequence = sequence.replace("6", "")
-            sequence = sequence.replace("7", "")
-            sequence = sequence.replace("8", "")
-            sequence = sequence.replace("9", "")
+            html.Div(
+                [
 
-            complement = Seq(sequence).complement()
-            reverse = Seq(sequence).reverse_complement()
-            transcribe = Seq(sequence).transcribe()
+                    html.P("Sekans", style={'font-weight': 'bold'}),
 
-            try:
-                if to_stop is True:
-                    translate = Seq(sequence).translate(table=table)
-                else:
-                    translate = Seq(sequence).translate(table=table).replace("*", "")
+                    dcc.Textarea(id="sekans", placeholder="Sekans Giriniz",
+                                 style={'marginRight': '10px', 'width': '100%', 'height': '200px'}),
 
-                return render(request, 'bioinformatic/translation/result.html',
-                              context={
-                                  'date': datetime.datetime.now(),
-                                  'table': table,
-                                  'len': len(sequence),
-                                  'GC': GC(sequence).__round__(2),
-                                  'complement': complement,
-                                  'revese': reverse,
-                                  'transcribe': transcribe,
-                                  'translate': translate,
-                              })
+                    dcc.Input(id="start", type="number", placeholder="Sekans başlangıcı", min=0,
+                              style={'marginLeft': '2px'}),
 
-            except Bio.Seq.CodonTable.TranslationError:
+                    dcc.Input(id="stop", type="number", placeholder="Sekans bitişi", min=0,
+                              style={'marginLeft': '2px'}),
 
-                msg = "Codon Tablo Hatası"
+                    dcc.Input(id="discard", type="text", placeholder="İstenmeyen sekans dizisi",
+                              style={'marginLeft': '2px'}),
 
-                return render(request, 'exception/page-404.html', {'msg': msg})
+                    html.Hr(),
 
+                    html.P("Dönüşüm Tablosu", style={'font-weight': 'bold'}),
+
+                    dcc.Dropdown(id="table", options={
+                        "1": "Standart Kod",
+                        "2": "Omurgalı Mitokondri Kodu",
+                        "3": "Maya Mitokondri Kodu",
+                        "4": "Küf, Protozoon ve Kölenterat Mitokondri Kodu ve Mikoplazma/Spiroplasma Kodu",
+                        "5": "Omurgasız Mitokondri Kodu",
+                        "6": "Siliat, Dasikladas ve Heksamita Nükleer Kodu",
+                        "9": "Ekinoderm ve Yassı Solucan Mitokondri Kodu",
+                        "10": "Euplotid Nükleer Kodu",
+                        "11": "Bakteriyel, Arkeal ve Bitki Plastid Kodu, prokaryotik virüsler",
+                        "12": "Alternatif Maya Nükleer Kodu",
+                        "13": "Ascidian Mitokondri Kodu",
+                        "14": "Alternatif Yassı Solucan Mitokondri Kodu",
+                        "16": "Klorofis Mitokondri Kodu",
+                        "21": "Trematod Mitokondriyal Kodu",
+                        "22": "Scenedesmus obliquus Mitokondri Kodu",
+                        "23": "Thraustochytrium Mitokondri Kodu",
+                        "24": "Rhabdopleuridae Mitokondri Kodu",
+                        "25": "Aday Bölüm SR1 ve Gracilibacteria Kodu",
+                        "26": "Pachysolen tannophilus Nükleer Kodu",
+                        "27": "Karyorelict Nükleer Kodu",
+                        "28": "Kondilostoma Nükleer Kodu",
+                        "29": "Mezodinyum Nükleer Kodu",
+                        "30": "Peritrich Nükleer Kodu",
+                        "31": "Blastocrithidia Nükleer Kodu",
+                        "33": "Cephalodiscidae Mitokondriyal UAA-Tyr Kodu"
+                    }, value="1", searchable=True),
+
+                    html.Small(" ***Dönüşüm tablosu verileri ", className='txt-bold'),
+                    html.A(' NCBI ', href="https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi", target="_blank",
+                           style={'text-decoration': 'none'}),
+                    html.Small(' sitesiden alınmıştır.'),
+
+                    dcc.Checklist(id="to_stop", options={'evet': 'Stop Kodonlarını dahil et.'}),
+
+                    html.Br(),
+
+                ]
+            ),
+
+            html.Div(id="output"),
+        ], style={'marginTop': "2%"}
+    )
+
+    @translate_app.callback(
+        Output("output", "children"),
+        Input("sekans", "value"),
+        Input("start", "value"),
+        Input("stop", "value"),
+        Input("discard", "value"),
+        Input("table", "value"),
+        Input("to_stop", "value"),
+    )
+    def update_output(sekans, start, stop, discard, table, to_stop):
+        sekans = sekans.replace(' ', '')
+        sekans = sekans.replace("\n", "")
+        sekans = sekans.replace("\t", "")
+        sekans = sekans.replace("\r", "")
+        sekans = sekans.replace("0", "")
+        sekans = sekans.replace("1", "")
+        sekans = sekans.replace("2", "")
+        sekans = sekans.replace("3", "")
+        sekans = sekans.replace("4", "")
+        sekans = sekans.replace("5", "")
+        sekans = sekans.replace("6", "")
+        sekans = sekans.replace("7", "")
+        sekans = sekans.replace("8", "")
+        sekans = sekans.replace("9", "")
+        sekans = sekans.upper()
+
+        if discard:
+            sekans = sekans.replace(str(discard).upper(), "")
+
+        if start or stop:
+            sekans = sekans[start:stop].upper()
+
+        if to_stop:
+            trans_seq = Seq(sekans).translate(table=int(table))
         else:
+            trans_seq = Seq(sekans).translate(table=int(table)).replace("*", "")
 
-            form = TranslationForm()
+        return html.Div([
+            html.Hr(),
+            html.P(
+                f" Girilen sekans uzunluğu: {len(sekans)}, %GC: {GC(sekans).__round__(2)}," +
+                f"  A: {sekans.count('A')}, T: {sekans.count('T')}, G: {sekans.count('G')}, C: {sekans.count('C')},"
+                f"  Protein Sekans Uzunluğu: {len(trans_seq)}, Stop kodonları sayısı: {trans_seq.count('*')}",
 
-    return render(request, 'bioinformatic/form.html', {'form': form, 'title': "DNA SEKANS TRASLASYON"})
+                style={'marginTop': '20px'}
+
+            ),
+
+            html.Hr(),
+
+            html.Label("Protein Sekansı", style={'font-weight': 'bold'}),
+
+            html.Div([
+                dcc.Textarea(
+                    value=str(trans_seq),
+                    style={'width': '100%', 'height': '200px'}
+                )
+            ]),
+
+            html.Hr(),
+        ])
+
+    return HttpResponseRedirect("/laboratory/bioinformatic/app/translate_dna/")
 
 
 def Kmer_SeqSlicing(request):
