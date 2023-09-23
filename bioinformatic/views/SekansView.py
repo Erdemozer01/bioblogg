@@ -1,8 +1,6 @@
 import datetime
 from pathlib import Path
-
-import Bio
-import dash_bootstrap_components.themes
+from Bio.SeqUtils import MeltingTemp as mt
 import pandas as pd
 import plotly.express as px
 from Bio.Seq import Seq
@@ -11,7 +9,6 @@ from dash import html, dcc, Input, Output
 from django.contrib import messages
 from django.shortcuts import *
 from django_plotly_dash import DjangoDash
-from bioinformatic.forms import DNASekansForm, TranslationForm
 import dash_ag_grid as dag
 import plotly.figure_factory as ff
 
@@ -306,6 +303,32 @@ def Kmer_SeqSlicing(request):
                 ]
             ),
 
+            html.Hr(),
+            html.P("Kmer varsayılan erime sıcaklığı değerleri", style={'font-weight': 'bold'}),
+
+            html.Div(
+                [
+
+                    html.Label("Sodyum:", style={'marginLeft': '5px', 'width': '10%'}),
+                    dcc.Input(id="Na", type="number", placeholder="Sodyum(varsayılan 50)", min=0, value=50,
+                              style={'marginLeft': '5px'}),
+                    html.Label("Potasyum:", style={'marginLeft': '5px', 'width': '10%'}),
+                    dcc.Input(id="K", type="number", placeholder="Potasyum", min=0, value=0,
+                              style={'marginLeft': '5px'}),
+                    html.Label("Tris:", style={'marginLeft': '5px'}),
+                    dcc.Input(id="Tris", type="number", placeholder="Tris", min=0, value=0,
+                              style={'marginLeft': '5px'}),
+                    html.Label("Mg:", style={'marginLeft': '5px'}),
+                    dcc.Input(id="Mg", type="number", placeholder="Mg", min=0, value=0,
+                              style={'marginLeft': '5px'}),
+                    html.Label("dNTPs:", style={'marginLeft': '5px'}),
+                    dcc.Input(id="dNTPs", type="number", placeholder="dNTPs", min=0, value=0,
+                              style={'marginLeft': '5px'}),
+                    html.Label("Tuz konsantrasyonu:", style={'marginLeft': '5px'}),
+                    dcc.Input(id="salt", type="number", placeholder="Tuz konsantrasyonu:", min=1, value=5, max=6,
+                              style={'marginLeft': '5px'}),
+                ]
+            ),
             html.Div(id="output"),
         ], style={'marginTop': "2%"}
     )
@@ -318,8 +341,14 @@ def Kmer_SeqSlicing(request):
         Input("kmer", "value"),
         Input("nuc_pos", "value"),
         Input("discard", "value"),
+        Input("Na", "value"),
+        Input("K", "value"),
+        Input("Tris", "value"),
+        Input("Mg", "value"),
+        Input("dNTPs", "value"),
+        Input("salt", "value"),
     )
-    def update_output(sekans, start, stop, kmer, nuc_pos, discard):
+    def update_output(sekans, start, stop, kmer, nuc_pos, discard, Na, K, Tris, Mg, dNTPs, salt):
         sekans = sekans.replace(' ', '')
         sekans = sekans.replace("\n", "")
         sekans = sekans.replace("\t", "")
@@ -334,12 +363,13 @@ def Kmer_SeqSlicing(request):
         sekans = sekans.replace("7", "")
         sekans = sekans.replace("8", "")
         sekans = sekans.replace("9", "")
+        sekans = sekans.upper()
 
         if discard:
             sekans = sekans.replace(str(discard).upper(), "")
 
         if start or stop:
-            sekans = sekans[start:stop].upper()
+            sekans = sekans[start:stop]
 
         df = pd.DataFrame({
             'index': [i for i in range(len(sekans))],
@@ -363,7 +393,8 @@ def Kmer_SeqSlicing(request):
             {
                 f'{nuc_position} Sayısı': [i.count(nuc_position) for i in kmer_list],
                 'kmer': kmer_list,
-                '%gc': [GC(gc).__round__(2) for gc in kmer_list]
+                '%gc': [GC(gc) for gc in kmer_list],
+                'tm': [mt.Tm_NN(gc, Na=Na, K=K, Tris=Tris, Mg=Mg, dNTPs=dNTPs, saltcorr=salt) for gc in kmer_list]
             }
         )
 
@@ -395,6 +426,7 @@ def Kmer_SeqSlicing(request):
                             {'field': f'{nuc_position} Sayısı'},
                             {'field': 'kmer', 'headerName': 'KMERS', 'filter': True},
                             {'field': '%gc', 'headerName': '%GC', 'filter': True},
+                            {'field': 'tm', 'headerName': 'TM', 'filter': True},
                         ]
                     ),
                 ],
