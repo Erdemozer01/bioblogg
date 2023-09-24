@@ -47,10 +47,8 @@ def FileConvert(request):
                               obj.molecule)
 
             except ValueError as e:
-                in_file.file.close()
-                out_file.file.close()
+                BioinformaticModel.objects.filter(user=request.user, tool="DOSYA DÖNÜŞTÜRME").delete()
                 messages.error(request, _(str(e)))
-                obj.delete()
                 return HttpResponseRedirect(request.get_full_path())
 
         return HttpResponseRedirect(reverse("bioinformatic:download"))
