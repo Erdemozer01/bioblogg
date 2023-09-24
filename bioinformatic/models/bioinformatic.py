@@ -50,6 +50,7 @@ class RecordModel(models.Model):
     description = models.CharField(max_length=100, blank=True)
     taxonomy = models.CharField(max_length=100, blank=True)
     annotations = models.CharField(max_length=100, blank=True)
+    letter_annotations = models.CharField(max_length=100, blank=True, null=True)
     db_xrefs = models.CharField(max_length=100, blank=True, null=True)
     features = models.CharField(max_length=100, blank=True, null=True)
     gene = models.CharField(max_length=100, blank=True, null=True)

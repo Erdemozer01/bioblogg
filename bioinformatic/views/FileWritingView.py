@@ -129,6 +129,11 @@ def FileWritingView(request, format, user):
 
 
 def CreateFileView(request, user, format):
+    if request.user.is_anonymous:
+        from django.conf import settings
+        messages.error(request, "Lütfen Giriş Yapınız")
+        return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
+
     obj_list = RecordModel.objects.filter(
         records__user=request.user,
         records__tool='DOSYA YAZMA',

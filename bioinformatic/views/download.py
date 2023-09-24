@@ -26,4 +26,7 @@ def download_file(request):
         # Return the response value
         return response
     finally:
+        path.close()
         os.remove(filepath)
+        obj.delete()
+

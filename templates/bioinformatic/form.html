@@ -1,24 +1,34 @@
 {% extends "blog/layouts/base-fullscreen.html" %}
 {% load django_bootstrap5 %}
+{% load i18n %}
 
-{% block title %} {{ title }} {% endblock %}
+{% block title %}
+    {{ title }}
+{% endblock %}
+
+
 
 <!-- Specific Page CSS goes HERE  -->
 {% block stylesheets %}{% endblock %}
 
 {% block navbar %}
-	{% include 'blog/includes/navigation.html' %}
+    {% include 'blog/includes/navigation.html' %}
 {% endblock %}
 
 {% block content %}
     <!-- Section -->
-    <section class="min-vh-50 d-flex bg-primary align-items-center mt-7">
+    <section class="min-vh-50 d-flex bg-primary align-items-center mt-7 mb-3">
         <div class="container">
             <div class="row justify-content-center">
                 <div class="col-12 col-md-8 col-lg-6 justify-content-center">
                     <div class="card bg-primary shadow-soft border-light p-4">
                         <div class="card-header text-center pb-0">
-                            <h2 class="h4"> {{ title }} </h2>
+                            <h2 class="h4">
+                                {% blocktranslate %}
+                                    {{ title }}
+                                {% endblocktranslate %}
+                            </h2>
+
                             {% if messages %}
                                 {% for message in messages %}
                                     {% if message.tags == 'error' %}
@@ -39,7 +49,13 @@
                                     {% endif %}
                                 </span>
 
-                                <span class="alert-inner--text"><strong>{{ message }}</strong> </span>
+                                <span class="alert-inner--text">
+                                        <strong>
+                                            {% blocktranslate %}
+                                                {{ message }}
+                                            {% endblocktranslate %}
+                                        </strong>
+                                </span>
 
                                 <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                                     <span aria-hidden="true">&times;</span>
@@ -48,6 +64,7 @@
                                 {% endfor %}
                             {% endif %}
                             </div>
+
                             <div class="card-body">
                                 <form method="post" enctype="multipart/form-data">
                                     {% csrf_token %}

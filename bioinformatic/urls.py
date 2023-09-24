@@ -9,6 +9,7 @@ urlpatterns = [
     path('dna-sekans-okuması/', views.SekansView.sequence_analiz, name="dna_seq_read"),
     path('dna-sekans-kesme/', views.SekansView.Kmer_SeqSlicing, name="dna_seq_slice"),
     path('dna-sekans-translate/', views.SekansView.translation, name="dna_seq_translate"),
+    path('create_frame_seq/', views.SekansView.create_frame_seq, name="create_frame_seq"),
 
     # Reading
     path('file-reading/<user>/', views.FileReadingView.file_reading, name="file_reading"),

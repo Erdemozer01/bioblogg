@@ -418,8 +418,10 @@ def Kmer_SeqSlicing(request):
                 [
                     dag.AgGrid(
                         style={'width': '100%'},
-                        rowData=df_kmer.to_dict("records"),
-                        dashGridOptions={'pagination': True},
+                        rowData=df.to_dict("records"),
+                        columnSize="sizeToFit",
+                        defaultColDef={"resizable": True, "sortable": True, "filter": True, "minWidth": 125},
+                        dashGridOptions={'pagination': True, "rowSelection": "multiple"},
                         columnDefs=[
                             {'field': f'{nuc_position} Sayısı'},
                             {'field': 'kmer', 'headerName': 'KMERS', 'filter': True},
@@ -436,3 +438,139 @@ def Kmer_SeqSlicing(request):
         ])
 
     return HttpResponseRedirect("/laboratory/bioinformatic/app/kmer_seq_slicing/")
+
+
+def create_frame_seq(request):
+    external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+    frame_seq_app = DjangoDash('create_frame_seq', external_stylesheets=external_stylesheets)
+
+    frame_seq_app.layout = html.Div(
+
+        [
+
+            html.H4('Çerçeve sekans oluşturma'),
+
+            html.A('BİYOİNFORMATİK ANASAYFA', href=HttpResponseRedirect(reverse("bioinformatic:home")).url,
+                   style={'float': 'right'}),
+
+            html.P("Sekans"),
+
+            html.Div(
+                [
+                    dcc.Textarea(id="sekans", placeholder="Sekans Giriniz",
+                                 style={'marginRight': '10px', 'width': '100%', 'height': '200px'}),
+                ]
+            ),
+
+            html.Div(
+                [
+                    dcc.Input(id="nuc_pos", type="number", placeholder="Nükleotit pozisyonu", min=0,
+                              style={'marginLeft': '2px'}),
+                    dcc.Input(id="frame_seq_len", type="number", placeholder="Çerçeve sekans uzunluğu", min=0,
+                              style={'marginLeft': '2px'}),
+                    dcc.Input(id="start", type="number", placeholder="Sekans başlangıcı", min=0,
+                              style={'marginLeft': '2px'}),
+                    dcc.Input(id="stop", type="number", placeholder="Sekans bitişi", min=0,
+                              style={'marginLeft': '2px'}),
+
+                    dcc.Input(id="discard", type="text", placeholder="İstenmeyen sekans dizisi",
+                              style={'marginLeft': '2px'}),
+                ]
+            ),
+
+            html.Div(id="output"),
+        ], style={'marginTop': "2%"}
+    )
+
+    @frame_seq_app.callback(
+        Output("output", "children"),
+        Input("sekans", "value"),
+        Input("nuc_pos", "value"),
+        Input("frame_seq_len", "value"),
+        Input("start", "value"),
+        Input("stop", "value"),
+        Input("discard", "value"),
+    )
+    def update_output(sekans, nuc_pos, frame_seq_len, start, stop, discard):
+        sekans = sekans.replace(' ', '')
+        sekans = sekans.replace("\n", "")
+        sekans = sekans.replace("\t", "")
+        sekans = sekans.replace("\r", "")
+        sekans = sekans.replace("0", "")
+        sekans = sekans.replace("1", "")
+        sekans = sekans.replace("2", "")
+        sekans = sekans.replace("3", "")
+        sekans = sekans.replace("4", "")
+        sekans = sekans.replace("5", "")
+        sekans = sekans.replace("6", "")
+        sekans = sekans.replace("7", "")
+        sekans = sekans.replace("8", "")
+        sekans = sekans.replace("9", "")
+        sekans = sekans.upper()
+
+        if discard:
+            sekans = sekans.replace(str(discard).upper(), "")
+
+        if start or stop:
+            sekans = sekans[start:stop]
+
+        df = pd.DataFrame({
+            'index': [i for i in range(len(sekans))],
+            'seq': [k for k in sekans]
+        })
+
+        nuc_position = df.to_dict()['seq'].get(nuc_pos)
+
+        frame_seq = []
+
+        df = pd.DataFrame({
+            'seq_len': [len(sekans[:50] + str(nuc_position) + sekans[50:frame_len]) for frame_len in
+                        range(50, frame_seq_len)],
+            'seq': [sekans[:50] + str(nuc_position) + sekans[50:frame_len] for frame_len in
+                    range(50, frame_seq_len)]
+        })
+        return html.Div([
+            html.P(
+                f"SEKANS UZUNLUĞU: {len(sekans)}, %GC: {GC(sekans).__round__(2)}, Nükleotid Pozisyonu : {nuc_position}",
+                style={'marginTop': '20px'}
+
+            ),
+
+            html.Label("Çerçeve Sekanslar"),
+
+            html.Div([
+                dag.AgGrid(
+                    id="frame_seq_table",
+                    style={'width': '100%'},
+                    rowData=df.to_dict("records"),
+                    columnSize="sizeToFit",
+                    defaultColDef={"resizable": True, "sortable": True, "filter": True, 'editable': True,
+                                   "minWidth": 125},
+                    dashGridOptions={'pagination': True, "rowSelection": "multiple"},
+                    columnDefs=[
+                        {'field': 'seq_len', 'headerName': 'UZUNLUK', 'filter': True},
+                        {'field': 'seq', 'headerName': 'SEKANS', 'filter': True},
+                    ]
+                ),
+                html.Div(id="quickstart-output"),
+            ]),
+            html.Hr(),
+        ]),
+
+    @frame_seq_app.callback(
+        Output("quickstart-output", "children"),
+        Input("frame_seq_table", "cellClicked")
+    )
+    def display_cell_clicked_on(cell):
+        if cell is None:
+            return "Click on a cell"
+
+        return html.Div(
+            [
+                dcc.Textarea(
+                    value=f"Çerçeve Sekans: \n  {cell['value']}",
+                    style={'width': '100%', 'height': '100px'}),
+            ]
+        ),
+
+    return HttpResponseRedirect("/laboratory/bioinformatic/app/create_frame_seq/")

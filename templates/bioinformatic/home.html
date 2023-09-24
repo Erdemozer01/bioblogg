@@ -82,6 +82,19 @@
                         </a>
                     </div>
 
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <a href="{% url 'bioinformatic:create_frame_seq' %}">
+                            <div class="card bg-primary border-light shadow-soft">
+                                <img src="{% static 'bioinformatic/5138210.jpg' %}"
+                                     class="card-img-top rounded-top"
+                                     alt="Kmer ve Sekans Kesme">
+                                <div class="card-body">
+                                    <h3 class="h5 card-title mt-3">ÇERÇEVE SEKANS OLUŞTURMA</h3>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+
                 </div>
             </div>
         </section>
@@ -126,14 +139,14 @@
                     </div>
 
                     <div class="col-12 col-md-6 col-lg-4 mb-5">
-                        <a href="#">
+                        <a href="{% url 'bioinformatic:file_convert' %}">
                             <div class="card bg-primary border-light shadow-soft">
 
                                 <img src="{% static 'bioinformatic/5103530.jpg' %}"
                                      class="card-img-top rounded-top">
 
                                 <div class="card-body">
-                                    <h3 class="h5 card-title mt-3">DNA'dan Proteine</h3>
+                                    <h3 class="h5 card-title mt-3">DOSYA DÖNÜŞTÜRME</h3>
                                 </div>
                             </div>
                         </a>
