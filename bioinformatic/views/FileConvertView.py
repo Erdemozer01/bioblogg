@@ -8,7 +8,7 @@ from django.contrib import messages
 from bioinformatic.forms.file_convert import FileConvertForm
 from bioinformatic.models.bioinformatic import BioinformaticModel
 from django.utils.translation import gettext as _
-
+from django.utils.translation import ngettext_lazy
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 
@@ -48,7 +48,7 @@ def FileConvert(request):
 
             except ValueError as e:
                 BioinformaticModel.objects.filter(user=request.user, tool="DOSYA DÖNÜŞTÜRME").delete()
-                messages.error(request, _(str(e)))
+                messages.error(request, str(e))
                 return HttpResponseRedirect(request.get_full_path())
 
         return HttpResponseRedirect(reverse("bioinformatic:download"))

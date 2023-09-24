@@ -48,7 +48,10 @@
                                 </span>
 
                                 <span class="alert-inner--text">
-                                        <strong>{{ message }}</strong>
+                                {% blocktranslate %}
+                                	<strong>{{ message }}</strong>
+                                {% endblocktranslate %}
+
                                 </span>
 
                                 <button type="button" class="close" data-dismiss="alert" aria-label="Close">
