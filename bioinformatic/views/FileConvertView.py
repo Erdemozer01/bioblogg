@@ -46,9 +46,9 @@ def FileConvert(request):
                 SeqIO.convert(in_file.file.path, obj.reading_file_format, out_file.file.path, obj.writing_file_format,
                               obj.molecule)
 
-            except ValueError as e:
+            except ValueError as err:
                 BioinformaticModel.objects.filter(user=request.user, tool="DOSYA DÖNÜŞTÜRME").delete()
-                messages.error(request, str(e))
+                messages.error(request, str(err))
                 return HttpResponseRedirect(request.get_full_path())
 
         return HttpResponseRedirect(reverse("bioinformatic:download"))
