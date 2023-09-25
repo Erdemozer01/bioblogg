@@ -7,7 +7,7 @@ from django.contrib import messages
 from bioinformatic.forms import FileReadingForm, TranslateForm, AlignmentForm
 from bioinformatic.models import BioinformaticModel, RecordModel
 from Bio import SeqIO
-from Bio.SeqUtils import GC
+from Bio.SeqUtils import GC, gc_fraction
 import pandas as pd
 import plotly.express as px
 from django_plotly_dash import DjangoDash
@@ -20,60 +20,173 @@ from Bio.Align import substitution_matrices
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 
-def alignment_score(request, user):
-    if request.user.is_anonymous:
-        from django.conf import settings
-        messages.error(request, "Lütfen Giriş Yapınız")
-        return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
+def alignment_score(request):
+    external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
-    form = AlignmentForm(request.POST or None)
+    alignment_score = DjangoDash('alignment_score', external_stylesheets=external_stylesheets)
 
-    if request.method == "POST":
+    alignment_score.layout = html.Div(
 
-        if form.is_valid():
+        [
 
-            try:
-                aligner = Align.PairwiseAligner()
+            html.H4('ALİGNMENT SKOR'),
 
-                seq1 = form.cleaned_data['seq1'].replace("\n", "").replace("\r", "")
+            html.A('BİYOİNFORMATİK ANASAYFA', href=HttpResponseRedirect(reverse("bioinformatic:home")).url,
+                   style={'float': 'right'}),
 
-                seq2 = form.cleaned_data['seq2'].replace("\n", "").replace("\r", "")
+            html.Div(
+                [
+                    html.P("Alignment Mod"),
 
-                aligner.mode = form.cleaned_data['mode']
+                    dcc.Dropdown(id="mod", options={
+                        'local': 'LOCAL',
+                        'global': 'GLOBAL'
+                    }, searchable=True),
 
-                aligner.substitution_matrix = substitution_matrices.load(form.cleaned_data['matrix'])
+                    html.P("Alignment MATRİX", style={'marginTop': '10px'}),
 
-                mod = form.cleaned_data['mode']
+                    dcc.Dropdown(id="mat", options={
+                        'BENNER22': 'BENNER22',
+                        'BENNER6': 'BENNER6',
+                        'BENNER74': 'BENNER74',
+                        'BLOSUM45': 'BLOSUM45',
+                        'BLOSUM50': 'BLOSUM50',
+                        'BLOSUM62': 'BLOSUM62',
+                        'BLOSUM80': 'BLOSUM80',
+                        'BLOSUM90': 'BLOSUM90',
+                        'DAYHOFF': 'DAYHOFF',
+                        'FENG': 'FENG',
+                        'HOXD70': 'HOXD70',
+                        'JOHNSON': 'JOHNSON',
+                        'JONES': 'JONES',
+                        'LEVIN': 'LEVIN',
+                        'MCLACHLAN': 'MCLACHLAN',
+                        'MDM78': 'MDM78',
+                        'PAM250': 'PAM250',
+                        'PAM30': 'PAM30',
+                        'PAM70': 'PAM70',
+                        'RAO': 'RAO',
+                        'RISLER': 'RISLER',
+                        'SCHNEIDER': 'SCHNEIDER',
+                        'STR': 'STR',
+                        'TRANS': 'TRANS',
+                    }, searchable=True),
 
-                matrix = form.cleaned_data['matrix']
+                    html.P("Hedef", style={'marginTop': '10px'}),
 
-                alignments = aligner.align(seq1, seq2)
+                    dcc.Textarea(id="seq1", placeholder="Sekans Giriniz",
+                                 style={'marginRight': '10px', 'width': '100%', 'height': '100px'}),
 
-                alignment = alignments[0]
+                    html.P("Sorgu", style={'marginTop': '10px'}),
 
-                count = alignment.counts()
+                    dcc.Textarea(id="seq2", placeholder="Sekans Giriniz",
+                                 style={'marginRight': '10px', 'width': '100%', 'height': '100px'}),
 
-                app = DjangoDash('alignment')
+                ]
+            ),
 
-                app.layout = html.Div([
-                    dcc.Textarea(
-                        id='textarea-example',
-                        value=f'\nBoşluk : {count.gaps}, Benzerlik : {count.identities}, Eşleşmeyen: {count.mismatches},\n\n {alignment.substitutions} \n\nMatriks: {matrix} \n\nMOD: {mod} \n\nScore: {alignment.score} \n\n' + "Alignment: \n\n" + f"{alignment}",
-                        style={'width': '100%', 'height': 300},
-                        className="form-control mb-2",
-                    ),
-                ])
+            html.Div(id="output"),
 
-            except ValueError:
-                return render(request, "exception/page-404.html", {'msg': 'Sekansınızı kontrol ediniz.'})
+        ], style={'marginTop': "2%"}
+    )
 
-            return render(request, "bioinformatic/reading/alignment.html")
+    @alignment_score.callback(
+        Output("output", "children"),
+        Input("mod", "value"),
+        Input("mat", "value"),
+        Input("seq1", "value"),
+        Input("seq2", "value"),
+    )
+    def update_output(mod, mat, seq1, seq2):
+        seq1 = str(seq1).replace(" ", '')
+        seq1 = str(seq1).replace("\n", "")
+        seq1 = str(seq1).replace("\t", "")
+        seq1 = str(seq1).replace("\r", "")
+        seq1 = str(seq1).replace("0", "")
+        seq1 = str(seq1).replace("1", "")
+        seq1 = str(seq1).replace("2", "")
+        seq1 = str(seq1).replace("3", "")
+        seq1 = str(seq1).replace("4", "")
+        seq1 = str(seq1).replace("5", "")
+        seq1 = str(seq1).replace("6", "")
+        seq1 = str(seq1).replace("7", "")
+        seq1 = str(seq1).replace("8", "")
+        seq1 = str(seq1).replace("9", "")
+        seq1 = str(seq1).upper()
 
-        else:
+        seq2 = str(seq2).replace(" ", "")
+        seq2 = str(seq2).replace("\n", "")
+        seq2 = str(seq2).replace("\t", "")
+        seq2 = str(seq2).replace("\r", "")
+        seq2 = str(seq2).replace("0", "")
+        seq2 = str(seq2).replace("1", "")
+        seq2 = str(seq2).replace("2", "")
+        seq2 = str(seq2).replace("3", "")
+        seq2 = str(seq2).replace("4", "")
+        seq2 = str(seq2).replace("5", "")
+        seq2 = str(seq2).replace("6", "")
+        seq2 = str(seq2).replace("7", "")
+        seq2 = str(seq2).replace("8", "")
+        seq2 = str(seq2).replace("9", "")
+        seq2 = str(seq2).upper()
 
-            form = AlignmentForm()
+        aligner = Align.PairwiseAligner()
 
-    return render(request, "bioinformatic/form.html", {'form': form, 'title': 'Alignment'})
+        aligner.mode = str(mod)
+
+        aligner.substitution_matrix = substitution_matrices.load(str(mat))
+
+        alignments = aligner.align(seq1, seq2)
+
+        alignment = alignments[0]
+
+        count = alignment.counts()
+
+        values = f'Boşluk : {count.gaps}  Benzerlik : {count.identities},  Eşleşmeyen: {count.mismatches},\n\nMatriks: {mat}, \n\n {alignment.substitutions}\n\nMOD: {str(mod).upper()} \n\nScore: {alignments.score}\n\nAlignment:\n\n{alignment}'
+
+        return html.Div(
+            [
+
+                html.P(
+                    f"Hedef sekans uzunluğu: {len(seq1)}, %GC: {GC(seq1)}, Sorgu sekans uzunluğu: {len(seq2)}, %GC: {GC(seq2)}",
+                    style={'marginTop': '20px'}
+                ),
+
+                html.Hr(),
+
+                html.Label("Alignments",  style={'marginBottom': '-35px'}),
+
+                html.Button("İNDİR", id="btn-download-align",
+                            style={'float': 'right', 'marginBottom': '20px'},
+                            className='button-primary'),
+                dcc.Download(id="download-align"),
+
+                html.Div(
+                    [
+                        dcc.Textarea(id='align-textarea', value=values,
+                                     style={'width': '100%', 'height': '500px', 'position': 'relative'}),
+                    ]
+                ),
+
+
+
+                html.Hr(),
+                html.Br(),
+
+            ], id='output',
+
+        )
+
+    @alignment_score.callback(
+        Output("download-align", "data"),
+        Input("btn-download-align", "n_clicks"),
+        Input('align-textarea', 'value'),
+        prevent_initial_call=True,
+    )
+    def func(n_clicks, values):
+        return dict(content=values, filename="alignment.txt")
+
+    return HttpResponseRedirect("/laboratory/bioinformatic/app/alignment_score/")
 
 
 def stats_view(request, user):
@@ -173,7 +286,6 @@ class FileReadingResultView(generic.ListView):
             context["protein"] = "protein yok"
         else:
             context["protein"] = "protein var"
-
 
         page = context['page_obj']
         paginator = page.paginator

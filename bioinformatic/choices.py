@@ -95,6 +95,7 @@ WRITE_FILE_FORMAT = [
     ("sff", "sff".upper()),
     ("stockholm", "stockholm".upper()),
     ("tab", "tab".upper()),
+    ("qual", "qual".upper()),
     ("xdna", "xdna".upper()),
 ]
 
