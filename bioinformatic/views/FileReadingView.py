@@ -288,6 +288,7 @@ def file_reading(request, user):
                         else:
 
                             for record in file_read:
+
                                 obj.record_content.create(
                                     molecule_id=record.id,
                                     name=record.name,
