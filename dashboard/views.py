@@ -6,8 +6,7 @@ from dash import html, dcc
 from django_plotly_dash import DjangoDash
 import plotly.express as px
 import pandas as pd
-from dash import dash_table
-from collections import OrderedDict
+
 from django.contrib import messages
 from django.shortcuts import redirect, get_object_or_404, reverse, render
 from django.conf import settings
@@ -79,7 +78,8 @@ class DashBoardUsers(generic.ListView):
             ),
 
             html.Div([
-                dcc.Graph(figure=px.line(all_users_df.to_dict(), x="Katılma Tarihi", title="Kullanıcı", hover_data=["Kullanıcı adı", "Ad", 'Email'], markers=True))
+                dcc.Graph(figure=px.line(all_users_df.to_dict(), x="Katılma Tarihi", title="Kullanıcı",
+                                         hover_data=["Kullanıcı adı", "Ad", 'Email'], markers=True))
 
             ])
 
@@ -119,7 +119,7 @@ class DashBoardPosts(generic.ListView):
             "Yazar": [post.author.username for post in Posts.objects.all()],
             "Kategori": [post.category.title for post in Posts.objects.all()],
             "Likes": [post.likes.count() for post in Posts.objects.all()],
-            "Dislikes": [post.dislike.count() for post in Posts.objects.all()]
+            "Dislikes": [post.dislike.count() for post in Posts.objects.all()],
         })
 
         all_post_app.layout = html.Div([
@@ -147,7 +147,8 @@ class DashBoardPosts(generic.ListView):
                 columnDefs=[
                     {'field': '#', 'headerName': 'İD', 'filter': True},
                     {'field': 'Tarih', 'headerName': 'Tarih', 'filter': True},
-                    {'field': 'Başlık', 'headerName': 'Başlık', 'filter': True},
+                    {'field': 'Başlık', 'headerName': 'Başlık', 'filter': True, },
+                    {'field': 'Yazar', 'headerName': 'Yazar', 'filter': True, },
                     {'field': 'Kategori', 'headerName': 'Kategori', 'filter': True},
                     {'field': 'Likes', 'headerName': 'Likes', 'filter': True},
                     {'field': 'Dislikes', 'headerName': 'Dislikes', 'filter': True},
