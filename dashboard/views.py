@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from django.views import generic
-from blog.models import Posts, Comments
+from blog.models import Posts
 from blog.forms import SocialMediaModelForm
 from dash import html, dcc
 from django_plotly_dash import DjangoDash
@@ -138,6 +138,9 @@ class DashBoardPosts(generic.ListView):
                 dashGridOptions={
                     'pagination': True,
                     "rowSelection": "multiple",
+                    "undoRedoCellEditing": True,
+                    "undoRedoCellEditingLimit": 20,
+                    "editType": "fullRow",
                     "noRowsOverlayComponent": "CustomNoRowsOverlay",
                     "noRowsOverlayComponentParams": {
                         "message": "Gönderi bulunamadı",

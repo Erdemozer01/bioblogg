@@ -1,7 +1,7 @@
 from .home import BioinformaticHomeView
-from .SekansView import sequence_analiz, translation
+from .SekansView import sequence_analiz, translation, alignment_score
 from .FileReadingView import (
-    file_reading, FileReadingResultView, ProteinPickView, stats_view, alignment_score
+    file_reading, FileReadingResultView, ProteinPickView, stats_view
 )
 from .FileWritingView import file_writing_format_select, CreateFileView, RecordDetailView, RecordDeleteView, \
     FileWritingListView

@@ -3,21 +3,194 @@ from Bio.SeqUtils import MeltingTemp as mt
 import pandas as pd
 import plotly.express as px
 from Bio.Seq import Seq
-from Bio.SeqUtils import GC
+from Bio.SeqUtils import GC, gc_fraction
 from dash import html, dcc, Input, Output
 from django.shortcuts import *
 from django_plotly_dash import DjangoDash
 import dash_ag_grid as dag
 import plotly.figure_factory as ff
+from Bio import Align
+from Bio.Align import substitution_matrices
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 
+def alignment_score(request):
+    external_stylesheets = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css']
+    external_scripts = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js']
+
+    alignment_score = DjangoDash('alignment_score', external_stylesheets=external_stylesheets,
+                                 external_scripts=external_scripts, add_bootstrap_links=True, title="ALİGNMENT SKOR")
+
+    alignment_score.layout = html.Div(
+
+        [
+
+            html.Div(
+                [
+
+                    html.H4('ALİGNMENT SKOR', className='text-primary fw-bolder'),
+
+                    html.A('BİYOİNFORMATİK ANASAYFA', href=HttpResponseRedirect(reverse("bioinformatic:home")).url,
+                           style={'float': 'right'}),
+
+                    html.P("Alignment Mod", className='text-success fw-bolder'),
+
+                    dcc.Dropdown(id="mod", options={
+                        'local': 'LOCAL',
+                        'global': 'GLOBAL'
+                    }, searchable=True),
+
+                    html.P("Alignment MATRİX", style={'marginTop': '10px'}, className='text-success fw-bolder'),
+
+                    dcc.Dropdown(id="mat", options={
+                        'BENNER22': 'BENNER22',
+                        'BENNER6': 'BENNER6',
+                        'BENNER74': 'BENNER74',
+                        'BLOSUM45': 'BLOSUM45',
+                        'BLOSUM50': 'BLOSUM50',
+                        'BLOSUM62': 'BLOSUM62',
+                        'BLOSUM80': 'BLOSUM80',
+                        'BLOSUM90': 'BLOSUM90',
+                        'DAYHOFF': 'DAYHOFF',
+                        'FENG': 'FENG',
+                        'HOXD70': 'HOXD70',
+                        'JOHNSON': 'JOHNSON',
+                        'JONES': 'JONES',
+                        'LEVIN': 'LEVIN',
+                        'MCLACHLAN': 'MCLACHLAN',
+                        'MDM78': 'MDM78',
+                        'PAM250': 'PAM250',
+                        'PAM30': 'PAM30',
+                        'PAM70': 'PAM70',
+                        'RAO': 'RAO',
+                        'RISLER': 'RISLER',
+                        'SCHNEIDER': 'SCHNEIDER',
+                        'STR': 'STR',
+                        'TRANS': 'TRANS',
+                    }, searchable=True),
+
+                    html.P("Hedef sekans", style={'marginTop': '10px'}, className='text-success fw-bolder'),
+
+                    dcc.Textarea(id="seq1", placeholder="Sekans Giriniz",
+                                 style={'marginRight': '10px', 'width': '100%', 'height': '100px'}),
+
+                    html.P("Sorgu sekans", style={'marginTop': '10px'}, className='text-success fw-bolder'),
+
+                    dcc.Textarea(id="seq2", placeholder="Sekans Giriniz",
+                                 style={'marginRight': '10px', 'width': '100%', 'height': '100px'}),
+
+                ], style={'margin': 20},
+            ),
+
+            html.Div(id="output"),
+
+        ], style={'marginTop': "2%"}
+    )
+
+    @alignment_score.callback(
+        Output("output", "children"),
+        Input("mod", "value"),
+        Input("mat", "value"),
+        Input("seq1", "value"),
+        Input("seq2", "value"),
+    )
+    def update_output(mod, mat, seq1, seq2):
+        seq1 = str(seq1).replace(" ", '')
+        seq1 = str(seq1).replace("\n", "")
+        seq1 = str(seq1).replace("\t", "")
+        seq1 = str(seq1).replace("\r", "")
+        seq1 = str(seq1).replace("0", "")
+        seq1 = str(seq1).replace("1", "")
+        seq1 = str(seq1).replace("2", "")
+        seq1 = str(seq1).replace("3", "")
+        seq1 = str(seq1).replace("4", "")
+        seq1 = str(seq1).replace("5", "")
+        seq1 = str(seq1).replace("6", "")
+        seq1 = str(seq1).replace("7", "")
+        seq1 = str(seq1).replace("8", "")
+        seq1 = str(seq1).replace("9", "")
+        seq1 = str(seq1).upper()
+
+        seq2 = str(seq2).replace(" ", "")
+        seq2 = str(seq2).replace("\n", "")
+        seq2 = str(seq2).replace("\t", "")
+        seq2 = str(seq2).replace("\r", "")
+        seq2 = str(seq2).replace("0", "")
+        seq2 = str(seq2).replace("1", "")
+        seq2 = str(seq2).replace("2", "")
+        seq2 = str(seq2).replace("3", "")
+        seq2 = str(seq2).replace("4", "")
+        seq2 = str(seq2).replace("5", "")
+        seq2 = str(seq2).replace("6", "")
+        seq2 = str(seq2).replace("7", "")
+        seq2 = str(seq2).replace("8", "")
+        seq2 = str(seq2).replace("9", "")
+        seq2 = str(seq2).upper()
+
+        aligner = Align.PairwiseAligner()
+
+        aligner.mode = str(mod)
+
+        aligner.substitution_matrix = substitution_matrices.load(str(mat))
+
+        alignments = aligner.align(seq1, seq2)
+
+        alignment = alignments[0]
+
+        count = alignment.counts()
+
+        values = f'Boşluk : {count.gaps}  Benzerlik : {count.identities},  Eşleşmeyen: {count.mismatches},\n\nMatriks: {mat},\n\n {alignment.substitutions}\nMOD: {str(mod).upper()}\n\nScore: {alignments.score}\n\nAlignment:\n\n' + str(
+            alignment)
+
+        return html.Div(
+            [
+
+                html.P(
+                    f"Hedef sekans uzunluğu: {len(seq1)}, %GC: {GC(seq1)}, Sorgu sekans uzunluğu: {len(seq2)}, %GC: {GC(seq2)}",
+                    style={'marginTop': '20px'}
+                ),
+
+                html.Hr(),
+
+                html.P("Alignments sonuçları", style={'marginBottom': '-35px'}, className='fw-bolder'),
+
+                html.Button("Sonuçları indir", id="btn-download-align",
+                            style={'float': 'right', 'marginBottom': '20px'},
+                            className='btn btn-primary mr-2'),
+                dcc.Download(id="download-align"),
+
+                html.Div(
+                    [
+                        dcc.Textarea(id='align-textarea', value=values, readOnly=True,
+                                     style={'width': '100%', 'height': '500px'}),
+                    ]
+                ),
+
+                html.Hr(),
+                html.Br(),
+
+            ], id='output', style={'margin': 20}
+
+        )
+
+    @alignment_score.callback(
+        Output("download-align", "data"),
+        Input("btn-download-align", "n_clicks"),
+        Input('align-textarea', 'value'),
+        prevent_initial_call=True,
+    )
+    def func(n_clicks, values):
+        return dict(content=values, filename="alignment.txt")
+
+    return HttpResponseRedirect("/laboratory/bioinformatic/app/alignment_score/")
+
+
 def sequence_analiz(request):
-    external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+    external_stylesheets = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css']
     external_scripts = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js']
     sequence_analiz = DjangoDash("sequence_analiz", external_stylesheets=external_stylesheets,
-                                 external_scripts=external_scripts)
+                                 external_scripts=external_scripts, title='Sekans Analiz', add_bootstrap_links=True)
 
     sequence_analiz.layout = html.Div(
 
@@ -28,7 +201,7 @@ def sequence_analiz(request):
             html.A('BİYOİNFORMATİK ANASAYFA', href=HttpResponseRedirect(reverse("bioinformatic:home")).url,
                    style={'float': 'right'}),
 
-            html.P("Sekans", style={'font-weight': 'bold'}),
+            html.P("Sekans", className='fw-bolder'),
 
             html.Div(
                 [
@@ -55,21 +228,21 @@ def sequence_analiz(request):
         Input("discard", "value"),
     )
     def update_output(sekans, start, stop, discard):
-        sekans = sekans.replace(' ', '')
-        sekans = sekans.replace("\n", "")
-        sekans = sekans.replace("\t", "")
-        sekans = sekans.replace("\r", "")
-        sekans = sekans.replace("0", "")
-        sekans = sekans.replace("1", "")
-        sekans = sekans.replace("2", "")
-        sekans = sekans.replace("3", "")
-        sekans = sekans.replace("4", "")
-        sekans = sekans.replace("5", "")
-        sekans = sekans.replace("6", "")
-        sekans = sekans.replace("7", "")
-        sekans = sekans.replace("8", "")
-        sekans = sekans.replace("9", "")
-        sekans = sekans.upper()
+        sekans = str(sekans).replace(" ", "")
+        sekans = str(sekans).replace("\n", "")
+        sekans = str(sekans).replace("\t", "")
+        sekans = str(sekans).replace("\r", "")
+        sekans = str(sekans).replace("0", "")
+        sekans = str(sekans).replace("1", "")
+        sekans = str(sekans).replace("2", "")
+        sekans = str(sekans).replace("3", "")
+        sekans = str(sekans).replace("4", "")
+        sekans = str(sekans).replace("5", "")
+        sekans = str(sekans).replace("6", "")
+        sekans = str(sekans).replace("7", "")
+        sekans = str(sekans).replace("8", "")
+        sekans = str(sekans).replace("9", "")
+        sekans = str(sekans).upper().replace("NONE", "")
 
         if discard:
             sekans = sekans.replace(str(discard).upper(), "")
@@ -90,7 +263,7 @@ def sequence_analiz(request):
         return html.Div([
             html.Hr(),
             html.P(
-                f"SEKANS UZUNLUĞU: {len(sekans)}, %GC: {GC(sekans).__round__(2)}," +
+                f"SEKANS UZUNLUĞU: {len(sekans)}, %GC: {gc_fraction(sekans)}," +
                 f"  A: {sekans.count('A')}, T: {sekans.count('T')}, G: {sekans.count('G')}, C: {sekans.count('C')}",
                 style={'marginTop': '20px'}
 
@@ -120,10 +293,10 @@ def sequence_analiz(request):
 
 
 def translation(request):
-    external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+    external_stylesheets = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css']
     external_scripts = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js']
     translate_app = DjangoDash("translate_dna", external_stylesheets=external_stylesheets,
-                               external_scripts=external_scripts)
+                               external_scripts=external_scripts, add_bootstrap_links=True, title='PROTEİN SENTEZİ')
 
     translate_app.layout = html.Div(
 
@@ -209,27 +382,27 @@ def translation(request):
         Input("to_stop", "value"),
     )
     def update_output(sekans, start, stop, discard, table, to_stop):
-        sekans = sekans.replace(' ', '')
-        sekans = sekans.replace("\n", "")
-        sekans = sekans.replace("\t", "")
-        sekans = sekans.replace("\r", "")
-        sekans = sekans.replace("0", "")
-        sekans = sekans.replace("1", "")
-        sekans = sekans.replace("2", "")
-        sekans = sekans.replace("3", "")
-        sekans = sekans.replace("4", "")
-        sekans = sekans.replace("5", "")
-        sekans = sekans.replace("6", "")
-        sekans = sekans.replace("7", "")
-        sekans = sekans.replace("8", "")
-        sekans = sekans.replace("9", "")
-        sekans = sekans.upper()
+        sekans = str(sekans).replace(" ", "")
+        sekans = str(sekans).replace("\n", "")
+        sekans = str(sekans).replace("\t", "")
+        sekans = str(sekans).replace("\r", "")
+        sekans = str(sekans).replace("0", "")
+        sekans = str(sekans).replace("1", "")
+        sekans = str(sekans).replace("2", "")
+        sekans = str(sekans).replace("3", "")
+        sekans = str(sekans).replace("4", "")
+        sekans = str(sekans).replace("5", "")
+        sekans = str(sekans).replace("6", "")
+        sekans = str(sekans).replace("7", "")
+        sekans = str(sekans).replace("8", "")
+        sekans = str(sekans).replace("9", "")
+        sekans = str(sekans).upper().replace("NONE", "")
 
         if discard:
             sekans = sekans.replace(str(discard).upper(), "")
 
         if start or stop:
-            sekans = sekans[start:stop].upper()
+            sekans = sekans[start:stop]
 
         if to_stop:
             trans_seq = Seq(sekans).translate(table=int(table))
@@ -239,7 +412,7 @@ def translation(request):
         return html.Div([
             html.Hr(),
             html.P(
-                f" Girilen sekans uzunluğu: {len(sekans)}, %GC: {GC(sekans).__round__(2)}," +
+                f" Girilen sekans uzunluğu: {len(sekans)}, %GC: {gc_fraction(sekans)}," +
                 f"  A: {sekans.count('A')}, T: {sekans.count('T')}, G: {sekans.count('G')}, C: {sekans.count('C')},"
                 f"  Protein Sekans Uzunluğu: {len(trans_seq)}, Stop kodonları sayısı: {trans_seq.count('*')}",
 
@@ -292,8 +465,10 @@ def translation(request):
 
 
 def Kmer_SeqSlicing(request):
-    external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
-    seq_input = DjangoDash('kmer_seq_slicing', external_stylesheets=external_stylesheets)
+    external_stylesheets = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css']
+    external_scripts = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js']
+    seq_input = DjangoDash('kmer_seq_slicing', external_stylesheets=external_stylesheets,
+                           external_scripts=external_scripts, add_bootstrap_links=True, title='Kmer oluşturma')
 
     seq_input.layout = html.Div(
 
@@ -304,58 +479,25 @@ def Kmer_SeqSlicing(request):
             html.A('BİYOİNFORMATİK ANASAYFA', href=HttpResponseRedirect(reverse("bioinformatic:home")).url,
                    style={'float': 'right'}),
 
-            html.P("Sekans"),
+            html.P("Sekans giriniz", className='fw-bolder'),
 
-            html.Div(
-                [
-                    dcc.Textarea(id="sekans", placeholder="Sekans Giriniz",
-                                 style={'marginRight': '10px', 'width': '100%', 'height': '200px'}),
-                ]
-            ),
+            dcc.Textarea(id="sekans", placeholder="Sekans Giriniz",
+                         style={'marginRight': '10px', 'width': '100%', 'height': '200px'}),
 
-            html.Div(
-                [
-                    dcc.Input(id="start", type="number", placeholder="Sekans başlangıcı", min=0,
-                              style={'marginLeft': '2px'}),
-                    dcc.Input(id="stop", type="number", placeholder="Sekans bitişi", min=0,
-                              style={'marginLeft': '2px'}),
-                    dcc.Input(id="kmer", type="number", placeholder="Kmer Uzunluğu", min=0,
-                              style={'marginLeft': '2px'}),
-                    dcc.Input(id="nuc_pos", type="number", placeholder="Nükleotit pozisyonu", min=0,
-                              style={'marginLeft': '2px'}),
-                    dcc.Input(id="discard", type="text", placeholder="İstenmeyen sekans dizisi",
-                              style={'marginLeft': '2px'}),
-                ]
-            ),
+            dcc.Input(id="start", type="number", placeholder="Sekans başlangıcı", min=1,
+                      style={'marginLeft': '2px'}),
+            dcc.Input(id="stop", type="number", placeholder="Sekans bitişi", min=1,
+                      style={'marginLeft': '2px'}),
+            dcc.Input(id="kmer", type="number", placeholder="Kmer Uzunluğu", min=0,
+                      style={'marginLeft': '2px'}),
+            dcc.Input(id="discard", type="text", placeholder="İstenmeyen sekans dizisi",
+                      style={'marginLeft': '2px'}),
 
             html.Hr(),
-            html.P("Kmer varsayılan erime sıcaklığı değerleri", style={'font-weight': 'bold'}),
 
-            html.Div(
-                [
-
-                    html.Label("Sodyum:", style={'marginLeft': '5px', 'width': '10%'}),
-                    dcc.Input(id="Na", type="number", placeholder="Sodyum(varsayılan 50)", min=0, value=50,
-                              style={'marginLeft': '5px'}),
-                    html.Label("Potasyum:", style={'marginLeft': '5px', 'width': '10%'}),
-                    dcc.Input(id="K", type="number", placeholder="Potasyum", min=0, value=0,
-                              style={'marginLeft': '5px'}),
-                    html.Label("Tris:", style={'marginLeft': '5px'}),
-                    dcc.Input(id="Tris", type="number", placeholder="Tris", min=0, value=0,
-                              style={'marginLeft': '5px'}),
-                    html.Label("Mg:", style={'marginLeft': '5px'}),
-                    dcc.Input(id="Mg", type="number", placeholder="Mg", min=0, value=0,
-                              style={'marginLeft': '5px'}),
-                    html.Label("dNTPs:", style={'marginLeft': '5px'}),
-                    dcc.Input(id="dNTPs", type="number", placeholder="dNTPs", min=0, value=0,
-                              style={'marginLeft': '5px'}),
-                    html.Label("Tuz konsantrasyonu:", style={'marginLeft': '5px'}),
-                    dcc.Input(id="salt", type="number", placeholder="Tuz konsantrasyonu:", min=1, value=5, max=6,
-                              style={'marginLeft': '5px'}),
-                ]
-            ),
             html.Div(id="output"),
-        ], style={'marginTop': "2%"}
+
+        ], style={'marginTop': "2%", 'margin': 20}
     )
 
     @seq_input.callback(
@@ -364,31 +506,24 @@ def Kmer_SeqSlicing(request):
         Input("start", "value"),
         Input("stop", "value"),
         Input("kmer", "value"),
-        Input("nuc_pos", "value"),
         Input("discard", "value"),
-        Input("Na", "value"),
-        Input("K", "value"),
-        Input("Tris", "value"),
-        Input("Mg", "value"),
-        Input("dNTPs", "value"),
-        Input("salt", "value"),
     )
-    def update_output(sekans, start, stop, kmer, nuc_pos, discard, Na, K, Tris, Mg, dNTPs, salt):
-        sekans = sekans.replace(' ', '')
-        sekans = sekans.replace("\n", "")
-        sekans = sekans.replace("\t", "")
-        sekans = sekans.replace("\r", "")
-        sekans = sekans.replace("0", "")
-        sekans = sekans.replace("1", "")
-        sekans = sekans.replace("2", "")
-        sekans = sekans.replace("3", "")
-        sekans = sekans.replace("4", "")
-        sekans = sekans.replace("5", "")
-        sekans = sekans.replace("6", "")
-        sekans = sekans.replace("7", "")
-        sekans = sekans.replace("8", "")
-        sekans = sekans.replace("9", "")
-        sekans = sekans.upper()
+    def update_output(sekans, start, stop, kmer, discard):
+        sekans = str(sekans).replace(" ", "")
+        sekans = str(sekans).replace("\n", "")
+        sekans = str(sekans).replace("\t", "")
+        sekans = str(sekans).replace("\r", "")
+        sekans = str(sekans).replace("0", "")
+        sekans = str(sekans).replace("1", "")
+        sekans = str(sekans).replace("2", "")
+        sekans = str(sekans).replace("3", "")
+        sekans = str(sekans).replace("4", "")
+        sekans = str(sekans).replace("5", "")
+        sekans = str(sekans).replace("6", "")
+        sekans = str(sekans).replace("7", "")
+        sekans = str(sekans).replace("8", "")
+        sekans = str(sekans).replace("9", "")
+        sekans = str(sekans).upper().replace("NONE", "")
 
         if discard:
             sekans = sekans.replace(str(discard).upper(), "")
@@ -396,80 +531,72 @@ def Kmer_SeqSlicing(request):
         if start or stop:
             sekans = sekans[start:stop]
 
-        df = pd.DataFrame({
-            'index': [i for i in range(len(sekans))],
-            'seq': [k for k in sekans]
-        })
-
-        nuc_position = df.to_dict()['seq'].get(nuc_pos)
-
         kmer_list = []
 
-        if kmer:
-            def getKmers(sequence, size, step=4):
-                for x in range(0, len(sequence) - size, step):
-                    yield sequence[x:x + size]
+        def getKmers(sequence, size):
+            for x in range(0, len(sequence) - size):
+                yield sequence[x:x + size]
 
-            for km in getKmers(sekans, kmer):
-                if km.count(str(nuc_position)) > 0:
-                    kmer_list.append(km)
+        for km in getKmers(sekans, kmer):
+            kmer_list.append(km)
 
         df_kmer = pd.DataFrame(
             {
-                f'{nuc_position} Sayısı': [i.count(nuc_position) for i in kmer_list],
+                'id': [i + 1 for i in range(len(kmer_list))],
                 'kmer': kmer_list,
-                '%gc': [GC(gc) for gc in kmer_list],
-                'tm': [mt.Tm_NN(gc, Na=Na, K=K, Tris=Tris, Mg=Mg, dNTPs=dNTPs, saltcorr=salt) for gc in kmer_list]
+                '%gc': [gc_fraction(gc) for gc in kmer_list],
             }
         )
 
-        return html.Div([
-            html.P(
-                f"SEKANS UZUNLUĞU: {len(sekans)}, %GC: {GC(sekans).__round__(2)}, Nükleotid Pozisyonu : {nuc_position}",
-                style={'marginTop': '20px'}
+        return html.Div(
+            [
 
-            ),
+                html.P(f"SEKANS UZUNLUĞU: {len(sekans)}, %GC: {gc_fraction(sekans)}",
+                       style={'marginTop': '10px'}),
 
-            html.Label("Sekanslar"),
+                html.P("Sekanslar", className='fw-bolder'),
 
-            html.Div([
-                dcc.Textarea(
-                    value=sekans,
-                    style={'width': '100%', 'height': '200px'}
-                )
-            ]),
+                dcc.Textarea(value=sekans, style={'width': '100%', 'height': '200px'}),
 
-            html.Label("Kmerler", style={'text': 'bold'}),
+                html.P("Kmerler", className="fw-bolder"),
 
-            html.Div(
-                [
-                    dag.AgGrid(
-                        style={'width': '100%'},
-                        rowData=df.to_dict("records"),
-                        columnSize="sizeToFit",
-                        defaultColDef={"resizable": True, "sortable": True, "filter": True, "minWidth": 125},
-                        dashGridOptions={'pagination': True, "rowSelection": "multiple"},
-                        columnDefs=[
-                            {'field': f'{nuc_position} Sayısı'},
-                            {'field': 'kmer', 'headerName': 'KMERS', 'filter': True},
-                            {'field': '%gc', 'headerName': '%GC', 'filter': True},
-                            {'field': 'tm', 'headerName': 'TM', 'filter': True},
-                        ]
-                    ),
-                ],
-            ),
-            html.Label("Grafik"),
-            html.Div([
-                dcc.Graph(figure=px.scatter(df_kmer, x=df_kmer[f'{nuc_position} Sayısı'], color=df_kmer['kmer']))
-            ])
-        ])
+                dag.AgGrid(
+                    style={'width': '100%'},
+                    rowData=df_kmer.to_dict("records"),
+                    columnSize="sizeToFit",
+                    defaultColDef={
+                        "resizable": True,
+                        "sortable": True,
+                        "filter": True,
+                        'editable': True,
+                        "minWidth": 125
+                    },
+                    dashGridOptions={
+                        'pagination': True,
+                        "rowSelection": "multiple",
+                        "undoRedoCellEditing": True,
+                        "undoRedoCellEditingLimit": 20,
+                        "editType": "fullRow",
+                    },
+                    columnDefs=[
+                        {'field': 'id', 'headerName': 'İD', 'filter': True},
+                        {'field': 'kmer', 'headerName': 'KMERS', 'filter': True},
+                        {'field': '%gc', 'headerName': '%GC', 'filter': True},
+                    ]
+                ),
+            ],
+        ), html.Br(), html.Hr(),
 
     return HttpResponseRedirect("/laboratory/bioinformatic/app/kmer_seq_slicing/")
 
 
 def create_frame_seq(request):
-    external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
-    frame_seq_app = DjangoDash('create_frame_seq', external_stylesheets=external_stylesheets)
+    external_stylesheets = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css']
+    external_scripts = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js']
+
+    frame_seq_app = DjangoDash('create_frame_seq', external_stylesheets=external_stylesheets,
+                               external_scripts=external_scripts, add_bootstrap_links=True,
+                               title='Çerçeve sekans oluşturma'.upper())
 
     frame_seq_app.layout = html.Div(
 
@@ -493,7 +620,7 @@ def create_frame_seq(request):
                 [
                     dcc.Input(id="nuc_pos", type="number", placeholder="Nükleotit pozisyonu", min=0,
                               style={'marginLeft': '2px'}),
-                    dcc.Input(id="frame_seq_len", type="number", placeholder="Çerçeve sekans uzunluğu", min=0,
+                    dcc.Input(id="frame_seq_len", type="number", placeholder="Çerçeve sekans uzunluğu", min=50,
                               style={'marginLeft': '2px'}),
                     dcc.Input(id="start", type="number", placeholder="Sekans başlangıcı", min=0,
                               style={'marginLeft': '2px'}),
@@ -519,21 +646,21 @@ def create_frame_seq(request):
         Input("discard", "value"),
     )
     def update_output(sekans, nuc_pos, frame_seq_len, start, stop, discard):
-        sekans = sekans.replace(' ', '')
-        sekans = sekans.replace("\n", "")
-        sekans = sekans.replace("\t", "")
-        sekans = sekans.replace("\r", "")
-        sekans = sekans.replace("0", "")
-        sekans = sekans.replace("1", "")
-        sekans = sekans.replace("2", "")
-        sekans = sekans.replace("3", "")
-        sekans = sekans.replace("4", "")
-        sekans = sekans.replace("5", "")
-        sekans = sekans.replace("6", "")
-        sekans = sekans.replace("7", "")
-        sekans = sekans.replace("8", "")
-        sekans = sekans.replace("9", "")
-        sekans = sekans.upper()
+        sekans = str(sekans).replace(" ", "")
+        sekans = str(sekans).replace("\n", "")
+        sekans = str(sekans).replace("\t", "")
+        sekans = str(sekans).replace("\r", "")
+        sekans = str(sekans).replace("0", "")
+        sekans = str(sekans).replace("1", "")
+        sekans = str(sekans).replace("2", "")
+        sekans = str(sekans).replace("3", "")
+        sekans = str(sekans).replace("4", "")
+        sekans = str(sekans).replace("5", "")
+        sekans = str(sekans).replace("6", "")
+        sekans = str(sekans).replace("7", "")
+        sekans = str(sekans).replace("8", "")
+        sekans = str(sekans).replace("9", "")
+        sekans = str(sekans).upper().replace("NONE", "")
 
         if discard:
             sekans = sekans.replace(str(discard).upper(), "")
@@ -542,26 +669,25 @@ def create_frame_seq(request):
             sekans = sekans[start:stop]
 
         df = pd.DataFrame({
-            'index': [i for i in range(len(sekans))],
             'seq': [k for k in sekans]
-        })
+        }, index=[i + 1 for i in range(len(sekans))])
 
         nuc_position = df.to_dict()['seq'].get(nuc_pos)
 
         df = pd.DataFrame({
             'seq_len': [len(sekans[:50] + str(nuc_position) + sekans[50:frame_len]) for frame_len in
                         range(50, frame_seq_len)],
-            'seq': [sekans[:50] + str(nuc_position) + sekans[50:frame_len] for frame_len in
+            'seq': [sekans[:50] + ' ' + str(nuc_position) + ' ' + sekans[50:frame_len] for frame_len in
                     range(50, frame_seq_len)]
         })
         return html.Div([
             html.P(
-                f"SEKANS UZUNLUĞU: {len(sekans)}, %GC: {GC(sekans).__round__(2)}, Nükleotid Pozisyonu : {nuc_position}",
+                f"SEKANS UZUNLUĞU: {len(sekans)}, %GC: {gc_fraction(sekans)}, Nükleotid Pozisyonu : {nuc_position}",
                 style={'marginTop': '20px'}
 
             ),
 
-            html.Label("Çerçeve Sekanslar"),
+            html.P("Çerçeve Sekanslar", className="fw-bolder"),
 
             html.Div([
                 dag.AgGrid(
@@ -588,12 +714,12 @@ def create_frame_seq(request):
     )
     def display_cell_clicked_on(cell):
         if cell is None:
-            return "Click on a cell"
+            return html.P("Çerçeve sekans seçimi henüz yapılmadı!", className="text-danger")
 
         return html.Div(
             [
                 dcc.Textarea(
-                    value=f"Çerçeve Sekans: \n  {cell['value']}",
+                    value=f"Çerçeve Sekans: \n{cell['value']}",
                     style={'width': '100%', 'height': '100px'}),
             ]
         ),
