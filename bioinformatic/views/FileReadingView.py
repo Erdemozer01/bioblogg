@@ -241,8 +241,11 @@ def file_reading(request, user):
                             for feature in record.features:
 
                                 if feature.type == "CDS":
+                                    print("CSD")
 
                                     if feature.qualifiers.get('translation') is None:
+
+                                        print("transla")
 
                                         obj.record_content.create(
                                             molecule_id=record.id,
@@ -257,6 +260,8 @@ def file_reading(request, user):
                                         )
 
                                     else:
+
+                                        print("Not trans")
 
                                         obj.record_content.create(
                                             molecule_id=record.id,
@@ -274,6 +279,8 @@ def file_reading(request, user):
 
                                 else:
 
+                                    print("not csd")
+
                                     obj.record_content.create(
                                         molecule_id=record.id,
                                         name=record.name,
@@ -287,19 +294,22 @@ def file_reading(request, user):
 
                         else:
 
+                            print("not record")
+
                             for record in file_read:
 
-                                obj.record_content.create(
-                                    molecule_id=record.id,
-                                    name=record.name,
-                                    description=record.description,
-                                    sequence=record.seq,
-                                    db_xrefs=record.dbxrefs,
-                                    annotations=record.annotations,
-                                    features=record.features,
-                                    gc=GC(record.seq).__round__(2),
-                                    seq_len=len(record.seq),
-                                )
+                                if file_format == "fastaq":
+
+                                    obj.record_content.create(
+                                        molecule_id=record.id,
+                                        name=record.name,
+                                        description=record.description,
+                                        sequence=record.seq,
+                                        db_xrefs=record.dbxrefs,
+                                        annotations=record.annotations['phred_quality'],
+                                        gc=GC(record.seq).__round__(2),
+                                        seq_len=len(record.seq),
+                                    )
 
                 except:
                     BioinformaticModel.objects.filter(user=request.user).delete()

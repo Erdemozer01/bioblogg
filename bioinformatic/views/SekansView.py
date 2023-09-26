@@ -190,13 +190,13 @@ def sequence_analiz(request):
     external_stylesheets = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css']
     external_scripts = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js']
     sequence_analiz = DjangoDash("sequence_analiz", external_stylesheets=external_stylesheets,
-                                 external_scripts=external_scripts, title='Sekans Analiz', add_bootstrap_links=True)
+                                 external_scripts=external_scripts, add_bootstrap_links=True, title='Sekans Analiz')
 
     sequence_analiz.layout = html.Div(
 
         [
 
-            html.H4('Sekans Analiz'),
+            html.H4('Sekans Analiz', className='text-primary'),
 
             html.A('BİYOİNFORMATİK ANASAYFA', href=HttpResponseRedirect(reverse("bioinformatic:home")).url,
                    style={'float': 'right'}),
@@ -217,7 +217,7 @@ def sequence_analiz(request):
             ),
 
             html.Div(id="output"),
-        ], style={'marginTop': "2%"}
+        ], style={'marginTop': "2%", 'margin': 20}
     )
 
     @sequence_analiz.callback(
@@ -262,18 +262,20 @@ def sequence_analiz(request):
 
         return html.Div([
             html.Hr(),
+
             html.P(
                 f"SEKANS UZUNLUĞU: {len(sekans)}, %GC: {gc_fraction(sekans)}," +
                 f"  A: {sekans.count('A')}, T: {sekans.count('T')}, G: {sekans.count('G')}, C: {sekans.count('C')}",
-                style={'marginTop': '20px'}
-
+                style={'marginTop': '10px'}
             ),
 
             html.Hr(),
 
             html.Div([
 
-                html.Label("Grafik"),
+                html.P("Grafik", className='text-primary'),
+
+
                 dcc.Graph(
                     figure=ff.create_distplot(
                         [a['positions'], t['positions'], g['positions'], c['positions']],
@@ -287,7 +289,7 @@ def sequence_analiz(request):
                     title="Nükleotit Sayıları",
                 ).update_yaxes(title="Nükletotit Sayısı").update_xaxes(title="Nükleotit")),
             ])
-        ])
+        ], style={'marginTop': "2%", 'margin': 20})
 
     return HttpResponseRedirect("/laboratory/bioinformatic/app/sequence_analiz/")
 
