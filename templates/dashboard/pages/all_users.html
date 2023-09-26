@@ -1,0 +1,11 @@
+{% extends "dashboard/layout/base.html" %}
+{% load static %}
+{% load plotly_dash %}
+
+{% block title %}TÜM KULLANICILAR{% endblock %}
+
+{% block content %}
+    
+    {% plotly_app name="all_users" ratio=1 %}
+
+{% endblock %}

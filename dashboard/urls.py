@@ -4,7 +4,8 @@ from .views import *
 app_name = "dashboard"
 
 urlpatterns = [
-    path('users-dashboard/<user>/', DashBoardView.as_view(), name="anasayfa"),
+    path('tüm-gönderiler/<slug:user>/', DashBoardPosts.as_view(), name="all_posts"),
+    path('tüm-kullanıcilar/<slug:user>/', DashBoardUsers.as_view(), name="all_users"),
     path('user-posts/<user>/<int:pk>/', MyPostList.as_view(), name="user_posts"),
     path('social_media/<user>/', SocialMediaListView.as_view(), name="social_dash"),
     path('messages/<user>/', MessagesListView.as_view(), name="messages_list"),

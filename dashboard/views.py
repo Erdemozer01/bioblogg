@@ -18,129 +18,149 @@ from django.contrib.auth.forms import PasswordChangeForm
 from accounts.forms import ContactMessagesReplyForm, UserMessagesForm
 from django.contrib.auth import update_session_auth_hash
 from .models import Notifications
+import dash_ag_grid as dag
 
 
-class DashBoardView(generic.ListView):
-    template_name = "dashboard/pages/index.html"
-    model = Posts
-    paginate_by = 10
+class DashBoardUsers(generic.ListView):
+    template_name = "dashboard/pages/all_users.html"
+    model = User
 
     def get(self, request, *args, **kwargs):
         if not self.request.user.is_staff:
             messages.error(request, "Yetkili girişi yapınız!")
             return redirect('%s?next=/blog/' % (settings.LOGIN_URL))
 
-        post_graph = DjangoDash('PostGraph')
+        external_stylesheets = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css']
+        external_scripts = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js']
 
-        post_table = DjangoDash('PostTable')
+        all_users_app = DjangoDash('all_users', external_stylesheets=external_stylesheets,
+                                   external_scripts=external_scripts,
+                                   add_bootstrap_links=True)
 
-        users_table = DjangoDash('ProfileTable')
+        all_users_df = pd.DataFrame({
+            "Kullanıcı adı": [profile.username for profile in User.objects.all()],
+            "Ad": [profile.first_name for profile in User.objects.all()],
+            "Soyad": [profile.last_name for profile in User.objects.all()],
+            "Email": [profile.email for profile in User.objects.all()],
+            "Katılma Tarihi": [profile.date_joined.date() for profile in User.objects.all()],
+            "Son oturum açma": [profile.last_login for profile in User.objects.all()],
+        })
 
-        users_graph = DjangoDash('ProfileGraph')
-
-        post_data = OrderedDict(
-            [
-                ("#", [post.id for post in Posts.objects.all()]),
-                ("Tarih", [post.created.date() for post in Posts.objects.all()]),
-                ("Başlık", [post.title[:20] for post in Posts.objects.all()]),
-                ("Yazar", [post.author.username for post in Posts.objects.all()]),
-                ("Kategori", [post.category.title for post in Posts.objects.all()]),
-                ("Likes", [post.likes.count() for post in Posts.objects.all()]),
-                ("Dislikes", [post.dislike.count() for post in Posts.objects.all()]),
-            ]
-        )
-
-        post_table_df = pd.DataFrame(
-            OrderedDict([(name, col_data) for (name, col_data) in post_data.items()])
-        )
-
-        post_table.layout = html.Div([
+        all_users_app.layout = html.Div([
 
             html.Br(),
 
-            dash_table.DataTable(
-                data=post_table_df.to_dict('records'),
-                columns=[{'id': c, 'name': c} for c in post_table_df.columns],
-                style_table={'height': '300px', 'overflowY': 'auto'},
-                style_cell={'textAlign': 'center'},
-                filter_action="native",
-                filter_options={"placeholder_text": "Ara", 'case': 'insensitive'},
-                sort_action="native",
-                sort_mode="multi",
-                page_action="native",
-                page_current=0,
-                page_size=10,
-                cell_selectable=True
-            )
-        ])
+            html.H5("TÜM KULLANICILAR", className="text-success"),
 
-        fig = px.bar(
-            post_data,
-            x="Kategori",
-            color="Kategori",
-            barmode="group",
-            title="Gönderi-Kategori",
-            labels={'count': 'Gönderi Sayısı'},
-            hover_data=['Tarih', 'Başlık', 'Likes'],
-            text_auto=True,
-        )
+            dag.AgGrid(
+                id="all_users_app",
+                style={'width': '100%'},
+                rowData=all_users_df.to_dict("records"),
+                columnSize="sizeToFit",
+                defaultColDef={"resizable": True, "sortable": True, "filter": True, 'editable': True,
+                               "minWidth": 125},
+                dashGridOptions={
+                    'pagination': True,
+                    "rowSelection": "multiple",
+                    "noRowsOverlayComponent": "CustomNoRowsOverlay",
+                    "noRowsOverlayComponentParams": {
+                        "message": "Gönderi bulunamadı",
+                        "fontSize": 12,
+                    },
+                },
+                columnDefs=[
+                    {'field': 'Kullanıcı adı', 'headerName': 'Kullanıcı adı', 'filter': True},
+                    {'field': 'Ad', 'headerName': 'Ad', 'filter': True},
+                    {'field': 'Soyad', 'headerName': 'Soyad', 'filter': True},
+                    {'field': 'Email', 'headerName': 'Email', 'filter': True},
+                    {'field': 'Katılma Tarihi', 'headerName': 'Katılma Tarihi', 'filter': True},
+                    {'field': 'Son oturum açma', 'headerName': 'Son oturum açma', 'filter': True},
+                ]
+            ),
 
-        post_graph.layout = html.Div(children=[
-            dcc.Graph(
-                id='example-graph',
-                figure=fig
-            )
-        ])
+            html.Div([
+                dcc.Graph(figure=px.line(all_users_df.to_dict(), x="Katılma Tarihi", title="Kullanıcı", hover_data=["Kullanıcı adı", "Ad", 'Email'], markers=True))
 
-        user_data = OrderedDict(
-            [
-                ("Kullanıcı adı", [profile.username for profile in User.objects.all()]),
-                ("Ad", [profile.first_name for profile in User.objects.all()]),
-                ("Soyad", [profile.last_name for profile in User.objects.all()]),
-                ("Email", [profile.email for profile in User.objects.all()]),
-                ("Katılma Tarihi", [profile.date_joined.date() for profile in User.objects.all()]),
-                ("Son oturum açma", [profile.last_login for profile in User.objects.all()]),
-            ]
-        )
+            ])
 
-        user_table_df = pd.DataFrame(
-            OrderedDict([(name, col_data) for (name, col_data) in user_data.items()])
-        )
+        ], style={"margin": 20}, )
 
-        users_table.layout = html.Div([
+        return super().get(request, *args, **kwargs)
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['notifications'] = Notifications.objects.filter(user=self.request.user, is_read=False).order_by(
+            "-created")
+        context['messages_list'] = ContactModel.objects.filter(receiver=self.request.user.pk)
+        context['messages_count'] = ContactModel.objects.filter(receiver=self.request.user.pk, is_read=False).count()
+        return context
+
+
+class DashBoardPosts(generic.ListView):
+    template_name = "dashboard/pages/all_posts.html"
+    model = Posts
+
+    def get(self, request, *args, **kwargs):
+        if not self.request.user.is_staff:
+            messages.error(request, "Yetkili girişi yapınız!")
+            return redirect('%s?next=/blog/' % (settings.LOGIN_URL))
+
+        external_stylesheets = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css']
+        external_scripts = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js']
+
+        all_post_app = DjangoDash('all_posts', external_stylesheets=external_stylesheets,
+                                  external_scripts=external_scripts,
+                                  add_bootstrap_links=True)
+
+        post_df = pd.DataFrame({
+            "#": [post.id for post in Posts.objects.all()],
+            "Tarih": [post.created.date() for post in Posts.objects.all()],
+            "Başlık": [post.title[:20] for post in Posts.objects.all()],
+            "Yazar": [post.author.username for post in Posts.objects.all()],
+            "Kategori": [post.category.title for post in Posts.objects.all()],
+            "Likes": [post.likes.count() for post in Posts.objects.all()],
+            "Dislikes": [post.dislike.count() for post in Posts.objects.all()]
+        })
+
+        all_post_app.layout = html.Div([
 
             html.Br(),
 
-            dash_table.DataTable(
-                data=user_table_df.to_dict('records'),
-                columns=[{'id': c, 'name': c} for c in user_table_df.columns],
-                style_table={'height': '300px', 'overflowY': 'auto'},
-                style_cell={'textAlign': 'center'},
-                filter_action="native",
-                filter_options={"placeholder_text": "Ara", 'case': 'insensitive'},
-                sort_action="native",
-                sort_mode="multi",
-                page_action="native",
-                page_current=0,
-                page_size=10,
-                cell_selectable=True
-            )
-        ])
+            html.H5("TÜM GÖNDERİLER", className="text-success"),
 
-        fig = px.line(
-            user_data,
-            x="Katılma Tarihi",
-            title="Kullanıcı",
-            hover_data=["Kullanıcı adı", "Ad", 'Email'],
-            markers=True
-        )
+            dag.AgGrid(
+                id="frame_seq_table",
+                style={'width': '100%'},
+                rowData=post_df.to_dict("records"),
+                columnSize="sizeToFit",
+                defaultColDef={"resizable": True, "sortable": True, "filter": True, 'editable': True,
+                               "minWidth": 125},
+                dashGridOptions={
+                    'pagination': True,
+                    "rowSelection": "multiple",
+                    "noRowsOverlayComponent": "CustomNoRowsOverlay",
+                    "noRowsOverlayComponentParams": {
+                        "message": "Gönderi bulunamadı",
+                        "fontSize": 12,
+                    },
+                },
+                columnDefs=[
+                    {'field': '#', 'headerName': 'İD', 'filter': True},
+                    {'field': 'Tarih', 'headerName': 'Tarih', 'filter': True},
+                    {'field': 'Başlık', 'headerName': 'Başlık', 'filter': True},
+                    {'field': 'Kategori', 'headerName': 'Kategori', 'filter': True},
+                    {'field': 'Likes', 'headerName': 'Likes', 'filter': True},
+                    {'field': 'Dislikes', 'headerName': 'Dislikes', 'filter': True},
+                ]
+            ),
 
-        users_graph.layout = html.Div(children=[
-            dcc.Graph(
-                id='user-graph',
-                figure=fig
-            )
-        ])
+            html.Div([
+                dcc.Graph(figure=px.bar(data_frame=post_df.to_dict(), x="Kategori", color="Kategori",
+                                        title="Gönderi-Kategori", labels={'count': 'Gönderi Sayısı'}, barmode="group",
+                                        hover_data=['Tarih', 'Başlık', 'Likes'], text_auto=True, ))
+            ])
+
+        ], style={"margin": 20}, )
 
         return super().get(request, *args, **kwargs)
 

@@ -159,7 +159,7 @@
                                        href="{% url 'dashboard:profile_update' request.user request.user.pk %}">Profil
                                         Güncelle</a>
                                     <a class="dropdown-item"
-                                       href="{% url "dashboard:anasayfa" request.user %}">Dashboard</a>
+                                       href="{% url "dashboard:all_posts" request.user %}">Dashboard</a>
                                 {% else %}
                                     <a class="dropdown-item"
                                        href="{% url 'blog:profile' request.user request.user.pk %}"> Profil </a>
@@ -418,7 +418,7 @@
                                        href="{% url 'dashboard:profile_update' request.user request.user.pk %}">Profil
                                         Güncelle</a>
                                     <a class="dropdown-item"
-                                       href="{% url "dashboard:anasayfa" request.user %}">Dashboard</a>
+                                       href="{% url "dashboard:all_posts" request.user %}">Dashboard</a>
                                 {% else %}
                                     <a class="dropdown-item"
                                        href="{% url 'blog:profile' request.user request.user.pk %}"> Profil </a>

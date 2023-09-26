@@ -249,7 +249,34 @@ def translation(request):
 
             html.Hr(),
 
-            html.Label("Protein Sekansı", style={'font-weight': 'bold'}),
+            html.Label("Komplement", style={'font-weight': 'bold'}),
+
+            html.Div([
+                dcc.Textarea(
+                    value=str(Seq(sekans).complement()),
+                    style={'width': '100%', 'height': '200px'}
+                )
+            ]),
+
+            html.Label("Reverse Komplement", style={'font-weight': 'bold'}),
+
+            html.Div([
+                dcc.Textarea(
+                    value=str(Seq(sekans).reverse_complement()),
+                    style={'width': '100%', 'height': '200px'}
+                )
+            ]),
+
+            html.Label("Transcribe", style={'font-weight': 'bold'}),
+
+            html.Div([
+                dcc.Textarea(
+                    value=str(Seq(sekans).transcribe()),
+                    style={'width': '100%', 'height': '200px'}
+                )
+            ]),
+
+            html.Label(f"Protein Sekansı", style={'font-weight': 'bold'}),
 
             html.Div([
                 dcc.Textarea(
@@ -520,8 +547,6 @@ def create_frame_seq(request):
         })
 
         nuc_position = df.to_dict()['seq'].get(nuc_pos)
-
-        frame_seq = []
 
         df = pd.DataFrame({
             'seq_len': [len(sekans[:50] + str(nuc_position) + sekans[50:frame_len]) for frame_len in

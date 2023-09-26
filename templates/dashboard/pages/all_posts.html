@@ -1,0 +1,11 @@
+{% extends "dashboard/layout/base.html" %}
+{% load static %}
+{% load plotly_dash %}
+
+{% block title %}TÜM GÖNDERİLER{% endblock %}
+
+{% block content %}
+
+    {% plotly_app name="all_posts" ratio=1 %}
+
+{% endblock %}
