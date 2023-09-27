@@ -1,21 +1,70 @@
 import os
-
+import gzip
 from django.db.models import Q
 from django.shortcuts import *
 from django.views import generic
 from django.contrib import messages
 from bioinformatic.forms import FileReadingForm, TranslateForm, AlignmentForm
-from bioinformatic.models import BioinformaticModel, RecordModel
+from bioinformatic.models import BioinformaticModel, RecordModel, FileModel
 from Bio import SeqIO
 from Bio.SeqUtils import GC, gc_fraction
 import pandas as pd
 import plotly.express as px
 from django_plotly_dash import DjangoDash
-from dash import html, dcc
+from dash import html, dcc, Dash
 from pathlib import Path
 from Bio.Seq import Seq
+import dash_ag_grid as dag
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
+
+
+def fastq_dash(request):
+    external_stylesheets = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css']
+    external_scripts = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js']
+    fastq_dash_app = DjangoDash('fastq_dash', external_stylesheets=external_stylesheets, external_scripts=external_scripts)
+
+    object_list = FileModel.objects.get(records__user=request.user, records__tool="DOSYA OKUMA")
+
+    file_read = SeqIO.parse(gzip.open(object_list.file.path, 'rt', encoding='utf-8'), 'fastq')
+
+    rowData = []
+
+    for i in file_read:
+        rowData.append({"id": i.id, "seq": i.seq, "qual": i.letter_annotations['phred_quality']})
+
+    columnDefs = [
+        {"headerName": "İD", "field": "id"},
+        {"headerName": "SEKANS", "field": "seq"},
+        {"headerName": "phred_quality", "field": "phred_quality"},
+    ]
+
+    grid = dag.AgGrid(
+                id="styling-rows-all-rows-class",
+                columnDefs=columnDefs,
+                rowData=rowData,
+                columnSize="sizeToFit",
+                defaultColDef={
+                    "resizable": True,
+                    "sortable": True,
+                    "filter": True,
+                    'editable': True,
+                    "minWidth": 125
+                },
+                dashGridOptions={
+                    'pagination': True,
+                    "rowSelection": "multiple",
+                    "undoRedoCellEditing": True,
+                    "undoRedoCellEditingLimit": 20,
+                    "editType": "fullRow",
+                },
+            )
+
+    fastq_dash_app.layout = html.Div(
+        children=grid
+    )
+
+    return HttpResponseRedirect("/laboratory/bioinformatic/app/fastq_dash/")
 
 
 def stats_view(request, user):
@@ -294,22 +343,16 @@ def file_reading(request, user):
 
                         else:
 
-                            print("not record")
-
                             for record in file_read:
 
-                                if file_format == "fastaq":
+                                if file_format == "fastq":
 
-                                    obj.record_content.create(
-                                        molecule_id=record.id,
-                                        name=record.name,
-                                        description=record.description,
-                                        sequence=record.seq,
-                                        db_xrefs=record.dbxrefs,
-                                        annotations=record.annotations['phred_quality'],
-                                        gc=GC(record.seq).__round__(2),
-                                        seq_len=len(record.seq),
-                                    )
+                                    return redirect('bioinformatic:fastq_dash')
+
+                                else:
+                                    BioinformaticModel.objects.filter(user=request.user).delete()
+                                    return render(request, "exception/page-404.html",
+                                                  {'msg': 'Hatalı dosya türü', 'url': request.path})
 
                 except:
                     BioinformaticModel.objects.filter(user=request.user).delete()

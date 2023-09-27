@@ -20,6 +20,7 @@ urlpatterns = [
          name="file_reading_detail"),
     path('file-reading/<user>/protein/', views.FileReadingView.ProteinPickView, name="file_reading_pick_protein"),
     path('istatistik-verileri/<user>/', views.FileReadingView.stats_view, name="stats"),
+    path('fastq_dash/', views.FileReadingView.fastq_dash, name="fastq_dash"),
 
     # Writing
     path('file-format-select/<user>/', views.FileWritingView.file_writing_format_select,
