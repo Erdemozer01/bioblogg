@@ -1,5 +1,6 @@
 import os
 import gzip
+from Bio import bgzf
 from django.db.models import Q
 from django.shortcuts import *
 from django.views import generic
@@ -9,40 +10,351 @@ from bioinformatic.models import BioinformaticModel, RecordModel, FileModel
 from Bio import SeqIO
 from Bio.SeqUtils import GC, gc_fraction
 import pandas as pd
+import pandas as gen
 import plotly.express as px
 from django_plotly_dash import DjangoDash
-from dash import html, dcc, Dash
+from dash import Dash, html, dcc, dash_table
 from pathlib import Path
 from Bio.Seq import Seq
 import dash_ag_grid as dag
+from collections import defaultdict
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 
-def fastq_dash(request):
+def file_reading(request, user):
+    if request.user.is_anonymous:
+        from django.conf import settings
+        messages.error(request, "Lütfen Giriş Yapınız")
+        return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
+
     external_stylesheets = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css']
     external_scripts = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js']
-    fastq_dash_app = DjangoDash('fastq_dash', external_stylesheets=external_stylesheets, external_scripts=external_scripts)
 
-    object_list = FileModel.objects.get(records__user=request.user, records__tool="DOSYA OKUMA")
+    if BioinformaticModel.objects.filter(user=request.user, tool="DOSYA OKUMA").exists():
+        BioinformaticModel.objects.filter(user=request.user, tool="DOSYA OKUMA").delete()
 
-    file_read = SeqIO.parse(gzip.open(object_list.file.path, 'rt', encoding='utf-8'), 'fastq')
+    form = FileReadingForm(request.POST or None, request.FILES or None)
 
-    rowData = []
+    if request.method == "POST":
 
-    for i in file_read:
-        rowData.append({"id": i.id, "seq": i.seq, "qual": i.letter_annotations['phred_quality']})
+        if request.FILES['file'].size > 100 * 1024 * 1024:
+            messages.error(request, 'Dosya boyutu en en fazla 5 mb dan fazladır.')
+            return HttpResponseRedirect(request.path)
+
+        if form.is_valid():
+
+            file_format = form.cleaned_data["reading_file_format"]
+            file = form.cleaned_data["file"]
+            molecule = form.cleaned_data["molecule"]
+
+            obj = BioinformaticModel.objects.create(
+                user=request.user,
+                molecule=molecule,
+                reading_file_format=file_format,
+                tool="DOSYA OKUMA",
+            )
+
+            file_obj = obj.records_files.create(file=file)
+
+            handle = open(file_obj.file.path, 'r', encoding='utf-8')
+
+            file_reading_dash_app = DjangoDash(
+                name=f"{file_format}-dosya-sonuc",
+                external_stylesheets=external_stylesheets,
+                external_scripts=external_scripts,
+                title=f"{file_format} dosyası okuması sonuçları".upper()
+            )
+
+            try:
+                records = SeqIO.parse(handle, file_format)
+
+            except UnicodeDecodeError:
+                try:
+                    records = SeqIO.parse(gzip.open(file_obj.file.path, 'rt', encoding='utf-8'), file_format)
+
+                except:
+                    obj.delete()
+                    return render(request, "exception/page-404.html", {'msg': "Hatalı dosya türü"})
+            try:
+                if file_format == "fasta":
+
+                    df_TABLE = pd.DataFrame(
+                        {
+                            'id': str(rec.id),
+                            'description': str(rec.description),
+                            'seq': str(rec.seq),
+                            'seq_len': len(str(rec.seq)),
+                            'gc': gc_fraction(rec.seq) * 100
+                        } for rec in records)
+
+                    file_reading_dash_app.layout = html.Div(
+                        children=[
+
+                            html.H4("Fasta dosyası okuması", className="fw-bolder text-primary m-2 "),
+
+                            html.Hr(className="border border-danger"),
+
+                            dag.AgGrid(
+                                id="df-table",
+                                style={'width': '100%'},
+                                rowData=df_TABLE.to_dict("records"),
+                                columnDefs=[
+                                    {'field': 'id', 'headerName': 'İD', 'filter': True},
+                                    {'field': 'description', 'headerName': 'Tanım', 'filter': True},
+                                    {'field': 'seq', 'headerName': 'SEKANSLAR', 'filter': True},
+                                    {'field': 'seq_len', 'headerName': 'Sekans uzunlukları', 'filter': True},
+                                    {'field': 'gc', 'headerName': '%GC', 'filter': True},
+                                ],
+                                columnSize="sizeToFit",
+                                defaultColDef={
+                                    "resizable": True,
+                                    "sortable": True,
+                                    "filter": True,
+                                    'editable': True,
+                                    "minWidth": 125
+                                },
+                                dashGridOptions={
+                                    'pagination': True,
+                                    "rowSelection": "multiple",
+                                    "undoRedoCellEditing": True,
+                                    "undoRedoCellEditingLimit": 20,
+                                    "editType": "fullRow",
+                                },
+                            ),
+
+                            html.Hr(),
+
+                            dcc.Graph(
+                                figure=px.pie(
+                                    data_frame=df_TABLE.to_dict("records"),
+                                    names=[j for seq in df_TABLE['seq'] for j in seq],
+                                    labels={'seq': "Nükleotit"},
+                                ).update_traces(
+                                    textposition='auto',
+                                    textinfo='value+percent+label',
+                                    legendgrouptitle={'text': 'Nükleotitler'}
+                                )
+                            ),
+
+                            html.Hr(className="border border-danger"),
+                        ],
+
+                        style={"margin": 30},
+                    )
+
+                elif file_format == "genbank":
+
+                    qualifiers = []
+
+                    table = []
+
+                    for record in records:
+                        table.append({'İD': record.id, 'Tanım': record.description, 'Sekans': str(record.seq),
+                                      'Sekans Uzunluğu': len(str(record.seq)), '%GC': gc_fraction(str(record.seq))})
+                        if record.features:
+                            for feature in record.features:
+                                qualifiers.append(feature.qualifiers)
+
+                    df_qualifiers = pd.DataFrame(i for i in qualifiers)
+
+                    file_reading_dash_app.layout = html.Div(
+                        children=[
+
+                            html.H4("Genbank dosyası okuması", className="fw-bolder text-primary m-2 "),
+
+                            html.Hr(className="border border-danger"),
+
+                            dag.AgGrid(
+                                id="df-table",
+                                style={'width': '100%'},
+                                rowData=pd.DataFrame(table).to_dict("records"),
+                                columnDefs=[{"field": str(i)} for i in pd.DataFrame(table).columns],
+                                columnSize="sizeToFit",
+                                defaultColDef={
+                                    "resizable": True,
+                                    "sortable": True,
+                                    "filter": True,
+                                    'editable': True,
+                                    "minWidth": 125
+                                },
+                                dashGridOptions={
+                                    'pagination': True,
+                                    "rowSelection": "multiple",
+                                    "undoRedoCellEditing": True,
+                                    "undoRedoCellEditingLimit": 20,
+                                    "editType": "fullRow",
+                                },
+                            ),
+
+                            html.Hr(),
+
+                            dag.AgGrid(
+                                id="df-table",
+                                style={'width': '100%'},
+                                rowData=df_qualifiers.to_dict("records"),
+                                columnDefs=[{"field": str(i)} for i in df_qualifiers.columns],
+                                columnSize="sizeToFit",
+                                defaultColDef={
+                                    "resizable": True,
+                                    "sortable": True,
+                                    "filter": True,
+                                    'editable': True,
+                                    "minWidth": 125
+                                },
+                                dashGridOptions={
+                                    'pagination': True,
+                                    "rowSelection": "multiple",
+                                    "undoRedoCellEditing": True,
+                                    "undoRedoCellEditingLimit": 20,
+                                    "editType": "fullRow",
+                                },
+                            ),
+
+                            html.Hr(),
+
+                            dcc.Graph(
+                                figure=px.pie(
+                                    data_frame=pd.DataFrame(table).to_dict("records"),
+                                    names=[j for seq in pd.DataFrame(table)['Sekans'] for j in seq],
+
+                                ).update_traces(
+                                    textposition='auto',
+                                    textinfo='value+percent+label',
+                                    legendgrouptitle={'text': 'Nükleotitler'},
+                                )
+                            ),
+
+                            html.Hr(className="border border-danger"),
+
+                        ], style={"margin": 30},
+                    )
+
+            finally:
+
+                handle.close()
+
+                file_obj.delete()
+
+            return HttpResponseRedirect(f"/laboratory/bioinformatic/app/{file_format}-dosya-sonuc")
+
+        else:
+
+            form = FileReadingForm()
+
+    return render(request, "bioinformatic/form.html", {'form': form, 'title': 'DOSYA OKUMASI'})
+
+def fastq_stats(request):
+    external_stylesheets = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css']
+    external_scripts = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js']
+
+    fastq_dash_app = DjangoDash('fastq-istatistik', external_stylesheets=external_stylesheets,
+                                external_scripts=external_scripts)
+
+    obj = FileModel.objects.get(records__user=request.user, records__tool="DOSYA OKUMA")
+
+    handle = gzip.open(obj.file.path, 'rt', encoding='utf-8')
+
+    records = SeqIO.parse(handle, obj.records.reading_file_format)
+
+    cnt = defaultdict(int)
+
+    for rec in records:
+        for letter in rec.seq:
+            cnt[letter] += 1
+
+    tot = sum(cnt.values())
+
+    df = pd.DataFrame(
+        {
+            'nuc': cnt.keys(),
+            'count': cnt.values(),
+            'per': [100 * i / tot for i in cnt.values()],
+        }
+    )
 
     columnDefs = [
-        {"headerName": "İD", "field": "id"},
-        {"headerName": "SEKANS", "field": "seq"},
-        {"headerName": "phred_quality", "field": "phred_quality"},
+        {"field": "nuc", "headerName": "Nükleotit", 'filter': True},
+        {"field": "count", "headerName": "Nükleotit sayısı", 'filter': True},
+        {"field": "per", "headerName": "Nükleotit Yüzdesi", 'filter': True},
     ]
 
     grid = dag.AgGrid(
-                id="styling-rows-all-rows-class",
-                columnDefs=columnDefs,
-                rowData=rowData,
+        id="fastq-table",
+        columnDefs=columnDefs,
+        rowData=df.to_dict("records"),
+        columnSize="sizeToFit",
+        defaultColDef={
+            "resizable": True,
+            "sortable": True,
+            "filter": True,
+            'editable': True,
+            "minWidth": 125
+        },
+        dashGridOptions={
+            'pagination': True,
+            "rowSelection": "multiple",
+            "undoRedoCellEditing": True,
+            "undoRedoCellEditingLimit": 20,
+            "editType": "fullRow",
+        },
+    )
+
+    fastq_dash_app.layout = html.Div(
+        children=[
+            html.P("FASTQ DOSYASI BİLGİLERi", className="fw-bolder text-primary mt-3"),
+            grid
+
+        ], className="m-5"
+    )
+
+    handle.close()
+
+    obj.file.delete()
+
+    return HttpResponseRedirect("/laboratory/bioinformatic/app/fastq-istatistik/")
+
+
+def stats_view(request, user):
+    global fig_lr
+    if request.user.is_anonymous:
+        from django.conf import settings
+        messages.error(request, "Lütfen Giriş Yapınız")
+        return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
+
+    external_stylesheets = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css']
+    external_scripts = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js']
+
+    object_list = RecordModel.objects.filter(records__user=request.user, records__tool="DOSYA OKUMA")
+
+    if object_list.exists():
+
+        df = pd.DataFrame(
+            {
+                "name": [dna.name for dna in object_list],
+                "DNA": [dna.seq_len for dna in object_list],
+                "PROTEİN": [pro.pro_seq_len for pro in object_list],
+                "%GC": [gc.gc for gc in object_list],
+            }
+        )
+
+        df_count = pd.DataFrame({
+            'Canlı': [dna.name for dna in object_list],
+            'ADENİN': [a.sequence.count("A") for a in object_list],
+            'TİMİN': [a.sequence.count("T") for a in object_list],
+            'GUANİN': [a.sequence.count("G") for a in object_list],
+            'SİTOZİN': [a.sequence.count("C") for a in object_list],
+            'TOPLAM': [a.sequence.count("A") + a.sequence.count("T") + a.sequence.count("G") + a.sequence.count("C") for
+                       a in object_list],
+        })
+
+        nuc_count = DjangoDash(f"nucleotit_table", external_stylesheets=external_stylesheets,
+                               external_scripts=external_scripts, add_bootstrap_links=True)
+
+        nuc_count.layout = html.Div([
+            dag.AgGrid(
+                style={'width': '100%'},
+                rowData=df_count.to_dict("records"),
                 columnSize="sizeToFit",
                 defaultColDef={
                     "resizable": True,
@@ -58,49 +370,41 @@ def fastq_dash(request):
                     "undoRedoCellEditingLimit": 20,
                     "editType": "fullRow",
                 },
-            )
-
-    fastq_dash_app.layout = html.Div(
-        children=grid
-    )
-
-    return HttpResponseRedirect("/laboratory/bioinformatic/app/fastq_dash/")
-
-
-def stats_view(request, user):
-    global context
-    if request.user.is_anonymous:
-        from django.conf import settings
-        messages.error(request, "Lütfen Giriş Yapınız")
-        return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
-
-    object_list = RecordModel.objects.filter(records__user=request.user, records__tool="DOSYA OKUMA")
-
-    if object_list.exists():
-
-        df = pd.DataFrame(
-            {
-                "name": [dna.name for dna in object_list],
-                "DNA": [dna.seq_len for dna in object_list],
-                "PROTEİN": [pro.pro_seq_len for pro in object_list],
-                "%GC": [gc.gc for gc in object_list],
-            }
-        )
-
-        scatter_map = DjangoDash(f"l{request.user}r")
-
-        scatter_map.layout = html.Div([
-            dcc.Graph(
-                figure=px.scatter(
-                    data_frame=df, x="DNA", y="PROTEİN",
-                    title="DNA - PROTEİN Lineer Regrasyon", trendline="ols",
-                    labels={
-                        "dna_seq_len": "DNA SEKANS UZUNLUĞU",
-                        "pro_seq_len": "PROTEİN SEKANS UZUNLUĞU",
-                        'name': 'Canlı'
-                    },
-                )),
+                columnDefs=[
+                    {'field': 'Canlı', 'headerName': 'Canlı', 'filter': True},
+                    {'field': 'ADENİN', 'headerName': 'ADENİN', 'filter': True},
+                    {'field': 'TİMİN', 'headerName': 'TİMİN', 'filter': True},
+                    {'field': 'GUANİN', 'headerName': 'GUANİN', 'filter': True},
+                    {'field': 'SİTOZİN', 'headerName': 'SİTOZİN', 'filter': True},
+                    {'field': 'TOPLAM', 'headerName': 'TOPLAM', 'filter': True},
+                ]
+            ),
         ])
+
+        scatter_map = DjangoDash(f"l{request.user}r", external_stylesheets=external_stylesheets,
+                                 external_scripts=external_scripts, add_bootstrap_links=True)
+
+        scatter_map.layout = html.Div(
+
+            [
+
+                html.P('GRAFİK', className='fw-bolder text-primary mt-3'),
+
+                dcc.Graph(
+                    figure=px.scatter(
+                        data_frame=df, x="DNA", y="PROTEİN",
+                        title="DNA - PROTEİN Lineer Regrasyon",
+                        trendline="ols",
+                        labels={
+                            "dna_seq_len": "DNA SEKANS UZUNLUĞU",
+                            "pro_seq_len": "PROTEİN SEKANS UZUNLUĞU",
+                            'name': 'Canlı'
+                        },
+                    )
+                )
+
+            ], style={'margin': 50}
+        )
 
         context = {
 
@@ -120,13 +424,15 @@ def stats_view(request, user):
 
             ),
 
+            'url': HttpResponseRedirect(f"/laboratory/bioinformatic/app/l{request.user}r/").url
+
         }
 
     else:
 
         return render(request, "exception/page-404.html", {'msg': "Verilere Ulaşılamadı"})
 
-    return render(request, "bioinformatic/stats/stats.html", context)
+    return render(request, template_name="bioinformatic/stats/stats.html", context=context)
 
 
 class FileReadingResultView(generic.ListView):
@@ -172,200 +478,6 @@ class FileReadingResultView(generic.ListView):
         context['pagelist'] = pagelist
 
         return context
-
-
-def file_reading(request, user):
-    global file_read
-
-    if request.user.is_anonymous:
-        from django.conf import settings
-        messages.error(request, "Lütfen Giriş Yapınız")
-        return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
-
-    if BioinformaticModel.objects.filter(user=request.user, tool="DOSYA OKUMA").exists():
-        BioinformaticModel.objects.filter(user=request.user, tool="DOSYA OKUMA").delete()
-
-    form = FileReadingForm(request.POST or None, request.FILES or None)
-
-    if request.method == "POST":
-
-        if form.is_valid():
-
-            file_format = form.cleaned_data["reading_file_format"]
-            read_file = form.cleaned_data["file"]
-            molecule = form.cleaned_data["molecule"]
-
-            obj = BioinformaticModel.objects.create(
-                user=request.user,
-                molecule=molecule,
-                reading_file_format=file_format,
-                tool="DOSYA OKUMA"
-            )
-
-            file_obj = obj.records_files.create(
-                file=read_file
-            )
-
-            try:
-                file_read = SeqIO.parse(file_obj.file.path, file_format)
-
-                for record in file_read:
-
-                    if record.features:
-
-                        for feature in record.features:
-
-                            if feature.type == "CDS":
-
-                                if feature.qualifiers.get('translation') is None:
-
-                                    obj.record_content.create(
-                                        molecule_id=record.id,
-                                        name=record.name,
-                                        sequence=record.seq,
-                                        seq_len=len(record.seq),
-                                        gene=feature.qualifiers.get('gene'),
-                                        db_xrefs=feature.qualifiers.get('db_xref'),
-                                        taxonomy=record.annotations['taxonomy'],
-                                        description=record.description,
-                                        gc=GC(record.seq).__round__(2),
-                                    )
-
-                                else:
-
-                                    obj.record_content.create(
-                                        molecule_id=record.id,
-                                        name=record.name,
-                                        taxonomy=record.annotations['taxonomy'],
-                                        description=record.description,
-                                        gene=feature.qualifiers.get('gene'),
-                                        db_xrefs=feature.qualifiers.get('db_xref'),
-                                        protein_sequence=feature.qualifiers.get('translation')[0],
-                                        pro_seq_len=len(feature.qualifiers.get('translation')[0]),
-                                        sequence=record.seq,
-                                        seq_len=len(record.seq),
-                                        gc=GC(record.seq).__round__(2),
-                                    )
-
-                            else:
-
-                                obj.record_content.create(
-                                    molecule_id=record.id,
-                                    name=record.name,
-                                    sequence=record.seq,
-                                    seq_len=len(record.seq),
-                                    db_xrefs=record.dbxrefs,
-                                    taxonomy=record.annotations['taxonomy'],
-                                    description=record.description,
-                                    gc=GC(record.seq).__round__(2),
-                                )
-
-                    else:
-
-                        for record in file_read:
-                            obj.record_content.create(
-                                molecule_id=record.id,
-                                name=record.name,
-                                description=record.description,
-                                sequence=record.seq,
-                                db_xrefs=record.dbxrefs,
-                                annotations=record.annotations,
-                                features=record.features,
-                                gc=GC(record.seq).__round__(2),
-                                seq_len=len(record.seq),
-                            )
-
-            except UnicodeDecodeError:
-
-                try:
-
-                    import gzip
-
-                    file_read = SeqIO.parse(gzip.open(file_obj.file.path, 'rt', encoding='utf-8'), file_format)
-
-                    for record in file_read:
-
-                        if record.features:
-
-                            for feature in record.features:
-
-                                if feature.type == "CDS":
-                                    print("CSD")
-
-                                    if feature.qualifiers.get('translation') is None:
-
-                                        print("transla")
-
-                                        obj.record_content.create(
-                                            molecule_id=record.id,
-                                            name=record.name,
-                                            sequence=record.seq,
-                                            seq_len=len(record.seq),
-                                            gene=feature.qualifiers.get('gene'),
-                                            db_xrefs=feature.qualifiers.get('db_xref'),
-                                            taxonomy=record.annotations['taxonomy'],
-                                            description=record.description,
-                                            gc=GC(record.seq).__round__(2),
-                                        )
-
-                                    else:
-
-                                        print("Not trans")
-
-                                        obj.record_content.create(
-                                            molecule_id=record.id,
-                                            name=record.name,
-                                            taxonomy=record.annotations['taxonomy'],
-                                            description=record.description,
-                                            gene=feature.qualifiers.get('gene'),
-                                            db_xrefs=feature.qualifiers.get('db_xref'),
-                                            protein_sequence=feature.qualifiers.get('translation')[0],
-                                            pro_seq_len=len(feature.qualifiers.get('translation')[0]),
-                                            sequence=record.seq,
-                                            seq_len=len(record.seq),
-                                            gc=GC(record.seq).__round__(2),
-                                        )
-
-                                else:
-
-                                    print("not csd")
-
-                                    obj.record_content.create(
-                                        molecule_id=record.id,
-                                        name=record.name,
-                                        sequence=record.seq,
-                                        seq_len=len(record.seq),
-                                        db_xrefs=record.dbxrefs,
-                                        taxonomy=record.annotations['taxonomy'],
-                                        description=record.description,
-                                        gc=GC(record.seq).__round__(2),
-                                    )
-
-                        else:
-
-                            for record in file_read:
-
-                                if file_format == "fastq":
-
-                                    return redirect('bioinformatic:fastq_dash')
-
-                                else:
-                                    BioinformaticModel.objects.filter(user=request.user).delete()
-                                    return render(request, "exception/page-404.html",
-                                                  {'msg': 'Hatalı dosya türü', 'url': request.path})
-
-                except:
-                    BioinformaticModel.objects.filter(user=request.user).delete()
-                    return render(request, "exception/page-404.html", {'msg': 'Hatalı dosya türü', 'url': request.path})
-
-            file_obj.delete()
-            return HttpResponseRedirect(reverse("bioinformatic:file_reading_results", kwargs={'user': request.user}))
-
-        else:
-
-            form = FileReadingForm()
-
-    return render(request, "bioinformatic/form.html", {'form': form, 'title': 'DOSYA OKUMASI'})
 
 
 class FileReadDetailView(generic.DetailView):

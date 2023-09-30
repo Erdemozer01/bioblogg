@@ -4,7 +4,7 @@ from bioinformatic.choices import ALIGNMENT_MODE, MATRIS
 
 
 class FileReadingForm(forms.ModelForm):
-    file = forms.FileField()
+    file = forms.FileField(label='Dosya', help_text="Not : Max. dosya boyutu 25 mb olmalıdır.")
 
     class Meta:
         model = BioinformaticModel

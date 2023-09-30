@@ -50,7 +50,7 @@
 
                                     <td id="Bolter" headers="{{ object.description }}">
                                         <a href="{% url 'bioinformatic:file_reading_detail' object.records.user object.pk object.description|slugify  %}">
-                                            {{ object.description }}
+                                            {{ object.name }}
                                         </a>
                                     </td>
 

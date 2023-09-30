@@ -18,6 +18,15 @@
             <div class="row justify-content-center">
                 <div class="col-lg-12">
 
+                     <div class="mb-2">
+                        <div class="card-header pb-0">
+                            <h2 class="h5">Nükleotit</h2>
+                        </div>
+                        <div class="card-body">
+                            {% plotly_app name="nucleotit_table" ratio=0.378 %}
+                        </div>
+                    </div>
+
                     <div class="mb-2">
                         <div class="card-header pb-0">
                             <h2 class="h5">İstatislik verileri</h2>
@@ -46,19 +55,17 @@
                     </div>
 
                     <div class="mb-2">
-                        <div class="card-header pb-0">
-                            <h2 class="h5">Grafik</h2>
-                        </div>
+
                         <div class="card-body">
-                            {% plotly_app name="lr"|join:request.user ratio=0.44 %}
+                            {% plotly_app name="lr"|join:request.user ratio=0.6 %}
                         </div>
 
-                        <a href="/django_plotly_dash/app/l{{ request.user }}r" target="_blank">
+                        <a href="{{ url }}" target="_blank">
                             <button class="btn btn-primary float-right mr-5">Grafik &raquo;</button>
                         </a>
 
                         <a href="{% url 'bioinformatic:file_reading_results' request.user %}" target="_blank">
-                            <button class="btn btn-primary float-left ml-5">&laquo;Sonuçlar</button>
+                            <button class="btn btn-primary float-left ml-5">&laquo; Sonuçlar</button>
                         </a>
 
                     </div>
