@@ -21,6 +21,7 @@ urlpatterns = [
     path('file-reading/<user>/protein/', views.FileReadingView.ProteinPickView, name="file_reading_pick_protein"),
     path('istatistik-verileri/<user>/', views.FileReadingView.stats_view, name="stats"),
     path('fastq-istatistik/', views.FileReadingView.fastq_stats, name="fastq_stats"),
+    path('phylo-tree-creating/', views.FileReadingView.PhylogeneticTree, name="pyhlo_tree"),
 
     # Writing
     path('file-format-select/<user>/', views.FileWritingView.file_writing_format_select,

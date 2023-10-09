@@ -139,7 +139,7 @@ METHOD = (
     ('paml', 'Maximum Likelihood (PAML)'),
 )
 
-ALGORITMA = (
+TREE_ALGORITMA = (
     ('', '------------'),
     ('nj', 'Neighbor Joining'),
     ('upgma', 'UPGMA'),

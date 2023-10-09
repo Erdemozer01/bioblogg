@@ -1,6 +1,6 @@
 from django import forms
-from bioinformatic.models import BioinformaticModel
-from bioinformatic.choices import ALIGNMENT_MODE, MATRIS
+from bioinformatic.models import BioinformaticModel, FileModel
+from bioinformatic.choices import *
 
 
 class FileReadingForm(forms.ModelForm):
@@ -43,3 +43,13 @@ class AlignmentForm(forms.Form):
     }))
     seq1 = forms.CharField(widget=forms.Textarea(attrs={'placeholder': 'Sekans 1'}), label="Sekans 1")
     seq2 = forms.CharField(widget=forms.Textarea(attrs={'placeholder': 'Sekans 2'}), label="Sekans 2")
+
+
+class MultipleSeqAlignmentFileForm(forms.Form):
+    alignment_tools = forms.ChoiceField(label="Alingmen Araçları", choices=METHOD, widget=forms.Select(attrs={
+        'class': 'custom-select'
+    }))
+    tree_alg = forms.ChoiceField(label="Algoritma", choices=TREE_ALGORITMA, widget=forms.Select(attrs={
+        'class': 'custom-select'
+    }))
+    file = forms.FileField(label='Dosya', help_text="Not : Max. dosya boyutu 25 mb olmalıdır.")

@@ -165,7 +165,6 @@ FILE_UPLOAD_HANDLERS = [
     "django.core.files.uploadhandler.TemporaryFileUploadHandler",
 ]
 
-
 CKEDITOR_CONFIGS = {
     'default': {
         'toolbar': 'full',

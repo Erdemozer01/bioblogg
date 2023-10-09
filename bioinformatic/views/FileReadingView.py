@@ -1,11 +1,12 @@
 import os
 import gzip
+import subprocess, sys
 from Bio import bgzf
 from django.db.models import Q
 from django.shortcuts import *
 from django.views import generic
 from django.contrib import messages
-from bioinformatic.forms import FileReadingForm, TranslateForm, AlignmentForm
+from bioinformatic.forms import FileReadingForm, TranslateForm,MultipleSeqAlignmentFileForm
 from bioinformatic.models import BioinformaticModel, RecordModel, FileModel
 from Bio import SeqIO
 from Bio.SeqUtils import GC, gc_fraction
@@ -13,13 +14,184 @@ import pandas as pd
 import pandas as gen
 import plotly.express as px
 from django_plotly_dash import DjangoDash
-from dash import Dash, html, dcc, dash_table
+from dash import Dash, html, dcc, dash_table, Output, Input
 from pathlib import Path
 from Bio.Seq import Seq
 import dash_ag_grid as dag
 from collections import defaultdict
-
+from Bio.Align.Applications import ClustalwCommandline, ClustalOmegaCommandline, MuscleCommandline
+from Bio import AlignIO
+from Bio.Phylo.TreeConstruction import DistanceTreeConstructor, DistanceCalculator
+from Bio import Phylo
+from bioinformatic.generate_tree import generate_elements
+import dash_cytoscape as cyto
+from bioinformatic.choices import *
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
+
+
+def PhylogeneticTree(request):
+    global clustal_omega_exe, muscle_cline, tree_alg, elements, stylesheet, layout, styles
+    if request.user.is_anonymous:
+        from django.conf import settings
+        messages.error(request, "Lütfen Giriş Yapınız")
+        return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
+
+    external_stylesheets = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css']
+    external_scripts = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js']
+
+    if BioinformaticModel.objects.filter(user=request.user, tool="Filogenetik Ağaç").exists():
+        BioinformaticModel.objects.filter(user=request.user, tool="Filogenetik Ağaç").delete()
+
+    tree_obj = BioinformaticModel.objects.create(user=request.user, tool="Filogenetik Ağaç")
+
+    form = MultipleSeqAlignmentFileForm(request.POST or None, request.FILES or None)
+
+    if request.method == "POST":
+
+        if request.FILES['file'].size > 25 * 1024 * 1024:
+            messages.error(request, "Dosya boyutu 25mb dan fazladır.")
+            return HttpResponseRedirect(request.path)
+
+        if form.is_valid():
+            in_file = tree_obj.records_files.create(file=request.FILES['file'])
+            out_file = tree_obj.records_files.create(file=f"{request.user}_alignment.fasta")
+            aligned_file = tree_obj.records_files.create(file=f"{request.user}_aligned.fasta")
+            stats_file = tree_obj.records_files.create(file=f"{request.user}_stats.txt")
+            scores_file = tree_obj.records_files.create(file=f"{request.user}_scores.txt")
+            xml_tree_file = tree_obj.records_files.create(file=f"{request.user}_tree.xml")
+            cluster_file = tree_obj.records_files.create(file=f"{request.user}_cluster.csv")
+
+            tools = form.cleaned_data['alignment_tools']
+
+            tree_alg = form.cleaned_data['tree_alg']
+
+            tree_app = DjangoDash(f'{tree_alg}',
+                                           external_stylesheets=external_stylesheets,
+                                           external_scripts=external_scripts,
+                                           add_bootstrap_links=True,
+                                           title=f'{tree_alg} AĞACI OLUŞTRMA'.upper()
+                                           )
+            if tools == "muscle":
+
+                if sys.platform.startswith('win32'):
+                    muscle_cline = os.path.join(BASE_DIR, 'bioinformatic', 'programs',
+                                                     "muscle3.8.31_i86win32.exe")
+                elif sys.platform.startswith('linux'):
+                    muscle_cline = os.path.join(BASE_DIR, 'bioinformatic', 'programs',
+                                                     'muscle3.8.425_i86linux32')
+
+                muscle_cline_tool = MuscleCommandline(
+                    muscle_cline,
+                    input=in_file.file.path,
+                    out=out_file.file.path,
+
+                )
+
+                if sys.platform.startswith('win32'):
+                    assert os.path.isfile(muscle_cline)
+                    stdout, stderr = muscle_cline_tool()
+
+                elif sys.platform.startswith('linux'):
+                    muscle_exe = os.path.join(BASE_DIR, 'bioinformatic', 'programs', 'muscle3.8.425_i86linux32')
+                    muscle_result = subprocess.check_output(
+                        [muscle_exe, "-in", in_file.file.path, "-out", out_file.file.path])
+
+                alignment = AlignIO.read(handle=out_file.file.path, format='fasta')
+
+                calculator = DistanceCalculator('identity')
+
+                constructor = DistanceTreeConstructor(calculator, method=tree_alg)
+
+                trees = constructor.build_tree(alignment)
+
+                Phylo.write(trees=trees, file=xml_tree_file.file.path, format="phyloxml")
+
+                tree = Phylo.read(xml_tree_file.file.path, 'phyloxml')
+
+                nodes, edges = generate_elements(tree)
+
+                elements = nodes + edges
+
+                layout = {'name': 'preset'}
+
+                stylesheet = [
+                    {
+                        'selector': '.nonterminal',
+                        'style': {
+                            'label': 'data(confidence)',
+                            'background-opacity': 0,
+                            "text-halign": "left",
+                            "text-valign": "top",
+                        }
+                    },
+                    {
+                        'selector': '.support',
+                        'style': {'background-opacity': 0}
+                    },
+                    {
+                        'selector': 'edge',
+                        'style': {
+                            "source-endpoint": "inside-to-node",
+                            "target-endpoint": "inside-to-node",
+                        }
+                    },
+                    {
+                        'selector': '.terminal',
+                        'style': {
+                            'label': 'data(name)',
+                            'width': 10,
+                            'height': 10,
+                            "text-valign": "center",
+                            "text-halign": "right",
+                            'background-color': '#222222'
+                        }
+                    }
+                ]
+
+            tree_app.layout = html.Div([
+
+                html.P("FİLOGENETİK AĞAÇ OLUŞTURMA", className="text-primary fw-bolder mb-4"),
+
+                html.P(f"{tree_alg} AĞACI".upper(), className="text-primary fw-bolder mb-4"),
+
+                cyto.Cytoscape(
+                    id='cytoscape-usage-phylogeny',
+                    elements=elements,
+                    stylesheet=stylesheet,
+                    layout=layout,
+                    style={
+                        'height': '95vh',
+                        'width': '100%'
+                    }
+                ),
+            ], className="m-4")
+
+            tree_obj.delete()
+
+            @tree_app.callback(
+                Output('cytoscape-usage-phylogeny', 'stylesheet'),
+                Input('cytoscape-usage-phylogeny', 'mouseoverEdgeData'))
+            def color_children(edgeData):
+                if edgeData is None:
+                    return stylesheet
+
+                if 's' in edgeData['source']:
+                    val = edgeData['source'].split('s')[0]
+                else:
+                    val = edgeData['source']
+
+                children_style = [{
+                    'selector': 'edge[source *= "{}"]'.format(val),
+                    'style': {
+                        'line-color': 'blue'
+                    }
+                }]
+
+                return stylesheet + children_style
+
+        return HttpResponseRedirect(f"/laboratory/bioinformatic/app/{tree_alg}")
+
+    return render(request, 'bioinformatic/form.html', {'form': form, 'title': 'Filogenetik ağaç oluşturma'})
 
 
 def file_reading(request, user):
@@ -38,12 +210,11 @@ def file_reading(request, user):
 
     if request.method == "POST":
 
-        if request.FILES['file'].size > 100 * 1024 * 1024:
-            messages.error(request, 'Dosya boyutu en en fazla 5 mb dan fazladır.')
+        if request.FILES['file'].size > 25 * 1024 * 1024:
+            messages.error(request, "Dosya boyutu en fazla 25mb olmalıdır.")
             return HttpResponseRedirect(request.path)
 
         if form.is_valid():
-
             file_format = form.cleaned_data["reading_file_format"]
             file = form.cleaned_data["file"]
             molecule = form.cleaned_data["molecule"]
@@ -59,6 +230,8 @@ def file_reading(request, user):
 
             handle = open(file_obj.file.path, 'r', encoding='utf-8')
 
+            records = SeqIO.parse(handle, file_format)
+
             file_reading_dash_app = DjangoDash(
                 name=f"{file_format}-dosya-sonuc",
                 external_stylesheets=external_stylesheets,
@@ -66,175 +239,290 @@ def file_reading(request, user):
                 title=f"{file_format} dosyası okuması sonuçları".upper()
             )
 
-            try:
-                records = SeqIO.parse(handle, file_format)
+            if file_format == "fasta":
 
-            except UnicodeDecodeError:
+                df_TABLE = pd.DataFrame(
+                    {
+                        'id': str(rec.id),
+                        'description': str(rec.description),
+                        'seq': str(rec.seq),
+                        'seq_len': len(str(rec.seq)),
+                        'gc': gc_fraction(rec.seq) * 100
+                    } for rec in records)
+
+                file_reading_dash_app.layout = html.Div(
+                    children=[
+
+                        html.H4("Fasta dosyası okuması", className="fw-bolder text-primary m-2 "),
+
+                        html.Hr(className="border border-danger"),
+
+                        dag.AgGrid(
+                            id="df-table",
+                            style={'width': '100%'},
+                            rowData=df_TABLE.to_dict("records"),
+                            columnDefs=[
+                                {'field': 'id', 'headerName': 'İD', 'filter': True},
+                                {'field': 'description', 'headerName': 'Tanım', 'filter': True},
+                                {'field': 'seq', 'headerName': 'SEKANSLAR', 'filter': True},
+                                {'field': 'seq_len', 'headerName': 'Sekans uzunlukları', 'filter': True},
+                                {'field': 'gc', 'headerName': '%GC', 'filter': True},
+                            ],
+                            columnSize="sizeToFit",
+                            defaultColDef={
+                                "resizable": True,
+                                "sortable": True,
+                                "filter": True,
+                                'editable': True,
+                                "minWidth": 125
+                            },
+                            dashGridOptions={
+                                'pagination': True,
+                                "rowSelection": "multiple",
+                                "undoRedoCellEditing": True,
+                                "undoRedoCellEditingLimit": 20,
+                                "editType": "fullRow",
+                            },
+                        ),
+
+                        html.Hr(),
+
+                        dcc.Graph(
+                            figure=px.pie(
+                                data_frame=df_TABLE.to_dict("records"),
+                                names=[j for seq in df_TABLE['seq'] for j in seq],
+                                labels={'seq': "Nükleotit"},
+                            ).update_traces(
+                                textposition='auto',
+                                textinfo='value+percent+label',
+                                legendgrouptitle={'text': 'Nükleotitler'}
+                            )
+                        ),
+
+                        html.Hr(className="border border-danger"),
+                    ],
+
+                    style={"margin": 30},
+                )
+
+            elif file_format == "genbank":
+
+                qualifiers = []
+
+                table = []
+
+                for record in records:
+                    table.append({'İD': record.id, 'Tanım': record.description, 'Sekans': str(record.seq),
+                                  'Sekans Uzunluğu': len(str(record.seq)), '%GC': gc_fraction(str(record.seq))})
+                    if record.features:
+                        for feature in record.features:
+                            qualifiers.append(feature.qualifiers)
+
+                df_qualifiers = pd.DataFrame(i for i in qualifiers)
+
+                file_reading_dash_app.layout = html.Div(
+                    children=[
+
+                        html.H4("Genbank dosyası okuması", className="fw-bolder text-primary m-2 "),
+
+                        html.Hr(className="border border-danger"),
+
+                        dag.AgGrid(
+                            id="df-table",
+                            style={'width': '100%'},
+                            rowData=pd.DataFrame(table).to_dict("records"),
+                            columnDefs=[{"field": str(i)} for i in pd.DataFrame(table).columns],
+                            columnSize="sizeToFit",
+                            defaultColDef={
+                                "resizable": True,
+                                "sortable": True,
+                                "filter": True,
+                                'editable': True,
+                                "minWidth": 125
+                            },
+                            dashGridOptions={
+                                'pagination': True,
+                                "rowSelection": "multiple",
+                                "undoRedoCellEditing": True,
+                                "undoRedoCellEditingLimit": 20,
+                                "editType": "fullRow",
+                            },
+                        ),
+
+                        html.Hr(),
+
+                        dag.AgGrid(
+                            id="df-table",
+                            style={'width': '100%'},
+                            rowData=df_qualifiers.to_dict("records"),
+                            columnDefs=[{"field": str(i)} for i in df_qualifiers.columns],
+                            columnSize="sizeToFit",
+                            defaultColDef={
+                                "resizable": True,
+                                "sortable": True,
+                                "filter": True,
+                                'editable': True,
+                                "minWidth": 125
+                            },
+                            dashGridOptions={
+                                'pagination': True,
+                                "rowSelection": "multiple",
+                                "undoRedoCellEditing": True,
+                                "undoRedoCellEditingLimit": 20,
+                                "editType": "fullRow",
+                            },
+                        ),
+
+                        html.Hr(),
+
+                        dcc.Graph(
+                            figure=px.pie(
+                                data_frame=pd.DataFrame(table).to_dict("records"),
+                                names=[j for seq in pd.DataFrame(table)['Sekans'] for j in seq],
+
+                            ).update_traces(
+                                textposition='auto',
+                                textinfo='value+percent+label',
+                                legendgrouptitle={'text': 'Nükleotitler'},
+                            )
+                        ),
+
+                        html.Hr(className="border border-danger"),
+
+                    ], style={"margin": 30},
+                )
+
+            elif file_format == "fastq":
+                n_cnt = defaultdict(int)
+
+                cnt_qual = defaultdict(int)
+
+                qual_pos = defaultdict(list)
+
+                handle = gzip.open(file_obj.file.path, 'rt', encoding='utf-8')
+
                 try:
-                    records = SeqIO.parse(gzip.open(file_obj.file.path, 'rt', encoding='utf-8'), file_format)
+                    records = SeqIO.parse(handle, file_format)
 
-                except:
-                    obj.delete()
-                    return render(request, "exception/page-404.html", {'msg': "Hatalı dosya türü"})
-            try:
-                if file_format == "fasta":
+                    for rec in records:
+                        for i, letter in enumerate(rec.seq):
+                            pos = i + 1
+                            if letter == 'N':
+                                n_cnt[pos] += 1
+                        for pos, quality in enumerate(rec.letter_annotations['phred_quality']):
+                            cnt_qual[quality] += 1
+                            if pos < 25 or quality == 40:
+                                continue
+                            pos = pos + 1
+                            qual_pos[pos].append(quality)
 
-                    df_TABLE = pd.DataFrame(
-                        {
-                            'id': str(rec.id),
-                            'description': str(rec.description),
-                            'seq': str(rec.seq),
-                            'seq_len': len(str(rec.seq)),
-                            'gc': gc_fraction(rec.seq) * 100
-                        } for rec in records)
+                except gzip.BadGzipFile:
 
-                    file_reading_dash_app.layout = html.Div(
-                        children=[
+                    handle = open(file_obj.file.path, 'r', encoding='utf-8')
+                    records = SeqIO.parse(handle, file_format)
 
-                            html.H4("Fasta dosyası okuması", className="fw-bolder text-primary m-2 "),
+                    for rec in records:
+                        for i, letter in enumerate(rec.seq):
+                            pos = i + 1
+                            if letter == 'N':
+                                n_cnt[pos] += 1
+                        for pos, quality in enumerate(rec.letter_annotations['phred_quality']):
+                            cnt_qual[quality] += 1
+                            if pos < 25 or quality == 40:
+                                continue
+                            pos = pos + 1
+                            qual_pos[pos].append(quality)
 
-                            html.Hr(className="border border-danger"),
+                tot = sum(cnt_qual.values())
+                seq_len = max(n_cnt.keys())
+                positions = range(1, seq_len + 1)
 
-                            dag.AgGrid(
-                                id="df-table",
-                                style={'width': '100%'},
-                                rowData=df_TABLE.to_dict("records"),
-                                columnDefs=[
-                                    {'field': 'id', 'headerName': 'İD', 'filter': True},
-                                    {'field': 'description', 'headerName': 'Tanım', 'filter': True},
-                                    {'field': 'seq', 'headerName': 'SEKANSLAR', 'filter': True},
-                                    {'field': 'seq_len', 'headerName': 'Sekans uzunlukları', 'filter': True},
-                                    {'field': 'gc', 'headerName': '%GC', 'filter': True},
-                                ],
-                                columnSize="sizeToFit",
-                                defaultColDef={
-                                    "resizable": True,
-                                    "sortable": True,
-                                    "filter": True,
-                                    'editable': True,
-                                    "minWidth": 125
-                                },
-                                dashGridOptions={
-                                    'pagination': True,
-                                    "rowSelection": "multiple",
-                                    "undoRedoCellEditing": True,
-                                    "undoRedoCellEditingLimit": 20,
-                                    "editType": "fullRow",
-                                },
-                            ),
+                df_table = pd.DataFrame([[qual, 100. * cnt / tot, cnt] for qual, cnt in cnt_qual.items()],
+                                        columns=['KALİTE SKORLARI', 'YÜZDE', 'SAYISI'])
 
-                            html.Hr(),
+                file_reading_dash_app.layout = html.Div(
+                    [
 
-                            dcc.Graph(
-                                figure=px.pie(
-                                    data_frame=df_TABLE.to_dict("records"),
-                                    names=[j for seq in df_TABLE['seq'] for j in seq],
-                                    labels={'seq': "Nükleotit"},
-                                ).update_traces(
-                                    textposition='auto',
-                                    textinfo='value+percent+label',
-                                    legendgrouptitle={'text': 'Nükleotitler'}
-                                )
-                            ),
+                        html.H4(f'{file_format} DOSYASI SONUÇLARI'.upper(), className="text-primary"),
 
-                            html.Hr(className="border border-danger"),
-                        ],
+                        html.Hr(),
 
-                        style={"margin": 30},
-                    )
+                        html.Button("Tabloyu indir", id="csv-button", n_clicks=0,
+                                    className="btn btn-outline-primary btn-sm float-sm-end mb-1"),
 
-                elif file_format == "genbank":
+                        html.P("TABLO"),
 
-                    qualifiers = []
+                        dag.AgGrid(
+                            style={'width': '100%'},
+                            id="export-data-grid",
+                            rowData=df_table.to_dict("records"),
+                            columnSize="sizeToFit",
+                            defaultColDef={
+                                "resizable": True,
+                                "sortable": True,
+                                "filter": True,
+                                'editable': True,
+                                "minWidth": 125
+                            },
+                            dashGridOptions={
+                                'pagination': True,
+                                "rowSelection": "multiple",
+                                "undoRedoCellEditing": True,
+                                "undoRedoCellEditingLimit": 20,
+                                "editType": "fullRow",
+                            },
+                            columnDefs=[{'field': f'{col}', 'headerName': f'{col}', 'filter': True} for col in
+                                        df_table.columns],
+                            csvExportParams={
+                                "fileName": "table_data.csv",
+                            },
+                        ),
 
-                    table = []
+                        html.Hr(),
 
-                    for record in records:
-                        table.append({'İD': record.id, 'Tanım': record.description, 'Sekans': str(record.seq),
-                                      'Sekans Uzunluğu': len(str(record.seq)), '%GC': gc_fraction(str(record.seq))})
-                        if record.features:
-                            for feature in record.features:
-                                qualifiers.append(feature.qualifiers)
+                        html.P("Grafik Seçiniz", className="fw-bolder ml-1"),
 
-                    df_qualifiers = pd.DataFrame(i for i in qualifiers)
+                        dcc.Dropdown(
+                            id="select",
+                            options={
+                                "distribution_n": "N dağılım grafiği",
+                                "phred_score": "Phred skor dağılım grafiği",
+                            },
+                        ),
 
-                    file_reading_dash_app.layout = html.Div(
-                        children=[
+                        html.Div(id="figure-output", className="mt-3"),
 
-                            html.H4("Genbank dosyası okuması", className="fw-bolder text-primary m-2 "),
+                    ], className="m-5"
+                )
 
-                            html.Hr(className="border border-danger"),
+                @file_reading_dash_app.callback(
+                    Output("figure-output", "children"),
+                    Input("select", "value"),
+                )
+                def figure(select):
+                    if select == "distribution_n":
+                        return dcc.Graph(figure=px.line(x=positions, y=[n_cnt[x] for x in positions]))
+                    elif select == "phred_score":
+                        vps = []
+                        poses = list(qual_pos.keys())
+                        poses.sort()
+                        for pos in poses:
+                            vps.append(qual_pos[pos])
+                        return dcc.Graph(
+                            figure=px.box(data_frame=vps, y=poses,
+                                          labels={'variable': 'Nükleotit Pozisyonu', 'value': 'PHERED skorları'},
+                                          title='PHERED skorları dağılımı')
+                        )
 
-                            dag.AgGrid(
-                                id="df-table",
-                                style={'width': '100%'},
-                                rowData=pd.DataFrame(table).to_dict("records"),
-                                columnDefs=[{"field": str(i)} for i in pd.DataFrame(table).columns],
-                                columnSize="sizeToFit",
-                                defaultColDef={
-                                    "resizable": True,
-                                    "sortable": True,
-                                    "filter": True,
-                                    'editable': True,
-                                    "minWidth": 125
-                                },
-                                dashGridOptions={
-                                    'pagination': True,
-                                    "rowSelection": "multiple",
-                                    "undoRedoCellEditing": True,
-                                    "undoRedoCellEditingLimit": 20,
-                                    "editType": "fullRow",
-                                },
-                            ),
-
-                            html.Hr(),
-
-                            dag.AgGrid(
-                                id="df-table",
-                                style={'width': '100%'},
-                                rowData=df_qualifiers.to_dict("records"),
-                                columnDefs=[{"field": str(i)} for i in df_qualifiers.columns],
-                                columnSize="sizeToFit",
-                                defaultColDef={
-                                    "resizable": True,
-                                    "sortable": True,
-                                    "filter": True,
-                                    'editable': True,
-                                    "minWidth": 125
-                                },
-                                dashGridOptions={
-                                    'pagination': True,
-                                    "rowSelection": "multiple",
-                                    "undoRedoCellEditing": True,
-                                    "undoRedoCellEditingLimit": 20,
-                                    "editType": "fullRow",
-                                },
-                            ),
-
-                            html.Hr(),
-
-                            dcc.Graph(
-                                figure=px.pie(
-                                    data_frame=pd.DataFrame(table).to_dict("records"),
-                                    names=[j for seq in pd.DataFrame(table)['Sekans'] for j in seq],
-
-                                ).update_traces(
-                                    textposition='auto',
-                                    textinfo='value+percent+label',
-                                    legendgrouptitle={'text': 'Nükleotitler'},
-                                )
-                            ),
-
-                            html.Hr(className="border border-danger"),
-
-                        ], style={"margin": 30},
-                    )
-
-            finally:
-
-                handle.close()
-
-                file_obj.delete()
+                @file_reading_dash_app.callback(
+                    Output("export-data-grid", "exportDataAsCsv"),
+                    Input("csv-button", "n_clicks"),
+                    prevent_initial_call=True,
+                )
+                def export_data_as_csv(n_clicks):
+                    if n_clicks:
+                        return True
+                    return False
 
             return HttpResponseRedirect(f"/laboratory/bioinformatic/app/{file_format}-dosya-sonuc")
 
@@ -243,6 +531,7 @@ def file_reading(request, user):
             form = FileReadingForm()
 
     return render(request, "bioinformatic/form.html", {'form': form, 'title': 'DOSYA OKUMASI'})
+
 
 def fastq_stats(request):
     external_stylesheets = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css']

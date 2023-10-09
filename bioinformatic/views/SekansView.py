@@ -4,13 +4,20 @@ import pandas as pd
 import plotly.express as px
 from Bio.Seq import Seq
 from Bio.SeqUtils import GC, gc_fraction
-from dash import html, dcc, Input, Output
+from dash import html, dcc, Input, Output, ctx
 from django.shortcuts import *
 from django_plotly_dash import DjangoDash
 import dash_ag_grid as dag
 import plotly.figure_factory as ff
 from Bio import Align
 from Bio.Align import substitution_matrices
+from bioinformatic.models.bioinformatic import BioinformaticModel
+
+from django.contrib import messages
+
+
+from Bio import Phylo, SeqIO
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -43,7 +50,7 @@ def alignment_score(request):
 
                     html.P("Alignment MATRİX", style={'marginTop': '10px'}, className='text-success fw-bolder'),
 
-                    dcc.Dropdown(id="mat", options={
+                    dcc.Dropdown(id="matrix", options={
                         'BENNER22': 'BENNER22',
                         'BENNER6': 'BENNER6',
                         'BENNER74': 'BENNER74',
@@ -72,18 +79,18 @@ def alignment_score(request):
 
                     html.P("Hedef sekans", style={'marginTop': '10px'}, className='text-success fw-bolder'),
 
-                    dcc.Textarea(id="seq1", placeholder="Sekans Giriniz",
+                    dcc.Textarea(id="target_seq", placeholder="Sekans Giriniz",
                                  style={'marginRight': '10px', 'width': '100%', 'height': '100px'}),
 
                     html.P("Sorgu sekans", style={'marginTop': '10px'}, className='text-success fw-bolder'),
 
-                    dcc.Textarea(id="seq2", placeholder="Sekans Giriniz",
+                    dcc.Textarea(id="query_seq", placeholder="Sekans Giriniz",
                                  style={'marginRight': '10px', 'width': '100%', 'height': '100px'}),
 
                 ], style={'margin': 20},
             ),
 
-            html.Div(id="output"),
+            html.Div(id="output", style={'margin': 20}),
 
         ], style={'marginTop': "2%"}
     )
@@ -91,65 +98,60 @@ def alignment_score(request):
     @alignment_score.callback(
         Output("output", "children"),
         Input("mod", "value"),
-        Input("mat", "value"),
-        Input("seq1", "value"),
-        Input("seq2", "value"),
+        Input("matrix", "value"),
+        Input("target_seq", "value"),
+        Input("query_seq", "value"),
     )
-    def update_output(mod, mat, seq1, seq2):
-        seq1 = str(seq1).replace(" ", '')
-        seq1 = str(seq1).replace("\n", "")
-        seq1 = str(seq1).replace("\t", "")
-        seq1 = str(seq1).replace("\r", "")
-        seq1 = str(seq1).replace("0", "")
-        seq1 = str(seq1).replace("1", "")
-        seq1 = str(seq1).replace("2", "")
-        seq1 = str(seq1).replace("3", "")
-        seq1 = str(seq1).replace("4", "")
-        seq1 = str(seq1).replace("5", "")
-        seq1 = str(seq1).replace("6", "")
-        seq1 = str(seq1).replace("7", "")
-        seq1 = str(seq1).replace("8", "")
-        seq1 = str(seq1).replace("9", "")
-        seq1 = str(seq1).upper()
+    def update_output(mod, matrix, target_seq, query_seq):
+        target_seq = str(target_seq).replace(" ", '')
+        target_seq = str(target_seq).replace("\n", "")
+        target_seq = str(target_seq).replace("\t", "")
+        target_seq = str(target_seq).replace("\r", "")
+        target_seq = str(target_seq).replace("0", "")
+        target_seq = str(target_seq).replace("1", "")
+        target_seq = str(target_seq).replace("2", "")
+        target_seq = str(target_seq).replace("3", "")
+        target_seq = str(target_seq).replace("4", "")
+        target_seq = str(target_seq).replace("5", "")
+        target_seq = str(target_seq).replace("6", "")
+        target_seq = str(target_seq).replace("7", "")
+        target_seq = str(target_seq).replace("8", "")
+        target_seq = str(target_seq).replace("9", "")
+        target_seq = str(target_seq).upper()
 
-        seq2 = str(seq2).replace(" ", "")
-        seq2 = str(seq2).replace("\n", "")
-        seq2 = str(seq2).replace("\t", "")
-        seq2 = str(seq2).replace("\r", "")
-        seq2 = str(seq2).replace("0", "")
-        seq2 = str(seq2).replace("1", "")
-        seq2 = str(seq2).replace("2", "")
-        seq2 = str(seq2).replace("3", "")
-        seq2 = str(seq2).replace("4", "")
-        seq2 = str(seq2).replace("5", "")
-        seq2 = str(seq2).replace("6", "")
-        seq2 = str(seq2).replace("7", "")
-        seq2 = str(seq2).replace("8", "")
-        seq2 = str(seq2).replace("9", "")
-        seq2 = str(seq2).upper()
+        query_seq = str(query_seq).replace(" ", "")
+        query_seq = str(query_seq).replace("\n", "")
+        query_seq = str(query_seq).replace("\t", "")
+        query_seq = str(query_seq).replace("\r", "")
+        query_seq = str(query_seq).replace("0", "")
+        query_seq = str(query_seq).replace("1", "")
+        query_seq = str(query_seq).replace("2", "")
+        query_seq = str(query_seq).replace("3", "")
+        query_seq = str(query_seq).replace("4", "")
+        query_seq = str(query_seq).replace("5", "")
+        query_seq = str(query_seq).replace("6", "")
+        query_seq = str(query_seq).replace("7", "")
+        query_seq = str(query_seq).replace("8", "")
+        query_seq = str(query_seq).replace("9", "")
+        query_seq = str(query_seq).upper()
 
         aligner = Align.PairwiseAligner()
 
         aligner.mode = str(mod)
 
-        aligner.substitution_matrix = substitution_matrices.load(str(mat))
+        aligner.substitution_matrix = substitution_matrices.load(str(matrix))
 
-        alignments = aligner.align(seq1, seq2)
+        alignments = aligner.align(target_seq, query_seq)
 
         alignment = alignments[0]
 
         count = alignment.counts()
 
-        values = f'Boşluk : {count.gaps}  Benzerlik : {count.identities},  Eşleşmeyen: {count.mismatches},\n\nMatriks: {mat},\n\n {alignment.substitutions}\nMOD: {str(mod).upper()}\n\nScore: {alignments.score}\n\nAlignment:\n\n' + str(
+        values = f'Boşluk : {count.gaps}  Benzerlik : {count.identities},  Eşleşmeyen: {count.mismatches},\n\nMatriks: {matrix}\n\n {alignment.substitutions}\nMOD: {str(mod).upper()}\n\nScore: {alignments.score}\n\nAlignment:\n\n' + str(
             alignment)
 
         return html.Div(
             [
-
-                html.P(
-                    f"Hedef sekans uzunluğu: {len(seq1)}, %GC: {GC(seq1)}, Sorgu sekans uzunluğu: {len(seq2)}, %GC: {GC(seq2)}",
-                    style={'marginTop': '20px'}
-                ),
 
                 html.Hr(),
 
@@ -160,17 +162,12 @@ def alignment_score(request):
                             className='btn btn-primary mr-2'),
                 dcc.Download(id="download-align"),
 
-                html.Div(
-                    [
-                        dcc.Textarea(id='align-textarea', value=values, readOnly=True,
-                                     style={'width': '100%', 'height': '500px'}),
-                    ]
-                ),
+                dcc.Textarea(id='align-textarea',
+                             value=f"Hedef sekans uzunluğu: {len(target_seq)}, %GC: {gc_fraction(target_seq)}, Sorgu sekans uzunluğu: {len(query_seq)}, %GC: {gc_fraction(query_seq)}\n\n" + values,
+                             readOnly=True,
+                             style={'width': '100%', 'height': '500px'}),
 
-                html.Hr(),
-                html.Br(),
-
-            ], id='output', style={'margin': 20}
+            ], id='output',
 
         )
 
@@ -399,55 +396,54 @@ def translation(request):
             trans_seq = Seq(sekans).translate(table=int(table)).replace("*", "")
 
         if trans_seq:
-
             return html.Div([
 
-            html.Hr(),
+                html.Hr(),
 
-            html.H4("SONUÇLAR"),
+                html.H4("SONUÇLAR"),
 
-            html.Hr(),
+                html.Hr(),
 
-            html.P(
-                f" Girilen sekans uzunluğu: {len(sekans)}, %GC: {gc_fraction(sekans)}," +
-                f"  A: {sekans.count('A')}, T: {sekans.count('T')}, G: {sekans.count('G')}, C: {sekans.count('C')},"
-                f"  Protein Sekans Uzunluğu: {len(trans_seq)}, Stop kodonları sayısı: {trans_seq.count('*')}",
-                style={'marginTop': '20px'}, className="fw-bolder"
-            ),
+                html.P(
+                    f" Girilen sekans uzunluğu: {len(sekans)}, %GC: {gc_fraction(sekans)}," +
+                    f"  A: {sekans.count('A')}, T: {sekans.count('T')}, G: {sekans.count('G')}, C: {sekans.count('C')},"
+                    f"  Protein Sekans Uzunluğu: {len(trans_seq)}, Stop kodonları sayısı: {trans_seq.count('*')}",
+                    style={'marginTop': '20px'}, className="fw-bolder"
+                ),
 
-            html.Hr(),
+                html.Hr(),
 
-            html.Label("Komplement", style={'font-weight': 'bold'}),
+                html.Label("Komplement", style={'font-weight': 'bold'}),
 
-            dcc.Textarea(
-                value=str(Seq(sekans).complement()),
-                className="form-control"
-            ),
+                dcc.Textarea(
+                    value=str(Seq(sekans).complement()),
+                    className="form-control"
+                ),
 
-            html.Label("Reverse Komplement", style={'font-weight': 'bold'}),
+                html.Label("Reverse Komplement", style={'font-weight': 'bold'}),
 
-            dcc.Textarea(
-                value=str(Seq(sekans).reverse_complement()),
-                className="form-control"
-            ),
+                dcc.Textarea(
+                    value=str(Seq(sekans).reverse_complement()),
+                    className="form-control"
+                ),
 
-            html.Label("Transcribe", style={'font-weight': 'bold'}),
+                html.Label("Transcribe", style={'font-weight': 'bold'}),
 
-            dcc.Textarea(
-                value=str(Seq(sekans).transcribe()),
-                className="form-control"
-            ),
+                dcc.Textarea(
+                    value=str(Seq(sekans).transcribe()),
+                    className="form-control"
+                ),
 
-            html.Label(f"Protein Sekansı", style={'font-weight': 'bold'}),
+                html.Label(f"Protein Sekansı", style={'font-weight': 'bold'}),
 
-            dcc.Textarea(
-                value=str(trans_seq),
-                className="form-control"
-            ),
+                dcc.Textarea(
+                    value=str(trans_seq),
+                    className="form-control"
+                ),
 
-            html.Hr(),
+                html.Hr(),
 
-        ])
+            ])
 
     return HttpResponseRedirect("/laboratory/bioinformatic/app/translate_dna/")
 
@@ -597,12 +593,8 @@ def create_frame_seq(request):
 
             html.P("Sekans"),
 
-            html.Div(
-                [
-                    dcc.Textarea(id="sekans", placeholder="Sekans Giriniz",
-                                 style={'marginRight': '10px', 'width': '100%', 'height': '200px'}),
-                ]
-            ),
+            dcc.Textarea(id="sekans", placeholder="Sekans Giriniz",
+                         className="form-control mb-1", style={'height': 200}),
 
             html.Div(
                 [
@@ -621,7 +613,7 @@ def create_frame_seq(request):
             ),
 
             html.Div(id="output"),
-        ], style={'marginTop': "2%"}
+        ], style={'margin': 30}
     )
 
     @frame_seq_app.callback(
@@ -693,6 +685,7 @@ def create_frame_seq(request):
                 ),
                 html.Div(id="quickstart-output"),
             ]),
+
             html.Hr(),
         ]),
 
@@ -713,3 +706,6 @@ def create_frame_seq(request):
         ),
 
     return HttpResponseRedirect("/laboratory/bioinformatic/app/create_frame_seq/")
+
+
+
