@@ -11,7 +11,6 @@ import dash_ag_grid as dag
 import plotly.figure_factory as ff
 from Bio import Align
 from Bio.Align import substitution_matrices
-from bioinformatic.models.bioinformatic import BioinformaticModel
 
 from django.contrib import messages
 

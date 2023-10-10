@@ -1,17 +1,18 @@
 import os
 import gzip
 import subprocess, sys
+
+import Bio.Application
 from Bio import bgzf
 from django.db.models import Q
 from django.shortcuts import *
 from django.views import generic
 from django.contrib import messages
-from bioinformatic.forms import FileReadingForm, TranslateForm,MultipleSeqAlignmentFileForm
+from bioinformatic.forms import FileReadingForm, TranslateForm, MultipleSeqAlignmentFileForm
 from bioinformatic.models import BioinformaticModel, RecordModel, FileModel
 from Bio import SeqIO
 from Bio.SeqUtils import GC, gc_fraction
 import pandas as pd
-import pandas as gen
 import plotly.express as px
 from django_plotly_dash import DjangoDash
 from dash import Dash, html, dcc, dash_table, Output, Input
@@ -23,14 +24,16 @@ from Bio.Align.Applications import ClustalwCommandline, ClustalOmegaCommandline,
 from Bio import AlignIO
 from Bio.Phylo.TreeConstruction import DistanceTreeConstructor, DistanceCalculator
 from Bio import Phylo
-from bioinformatic.generate_tree import generate_elements
 import dash_cytoscape as cyto
-from bioinformatic.choices import *
+from bioinformatic.generate_tree import generate_elements
+import dash_bio as dashbio
+
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 
 def PhylogeneticTree(request):
-    global clustal_omega_exe, muscle_cline, tree_alg, elements, stylesheet, layout, styles
+    global clustal_omega_exe, muscle_cline, tree_alg, elements, stylesheet, layout, styles, tree, clustalw2_exe, stats, stats_file
+    stats = ""
     if request.user.is_anonymous:
         from django.conf import settings
         messages.error(request, "Lütfen Giriş Yapınız")
@@ -42,8 +45,6 @@ def PhylogeneticTree(request):
     if BioinformaticModel.objects.filter(user=request.user, tool="Filogenetik Ağaç").exists():
         BioinformaticModel.objects.filter(user=request.user, tool="Filogenetik Ağaç").delete()
 
-    tree_obj = BioinformaticModel.objects.create(user=request.user, tool="Filogenetik Ağaç")
-
     form = MultipleSeqAlignmentFileForm(request.POST or None, request.FILES or None)
 
     if request.method == "POST":
@@ -53,124 +54,173 @@ def PhylogeneticTree(request):
             return HttpResponseRedirect(request.path)
 
         if form.is_valid():
+            tree_obj = BioinformaticModel.objects.create(user=request.user, tool="Filogenetik Ağaç")
             in_file = tree_obj.records_files.create(file=request.FILES['file'])
             out_file = tree_obj.records_files.create(file=f"{request.user}_alignment.fasta")
-            aligned_file = tree_obj.records_files.create(file=f"{request.user}_aligned.fasta")
-            stats_file = tree_obj.records_files.create(file=f"{request.user}_stats.txt")
-            scores_file = tree_obj.records_files.create(file=f"{request.user}_scores.txt")
             xml_tree_file = tree_obj.records_files.create(file=f"{request.user}_tree.xml")
             cluster_file = tree_obj.records_files.create(file=f"{request.user}_cluster.csv")
+            scores_file = tree_obj.records_files.create(file=f"{request.user}_scores.txt")
 
             tools = form.cleaned_data['alignment_tools']
 
             tree_alg = form.cleaned_data['tree_alg']
 
             tree_app = DjangoDash(f'{tree_alg}',
-                                           external_stylesheets=external_stylesheets,
-                                           external_scripts=external_scripts,
-                                           add_bootstrap_links=True,
-                                           title=f'{tree_alg} AĞACI OLUŞTRMA'.upper()
-                                           )
-            if tools == "muscle":
+                                  external_stylesheets=external_stylesheets,
+                                  external_scripts=external_scripts,
+                                  add_bootstrap_links=True,
+                                  title=f'{tree_alg} AĞACI OLUŞTRMA'.upper()
+                                  )
+            try:
 
-                if sys.platform.startswith('win32'):
-                    muscle_cline = os.path.join(BASE_DIR, 'bioinformatic', 'programs',
-                                                     "muscle3.8.31_i86win32.exe")
-                elif sys.platform.startswith('linux'):
-                    muscle_cline = os.path.join(BASE_DIR, 'bioinformatic', 'programs',
-                                                     'muscle3.8.425_i86linux32')
+                if tools == "muscle":
 
-                muscle_cline_tool = MuscleCommandline(
-                    muscle_cline,
-                    input=in_file.file.path,
-                    out=out_file.file.path,
+                    if sys.platform.startswith('win32'):
+                        muscle_cline = os.path.join(BASE_DIR, 'bioinformatic', 'programs',
+                                                    "muscle3.8.31_i86win32.exe")
+                    elif sys.platform.startswith('linux'):
+                        muscle_cline = os.path.join(BASE_DIR, 'bioinformatic', 'programs',
+                                                    'muscle3.8.425_i86linux32')
 
-                )
+                    muscle_cline_tool = MuscleCommandline(
+                        muscle_cline,
+                        input=in_file.file.path,
+                        out=out_file.file.path,
 
-                if sys.platform.startswith('win32'):
-                    assert os.path.isfile(muscle_cline)
-                    stdout, stderr = muscle_cline_tool()
+                    )
 
-                elif sys.platform.startswith('linux'):
-                    muscle_exe = os.path.join(BASE_DIR, 'bioinformatic', 'programs', 'muscle3.8.425_i86linux32')
-                    muscle_result = subprocess.check_output(
-                        [muscle_exe, "-in", in_file.file.path, "-out", out_file.file.path])
+                    if sys.platform.startswith('win32'):
+                        assert os.path.isfile(muscle_cline)
+                        stdout, stderr = muscle_cline_tool()
 
-                alignment = AlignIO.read(handle=out_file.file.path, format='fasta')
+                    elif sys.platform.startswith('linux'):
+                        muscle_exe = os.path.join(BASE_DIR, 'bioinformatic', 'programs', 'muscle3.8.425_i86linux32')
+                        muscle_result = subprocess.check_output(
+                            [muscle_exe, "-in", in_file.file.path, "-out", out_file.file.path])
 
-                calculator = DistanceCalculator('identity')
+                elif tools == "clustalw2":
+                    stats_file = tree_obj.records_files.create(file=f"{request.user}_stats.txt")
+                    if sys.platform.startswith('win32'):
+                        clustalw2_exe = os.path.join(BASE_DIR, 'bioinformatic', 'programs', 'clustalw2.exe')
 
-                constructor = DistanceTreeConstructor(calculator, method=tree_alg)
+                    elif sys.platform.startswith('linux'):
+                        clustalw2_exe = os.path.join(BASE_DIR, 'bioinformatic', 'programs', 'clustalw2')
 
-                trees = constructor.build_tree(alignment)
+                    clustalw_cline = ClustalwCommandline(
+                        clustalw2_exe,
+                        infile=in_file.file.path,
+                        outfile=out_file.file.path,
+                        align=True,
+                        outorder="ALIGNED",
+                        convert=True,
+                        output="FASTA",
+                        stats=stats_file.file.path,
+                        clustering=tree_alg,
+                        score="percent"
+                    )
 
-                Phylo.write(trees=trees, file=xml_tree_file.file.path, format="phyloxml")
+                    assert os.path.isfile(clustalw2_exe)
+                    stdout, stderr = clustalw_cline()
 
-                tree = Phylo.read(xml_tree_file.file.path, 'phyloxml')
+            except Bio.Application.ApplicationError:
+                messages.error(request, "Uygulama Hatası! Hatalı dosya türü girdiniz.")
+                tree_obj.delete()
+                return HttpResponseRedirect(request.path)
+
+            alignment = AlignIO.read(handle=out_file.file.path, format='fasta')
+
+            data = open(out_file.file.path, 'r', encoding="utf-8").read()
+
+            calculator = DistanceCalculator('identity')
+
+            constructor = DistanceTreeConstructor(calculator, method=tree_alg)
+
+            trees = constructor.build_tree(alignment)
+
+            Phylo.write(trees=trees, file=xml_tree_file.file.path, format="phyloxml")
+
+            tree = Phylo.read(xml_tree_file.file.path, 'phyloxml')
+
+            try:
 
                 nodes, edges = generate_elements(tree)
 
                 elements = nodes + edges
 
-                layout = {'name': 'preset'}
+            except ZeroDivisionError:
+                messages.error(request, "Hata! Protein dosyası girmiş olabilirsiniz")
+                return HttpResponseRedirect(request.path)
 
-                stylesheet = [
-                    {
-                        'selector': '.nonterminal',
-                        'style': {
-                            'label': 'data(confidence)',
-                            'background-opacity': 0,
-                            "text-halign": "left",
-                            "text-valign": "top",
-                        }
+            layout = {"name": "preset"}
+
+            stylesheet = [
+                {
+                    "selector": ".nonterminal",
+                    "style": {
+                        "label": "data(confidence)",
+                        "background-opacity": 0,
+                        "text-halign": "left",
+                        "text-valign": "top",
                     },
-                    {
-                        'selector': '.support',
-                        'style': {'background-opacity': 0}
+                },
+                {"selector": ".support", "style": {"background-opacity": 0}},
+                {
+                    "selector": "edge",
+                    "style": {
+                        "source-endpoint": "inside-to-node",
+                        "target-endpoint": "inside-to-node",
                     },
-                    {
-                        'selector': 'edge',
-                        'style': {
-                            "source-endpoint": "inside-to-node",
-                            "target-endpoint": "inside-to-node",
-                        }
+                },
+                {
+                    "selector": ".terminal",
+                    "style": {
+                        "label": "data(name)",
+                        "width": 10,
+                        "height": 10,
+                        "text-valign": "center",
+                        "text-halign": "right",
+                        "background-color": "#222222",
                     },
-                    {
-                        'selector': '.terminal',
-                        'style': {
-                            'label': 'data(name)',
-                            'width': 10,
-                            'height': 10,
-                            "text-valign": "center",
-                            "text-halign": "right",
-                            'background-color': '#222222'
+                },
+            ]
+
+            tree_app.layout = html.Div(
+                [
+
+                    html.P("FİLOGENETİK AĞAÇ OLUŞTURMA", className="text-primary fw-bolder mb-4"),
+
+                    html.P(f"{tools} aracıyla {tree_alg} ağacı oluşturuldu".upper(),
+                           className="text-primary fw-bolder mb-4"),
+
+                    cyto.Cytoscape(
+                        id='cytoscape-usage-phylogeny',
+                        elements=elements,
+                        stylesheet=stylesheet,
+                        layout=layout,
+                        style={
+                            'height': '95vh',
+                            'width': '100%'
                         }
-                    }
-                ]
+                    ),
 
-            tree_app.layout = html.Div([
+                    html.Hr(),
 
-                html.P("FİLOGENETİK AĞAÇ OLUŞTURMA", className="text-primary fw-bolder mb-4"),
+                    html.P("Alignment Haritası", className="fw-bolder"),
 
-                html.P(f"{tree_alg} AĞACI".upper(), className="text-primary fw-bolder mb-4"),
+                    dashbio.AlignmentChart(
+                        id='my-default-alignment-viewer',
+                        data=data,
+                        height=900,
+                        tilewidth=30,
+                    ),
 
-                cyto.Cytoscape(
-                    id='cytoscape-usage-phylogeny',
-                    elements=elements,
-                    stylesheet=stylesheet,
-                    layout=layout,
-                    style={
-                        'height': '95vh',
-                        'width': '100%'
-                    }
-                ),
-            ], className="m-4")
-
-            tree_obj.delete()
+                ], className="m-5"
+            )
 
             @tree_app.callback(
                 Output('cytoscape-usage-phylogeny', 'stylesheet'),
-                Input('cytoscape-usage-phylogeny', 'mouseoverEdgeData'))
+                Input('cytoscape-usage-phylogeny', 'mouseoverEdgeData')
+            )
             def color_children(edgeData):
                 if edgeData is None:
                     return stylesheet

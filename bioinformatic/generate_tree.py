@@ -1,6 +1,6 @@
 import math
 
-def generate_elements(tree, xlen=30, ylen=30, grabbable=False):
+def generate_elements(tree, xlen=30, ylen=30, grabbable=True):
     def get_col_positions(tree, column_width=80):
         taxa = tree.get_terminals()
 
