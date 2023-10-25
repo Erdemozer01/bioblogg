@@ -1,23 +1,20 @@
 import os
 import gzip
 import subprocess, sys
-
 import Bio.Application
-from Bio import bgzf
-from django.db.models import Q
 from django.shortcuts import *
-from django.views import generic
 from django.contrib import messages
-from bioinformatic.forms import FileReadingForm, TranslateForm, MultipleSeqAlignmentFileForm
-from bioinformatic.models import BioinformaticModel, RecordModel, FileModel
-from Bio import SeqIO
-from Bio.SeqUtils import GC, gc_fraction
+from bioinformatic.forms import FileReadingForm, MultipleSeqAlignmentFileForm, BlastForm
+from bioinformatic.models import BioinformaticModel
+from Bio import SeqIO, SearchIO
+from Bio.SeqUtils import gc_fraction
 import pandas as pd
 import plotly.express as px
 from django_plotly_dash import DjangoDash
 from dash import Dash, html, dcc, dash_table, Output, Input
+import dash_bootstrap_components as dbc
 from pathlib import Path
-from Bio.Seq import Seq
+from Bio.Blast import NCBIWWW, NCBIXML
 import dash_ag_grid as dag
 from collections import defaultdict
 from Bio.Align.Applications import ClustalwCommandline, ClustalOmegaCommandline, MuscleCommandline
@@ -27,6 +24,9 @@ from Bio import Phylo
 import dash_cytoscape as cyto
 from bioinformatic.generate_tree import generate_elements
 import dash_bio as dashbio
+import plotly.graph_objs as go
+import time
+import numpy as np
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -58,8 +58,6 @@ def PhylogeneticTree(request):
             in_file = tree_obj.records_files.create(file=request.FILES['file'])
             out_file = tree_obj.records_files.create(file=f"{request.user}_alignment.fasta")
             xml_tree_file = tree_obj.records_files.create(file=f"{request.user}_tree.xml")
-            cluster_file = tree_obj.records_files.create(file=f"{request.user}_cluster.csv")
-            scores_file = tree_obj.records_files.create(file=f"{request.user}_scores.txt")
 
             tools = form.cleaned_data['alignment_tools']
 
@@ -99,7 +97,7 @@ def PhylogeneticTree(request):
                             [muscle_exe, "-in", in_file.file.path, "-out", out_file.file.path])
 
                 elif tools == "clustalw2":
-                    stats_file = tree_obj.records_files.create(file=f"{request.user}_stats.txt")
+
                     if sys.platform.startswith('win32'):
                         clustalw2_exe = os.path.join(BASE_DIR, 'bioinformatic', 'programs', 'clustalw2.exe')
 
@@ -114,13 +112,40 @@ def PhylogeneticTree(request):
                         outorder="ALIGNED",
                         convert=True,
                         output="FASTA",
-                        stats=stats_file.file.path,
                         clustering=tree_alg,
                         score="percent"
                     )
 
                     assert os.path.isfile(clustalw2_exe)
                     stdout, stderr = clustalw_cline()
+
+                elif tools == "omega":
+                    if sys.platform.startswith('win32'):
+                        clustal_omega_exe = os.path.join(BASE_DIR, 'bioinformatic', 'programs',
+                                                         'clustal-omega-1.2.2-win64/clustalo.exe')
+                    elif sys.platform.startswith('linux'):
+                        clustal_omega_exe = os.path.join(BASE_DIR, 'bioinformatic', 'programs',
+                                                         'clustalo-1.2.4-Ubuntu-32-bit')
+
+                    clustal_omega_cline = ClustalOmegaCommandline(
+                        clustal_omega_exe,
+                        infile=in_file.file.path,
+                        outfile=out_file.file.path,
+                        force=True,
+                        verbose=True,
+                        auto=True,
+                        usekimura="yes"
+                    )
+
+                    if sys.platform.startswith('win32'):
+                        assert os.path.isfile(clustal_omega_exe)
+                        stdout, stderr = clustal_omega_cline()
+
+                    elif sys.platform.startswith('linux'):
+                        subprocess.Popen(str(clustal_omega_cline), stdin=subprocess.PIPE,
+                                         stdout=subprocess.PIPE,
+                                         stderr=subprocess.PIPE, universal_newlines=True,
+                                         shell=(sys.platform != "win32"))
 
             except Bio.Application.ApplicationError:
                 messages.error(request, "Uygulama Hatası! Hatalı dosya türü girdiniz.")
@@ -187,10 +212,27 @@ def PhylogeneticTree(request):
             tree_app.layout = html.Div(
                 [
 
-                    html.P("FİLOGENETİK AĞAÇ OLUŞTURMA", className="text-primary fw-bolder mb-4"),
+                    dbc.NavbarSimple(
+                        children=[
+                            html.A(
+                                [dbc.NavItem(dbc.NavLink("Biyoinformatik", className="text-white"))],
+                                href=redirect("bioinformatic:home").url
+                            ),
+
+                            html.A(
+                                [dbc.NavItem(dbc.NavLink("Geri", className="text-white")), ],
+                                href=redirect("bioinformatic:pyhlo_tree").url,
+                            ),
+
+                        ],
+                        brand="Filogenetik ağaç oluşturma".title(),
+                        brand_href=str(request.path),
+                        color="primary",
+                        sticky="top",
+                    ),
 
                     html.P(f"{tools} aracıyla {tree_alg} ağacı oluşturuldu".upper(),
-                           className="text-primary fw-bolder mb-4"),
+                           className="text-primary fw-bolder mb-4 mt-3"),
 
                     cyto.Cytoscape(
                         id='cytoscape-usage-phylogeny',
@@ -198,9 +240,9 @@ def PhylogeneticTree(request):
                         stylesheet=stylesheet,
                         layout=layout,
                         style={
-                            'height': '95vh',
-                            'width': '100%'
-                        }
+                            'height': '80vh',
+                            'width': '90%'
+                        }, className="mx-auto"
                     ),
 
                     html.Hr(),
@@ -210,8 +252,9 @@ def PhylogeneticTree(request):
                     dashbio.AlignmentChart(
                         id='my-default-alignment-viewer',
                         data=data,
-                        height=900,
+                        height=1000,
                         tilewidth=30,
+
                     ),
 
                 ], className="m-5"
@@ -241,7 +284,7 @@ def PhylogeneticTree(request):
 
         return HttpResponseRedirect(f"/laboratory/bioinformatic/app/{tree_alg}")
 
-    return render(request, 'bioinformatic/form.html', {'form': form, 'title': 'Filogenetik ağaç oluşturma'})
+    return render(request, 'bioinformatic/form.html', {'form': form, 'title': 'Filogeneni ve Alignment Haritası'})
 
 
 def file_reading(request, user):
@@ -583,79 +626,8 @@ def file_reading(request, user):
     return render(request, "bioinformatic/form.html", {'form': form, 'title': 'DOSYA OKUMASI'})
 
 
-def fastq_stats(request):
-    external_stylesheets = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css']
-    external_scripts = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js']
-
-    fastq_dash_app = DjangoDash('fastq-istatistik', external_stylesheets=external_stylesheets,
-                                external_scripts=external_scripts)
-
-    obj = FileModel.objects.get(records__user=request.user, records__tool="DOSYA OKUMA")
-
-    handle = gzip.open(obj.file.path, 'rt', encoding='utf-8')
-
-    records = SeqIO.parse(handle, obj.records.reading_file_format)
-
-    cnt = defaultdict(int)
-
-    for rec in records:
-        for letter in rec.seq:
-            cnt[letter] += 1
-
-    tot = sum(cnt.values())
-
-    df = pd.DataFrame(
-        {
-            'nuc': cnt.keys(),
-            'count': cnt.values(),
-            'per': [100 * i / tot for i in cnt.values()],
-        }
-    )
-
-    columnDefs = [
-        {"field": "nuc", "headerName": "Nükleotit", 'filter': True},
-        {"field": "count", "headerName": "Nükleotit sayısı", 'filter': True},
-        {"field": "per", "headerName": "Nükleotit Yüzdesi", 'filter': True},
-    ]
-
-    grid = dag.AgGrid(
-        id="fastq-table",
-        columnDefs=columnDefs,
-        rowData=df.to_dict("records"),
-        columnSize="sizeToFit",
-        defaultColDef={
-            "resizable": True,
-            "sortable": True,
-            "filter": True,
-            'editable': True,
-            "minWidth": 125
-        },
-        dashGridOptions={
-            'pagination': True,
-            "rowSelection": "multiple",
-            "undoRedoCellEditing": True,
-            "undoRedoCellEditingLimit": 20,
-            "editType": "fullRow",
-        },
-    )
-
-    fastq_dash_app.layout = html.Div(
-        children=[
-            html.P("FASTQ DOSYASI BİLGİLERi", className="fw-bolder text-primary mt-3"),
-            grid
-
-        ], className="m-5"
-    )
-
-    handle.close()
-
-    obj.file.delete()
-
-    return HttpResponseRedirect("/laboratory/bioinformatic/app/fastq-istatistik/")
-
-
-def stats_view(request, user):
-    global fig_lr
+def blast(request):
+    global result_handle
     if request.user.is_anonymous:
         from django.conf import settings
         messages.error(request, "Lütfen Giriş Yapınız")
@@ -664,225 +636,91 @@ def stats_view(request, user):
     external_stylesheets = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css']
     external_scripts = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js']
 
-    object_list = RecordModel.objects.filter(records__user=request.user, records__tool="DOSYA OKUMA")
+    app = DjangoDash('blast', external_stylesheets=external_stylesheets,
+                     external_scripts=external_scripts, add_bootstrap_links=True,
+                     title='BLAST')
 
-    if object_list.exists():
+    if BioinformaticModel.objects.filter(user=request.user, tool="BLAST").exists():
+        BioinformaticModel.objects.filter(user=request.user, tool="BLAST").delete()
 
-        df = pd.DataFrame(
-            {
-                "name": [dna.name for dna in object_list],
-                "DNA": [dna.seq_len for dna in object_list],
-                "PROTEİN": [pro.pro_seq_len for pro in object_list],
-                "%GC": [gc.gc for gc in object_list],
-            }
-        )
+    form = BlastForm(request.POST or None, request.FILES or None)
 
-        df_count = pd.DataFrame({
-            'Canlı': [dna.name for dna in object_list],
-            'ADENİN': [a.sequence.count("A") for a in object_list],
-            'TİMİN': [a.sequence.count("T") for a in object_list],
-            'GUANİN': [a.sequence.count("G") for a in object_list],
-            'SİTOZİN': [a.sequence.count("C") for a in object_list],
-            'TOPLAM': [a.sequence.count("A") + a.sequence.count("T") + a.sequence.count("G") + a.sequence.count("C") for
-                       a in object_list],
-        })
-
-        nuc_count = DjangoDash(f"nucleotit_table", external_stylesheets=external_stylesheets,
-                               external_scripts=external_scripts, add_bootstrap_links=True)
-
-        nuc_count.layout = html.Div([
-            dag.AgGrid(
-                style={'width': '100%'},
-                rowData=df_count.to_dict("records"),
-                columnSize="sizeToFit",
-                defaultColDef={
-                    "resizable": True,
-                    "sortable": True,
-                    "filter": True,
-                    'editable': True,
-                    "minWidth": 125
-                },
-                dashGridOptions={
-                    'pagination': True,
-                    "rowSelection": "multiple",
-                    "undoRedoCellEditing": True,
-                    "undoRedoCellEditingLimit": 20,
-                    "editType": "fullRow",
-                },
-                columnDefs=[
-                    {'field': 'Canlı', 'headerName': 'Canlı', 'filter': True},
-                    {'field': 'ADENİN', 'headerName': 'ADENİN', 'filter': True},
-                    {'field': 'TİMİN', 'headerName': 'TİMİN', 'filter': True},
-                    {'field': 'GUANİN', 'headerName': 'GUANİN', 'filter': True},
-                    {'field': 'SİTOZİN', 'headerName': 'SİTOZİN', 'filter': True},
-                    {'field': 'TOPLAM', 'headerName': 'TOPLAM', 'filter': True},
-                ]
-            ),
-        ])
-
-        scatter_map = DjangoDash(f"l{request.user}r", external_stylesheets=external_stylesheets,
-                                 external_scripts=external_scripts, add_bootstrap_links=True)
-
-        scatter_map.layout = html.Div(
-
-            [
-
-                html.P('GRAFİK', className='fw-bolder text-primary mt-3'),
-
-                dcc.Graph(
-                    figure=px.scatter(
-                        data_frame=df, x="DNA", y="PROTEİN",
-                        title="DNA - PROTEİN Lineer Regrasyon",
-                        trendline="ols",
-                        labels={
-                            "dna_seq_len": "DNA SEKANS UZUNLUĞU",
-                            "pro_seq_len": "PROTEİN SEKANS UZUNLUĞU",
-                            'name': 'Canlı'
-                        },
-                    )
-                )
-
-            ], style={'margin': 50}
-        )
-
-        context = {
-
-            'stat': df.describe().round(3).to_html(
-                classes="table table-hover shadow-soft rounded-lg text-center",
-                border=False, header="İstatistik", justify="center"
-            ),
-
-            'table_cov': df.cov().round(3).to_html(
-                classes="table table-hover shadow-soft rounded-lg text-center",
-                border=False, header="Kovaryans", justify="center"
-            ),
-
-            'table_cor': df.corr().round(3).to_html(
-                classes="table table-hover shadow-soft rounded-lg text-center",
-                border=False, header="Korelasyon", justify="center"
-
-            ),
-
-            'url': HttpResponseRedirect(f"/laboratory/bioinformatic/app/l{request.user}r/").url
-
-        }
-
-    else:
-
-        return render(request, "exception/page-404.html", {'msg': "Verilere Ulaşılamadı"})
-
-    return render(request, template_name="bioinformatic/stats/stats.html", context=context)
-
-
-class FileReadingResultView(generic.ListView):
-    template_name = "bioinformatic/reading/result.html"
-    model = RecordModel
-    paginate_by = 10
-
-    def get(self, request, *args, **kwargs):
-        if request.user.is_anonymous:
-            from django.conf import settings
-            messages.error(request, "Lütfen Giriş Yapınız")
-            return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
-        return super().get(request, *args, **kwargs)
-
-    def get_queryset(self):
-        search = self.request.GET.get('search', False)
-        if search:
-            return RecordModel.objects.filter(
-                Q(description__icontains=search, records__user=self.request.user, records__tool="DOSYA OKUMA"))
-        else:
-            return RecordModel.objects.filter(records__user=self.request.user, records__tool="DOSYA OKUMA")
-
-    def get_context_data(self, *, object_list=None, **kwargs):
-        global file_format, protein, to_stop
-        context = super().get_context_data(**kwargs)
-        for i in BioinformaticModel.objects.filter(user=self.request.user, tool="DOSYA OKUMA"):
-            to_stop = [i.to_stop]
-        protein = [i.pro_seq_len for i in self.get_queryset()]
-        context["title"] = "Sonuçlar"
-        context["count"] = RecordModel.objects.filter(records__user=self.request.user,
-                                                      records__tool="DOSYA OKUMA").count()
-        context["to_stop"] = to_stop[0]
-
-        if None in protein:
-            context["protein"] = "protein yok"
-        else:
-            context["protein"] = "protein var"
-
-        page = context['page_obj']
-        paginator = page.paginator
-        pagelist = paginator.get_elided_page_range(page.number, on_each_side=2, on_ends=2)
-
-        context['pagelist'] = pagelist
-
-        return context
-
-
-class FileReadDetailView(generic.DetailView):
-    template_name = "bioinformatic/reading/detail.html"
-    model = RecordModel
-
-    def get_queryset(self):
-        return RecordModel.objects.filter(records__user=self.request.user, records__tool="DOSYA OKUMA")
-
-    def get(self, request, *args, **kwargs):
-        if request.user.is_anonymous:
-            from django.conf import settings
-            messages.error(request, "Lütfen Giriş Yapınız")
-            return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
-        return super().get(request, *args, **kwargs)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['A'] = self.object.sequence.count("A")
-        context['T'] = self.object.sequence.count("T")
-        context['G'] = self.object.sequence.count("G")
-        context['C'] = self.object.sequence.count("C")
-        return context
-
-
-def ProteinPickView(request, user):
-    if request.user.is_anonymous:
-        from django.conf import settings
-        messages.error(request, "Lütfen Giriş Yapınız")
-        return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
-
-    form = TranslateForm(request.POST or None)
-    object_list = BioinformaticModel.objects.filter(user=request.user, tool="DOSYA OKUMA")
-    record_obj = RecordModel.objects.filter(records__user=request.user, records__tool="DOSYA OKUMA")
+    blast_obj = BioinformaticModel.objects.create(
+        user=request.user,
+        tool="BLAST",
+    )
 
     if request.method == "POST":
-
         if form.is_valid():
 
-            trans_table = form.cleaned_data["trans_table"]
-            to_stop = form.cleaned_data["to_stop"]
+            type = form.cleaned_data['type']
+            program = form.cleaned_data['program']
+            database = form.cleaned_data['database']
 
-            if to_stop is True:
+            if type == 'file':
+                file = blast_obj.records_files.create(file=request.FILES['file'])
+                record = next(SeqIO.parse(file.file.path, format="fasta"))
+                result_handle = NCBIWWW.qblast(program=program, database=database, sequence=record.seq)
+            elif type == 'gi':
+                gi = form.cleaned_data['gi']
+                result_handle = NCBIWWW.qblast(str(program), str(database), str(gi))
 
-                for object in object_list:
-                    object.to_stop = to_stop
-                    object.trans_table = trans_table
-                    object.save()
+            blast_xml = blast_obj.records_files.create(file=f"{request.user}_blast.xml")
+            result_file = blast_obj.records_files.create(file="result.txt")
 
-                for record in record_obj:
-                    record.protein_sequence = Seq(record.sequence).translate(table=trans_table)
-                    record.pro_seq_len = len(Seq(record.sequence).translate(table=trans_table))
-                    record.save()
+            with open(blast_xml.file.path, "w") as out_handle:
+                out_handle.write(result_handle.read())
 
-            else:
-                for object in object_list:
-                    object.to_stop = to_stop
-                    object.trans_table = trans_table
-                    object.save()
 
-                for record in record_obj:
-                    record.protein_sequence = Seq(record.sequence).translate(table=trans_table).replace("*", "")
-                    record.pro_seq_len = len(Seq(record.sequence).translate(table=trans_table).replace("*", ""))
-                    record.save()
+            blast_qresult = SearchIO.read(blast_xml.file.path, "blast-xml")
 
-            return HttpResponseRedirect(
-                reverse("bioinformatic:file_reading_results", kwargs={'user': request.user}))
+            blast_records = NCBIXML.parse(open(blast_xml.file.path, 'r'))
 
-    return render(request, "bioinformatic/form.html", {"form": form, "title": "Proteinleri Topla"})
+            file_obj = open(result_file.file.path, "w")
+
+            for hsp in blast_qresult:
+                for blast_record in blast_records:
+                    for alignment in blast_record.alignments:
+                        for hsps in alignment.hsps:
+                            file_obj.writelines(f"{hsp}" + 3 * "\n")
+                            file_obj.writelines(f"{hsps}" + 3 * "\n")
+
+            app.layout = dbc.Container(
+                [
+                    html.H1("Blast Sonuçları", className="mt-3"),
+                    html.Hr(),
+                    dbc.Row(
+                        [
+
+                            html.Button("Sonuçları indir", id="btn-download-blast",
+                                        style={'float': 'right', 'marginBottom': '20px'},
+                                        className='btn btn-primary col-4'),
+                            dcc.Download(id="download-blast"),
+
+                            dcc.Textarea(id='align-textarea',
+                                         value=open(result_file.file.path, 'r').read(),
+                                         readOnly=True,
+                                         style={'width': '100%', 'height': '300px'}),
+                        ],
+                        align="center", className="m-4"
+                    ),
+                ],
+
+            )
+
+            @app.callback(
+                Output("download-blast", "data"),
+                Input("btn-download-blast", "n_clicks"),
+                Input('align-textarea', 'value'),
+                prevent_initial_call=True,
+            )
+            def func(n_clicks, values):
+                return dict(content=values, filename=f"{request.user}_blast.txt")
+
+            file_obj.close()
+
+            blast_obj.delete()
+
+            return HttpResponseRedirect("/laboratory/bioinformatic/app/blast/")
+
+    return render(request, 'bioinformatic/form.html', {'form': form, 'title': 'BLAST'})

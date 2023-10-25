@@ -11,12 +11,11 @@ import dash_ag_grid as dag
 import plotly.figure_factory as ff
 from Bio import Align
 from Bio.Align import substitution_matrices
+import dash_bootstrap_components as dbc
 
 from django.contrib import messages
 
-
 from Bio import Phylo, SeqIO
-
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -146,7 +145,7 @@ def alignment_score(request):
 
         count = alignment.counts()
 
-        values = f'Boşluk : {count.gaps}  Benzerlik : {count.identities},  Eşleşmeyen: {count.mismatches},\n\nMatriks: {matrix}\n\n {alignment.substitutions}\nMOD: {str(mod).upper()}\n\nScore: {alignments.score}\n\nAlignment:\n\n' + str(
+        values = f'Boşluk : {count.gaps}  Benzerlik : {count.identities},  Eşleşmeyen: {count.mismatches}\n\nMatriks: {matrix}\n\n {alignment.substitutions}\nMOD: {str(mod).upper()}\n\nScore: {alignments.score}\n\nAlignment:\n\n' + str(
             alignment)
 
         return html.Div(
@@ -585,10 +584,20 @@ def create_frame_seq(request):
 
         [
 
-            html.H4('Çerçeve sekans oluşturma'),
+            dbc.NavbarSimple(
+                children=[
+                    html.A(
+                        [dbc.NavItem(dbc.NavLink("Biyoinformatik", className="text-white"))],
+                        href=redirect("bioinformatic:home").url
+                    ),
 
-            html.A('BİYOİNFORMATİK ANASAYFA', href=HttpResponseRedirect(reverse("bioinformatic:home")).url,
-                   style={'float': 'right'}),
+                ],
+                brand="Çerçeve sekans oluşturma".title(),
+                brand_href=str(request.path),
+                color="primary",
+                sticky="top",
+            ),
+
 
             html.P("Sekans"),
 
@@ -682,14 +691,14 @@ def create_frame_seq(request):
                         {'field': 'seq', 'headerName': 'SEKANS', 'filter': True},
                     ]
                 ),
-                html.Div(id="quickstart-output"),
+                html.Div(id="output"),
             ]),
 
             html.Hr(),
         ]),
 
     @frame_seq_app.callback(
-        Output("quickstart-output", "children"),
+        Output("output", "children"),
         Input("frame_seq_table", "cellClicked")
     )
     def display_cell_clicked_on(cell):
@@ -707,4 +716,115 @@ def create_frame_seq(request):
     return HttpResponseRedirect("/laboratory/bioinformatic/app/create_frame_seq/")
 
 
+def TemperatureMeltingView(request):
+    external_stylesheets = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css']
+    external_scripts = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js']
 
+    mt_app = DjangoDash('temp-melt', external_stylesheets=external_stylesheets, external_scripts=external_scripts,
+                        title='Primer Erime Sıcaklığı')
+
+    controls = dbc.Card(
+        [
+
+            html.Div(
+                [
+                    dbc.Label("Sekans"),
+                    dcc.Textarea(placeholder="Sekans", id="sekans", style={'height': 100}, className="form-control"),
+                ]
+            ),
+            html.Div(
+                [
+                    dbc.Label("Sodyum"),
+                    dbc.Input(placeholder="Sodyum", type="number", id="Na", value=50, min=0),
+                ]
+            ),
+            html.Div(
+                [
+                    dbc.Label("Potayum"),
+                    dbc.Input(placeholder="Potayum", type="number", id="K", value=0, min=0),
+                ]
+            ),
+            html.Div(
+                [
+                    dbc.Label("Tris"),
+                    dbc.Input(placeholder="Tris", type="number", id="Tris", value=0, min=0),
+                ]
+            ),
+            html.Div(
+                [
+                    dbc.Label("Magnezyum"),
+                    dbc.Input(placeholder="Magnezyum", type="number", id="Mg", value=0, min=0),
+                ]
+            ),
+            html.Div(
+                [
+                    dbc.Label("dNTPs"),
+                    dbc.Input(placeholder="dNTPs", type="number", id="dNTPs", value=0, min=0),
+                ]
+            ),
+            html.Div(
+                [
+                    dbc.Label("Tuz"),
+                    dbc.Input(placeholder="Tuz", type="number", id="saltcorr", value=5, min=0, max=6),
+                ]
+            ),
+        ],
+        body=True,
+    )
+
+    mt_app.layout = dbc.Container(
+        [
+            html.H3("Primer Erime sıcaklığı"),
+            html.Hr(),
+            dbc.Row(
+                [
+                    dbc.Col(controls, md=6),
+                    dbc.Col(html.Div(id="output"), md=4),
+                ],
+                align="center",
+            ),
+        ],
+        className="m-4"
+    )
+
+    @mt_app.callback(
+        Output("output", 'children'),
+        Input("sekans", "value"),
+        Input("Na", "value"),
+        Input("K", "value"),
+        Input("Tris", "value"),
+        Input("Mg", "value"),
+        Input("dNTPs", "value"),
+        Input("saltcorr", "value")
+    )
+    def temp_melting(sekans, Na, K, Tris, Mg, dNTPs, saltcorr):
+        if sekans is not None:
+            sekans = str(sekans).replace(" ", "")
+            sekans = str(sekans).replace("\n", "")
+            sekans = str(sekans).replace("\t", "")
+            sekans = str(sekans).replace("\r", "")
+            sekans = str(sekans).replace("0", "")
+            sekans = str(sekans).replace("1", "")
+            sekans = str(sekans).replace("2", "")
+            sekans = str(sekans).replace("3", "")
+            sekans = str(sekans).replace("4", "")
+            sekans = str(sekans).replace("5", "")
+            sekans = str(sekans).replace("6", "")
+            sekans = str(sekans).replace("7", "")
+            sekans = str(sekans).replace("8", "")
+            sekans = str(sekans).replace("9", "")
+            sekans = str(sekans).upper().replace("NONE", "")
+
+            primer_len = len(sekans)
+
+            temperature_melting = mt.Tm_NN(seq=sekans, Na=Na, K=K, Tris=Tris, Mg=Mg, dNTPs=dNTPs, saltcorr=saltcorr)
+
+            return html.Div([
+                html.P(f"Sekans Uzunluğu : {primer_len}"),
+                html.P(f"Erime Sıcaklığı : {temperature_melting}"),
+            ])
+
+        else:
+            return "Sekans girilmedi"
+
+    return HttpResponseRedirect("/laboratory/bioinformatic/app/temp-melt/")

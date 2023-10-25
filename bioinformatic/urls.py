@@ -11,17 +11,12 @@ urlpatterns = [
     path('dna-sekans-translate/', views.SekansView.translation, name="dna_seq_translate"),
     path('create_frame_seq/', views.SekansView.create_frame_seq, name="create_frame_seq"),
     path('alignment-score/', views.SekansView.alignment_score, name="alignment_score"),
+    path('temperature-melting/', views.SekansView.TemperatureMeltingView, name="temp_melt"),
 
     # Reading
     path('file-reading/<user>/', views.FileReadingView.file_reading, name="file_reading"),
-    path('file-reading/<user>/sonuçlar/', views.FileReadingView.FileReadingResultView.as_view(),
-         name="file_reading_results"),
-    path('file-reading-detail/<slug:user>/<pk>/<description>/', views.FileReadingView.FileReadDetailView.as_view(),
-         name="file_reading_detail"),
-    path('file-reading/<user>/protein/', views.FileReadingView.ProteinPickView, name="file_reading_pick_protein"),
-    path('istatistik-verileri/<user>/', views.FileReadingView.stats_view, name="stats"),
-    path('fastq-istatistik/', views.FileReadingView.fastq_stats, name="fastq_stats"),
     path('phylo-tree-creating/', views.FileReadingView.PhylogeneticTree, name="pyhlo_tree"),
+    path('blast/', views.FileReadingView.blast, name="blast"),
 
     # Writing
     path('file-format-select/<user>/', views.FileWritingView.file_writing_format_select,

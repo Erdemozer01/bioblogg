@@ -52,4 +52,18 @@ class MultipleSeqAlignmentFileForm(forms.Form):
     tree_alg = forms.ChoiceField(label="Algoritma", choices=TREE_ALGORITMA, widget=forms.Select(attrs={
         'class': 'custom-select'
     }))
-    file = forms.FileField(label='Dosya', help_text="Not : Max. dosya boyutu 25 mb olmalıdır.")
+    file = forms.FileField(label='Fasta Dosyası', help_text="Not : Max. dosya boyutu 25mb olmalıdır.")
+
+
+class BlastForm(forms.Form):
+    type = forms.ChoiceField(choices=RECORD_FORMAT, label="Blast Türü Seçiniz", widget=forms.Select(attrs={
+        'class': 'custom-select'
+    }))
+    file = forms.FileField(label="Fasta Dosyası", required=False)
+    gi = forms.CharField(label="Gİ (GENİNFO) Numarası", required=False)
+    program = forms.ChoiceField(choices=BLAST_PROGRAM, label="Blast Programı Seçiniz", widget=forms.Select(attrs={
+        'class': 'custom-select'
+    }))
+    database = forms.ChoiceField(choices=BLAST_DATABASE, label="Blast Veritabanı Seçiniz", widget=forms.Select(attrs={
+        'class': 'custom-select'
+    }))

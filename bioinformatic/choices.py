@@ -1,3 +1,24 @@
+BLAST_PROGRAM = (
+    ('', '------------'),
+    ('blastn', 'BLASTN'),
+    ('blastp', 'BLASTP'),
+    ('blastx', 'BLASTX'),
+    ('tblastn', 'TBLASTN'),
+    ('tblastn', 'TBLASTN'),
+)
+
+BLAST_DATABASE = (
+    ('', '------------'),
+    ('nr', 'nr'),
+    ('nt', 'nt'),
+)
+
+RECORD_FORMAT = (
+    ('', '------------'),
+    ('file', 'DOSYA'),
+    ('gi', 'Gİ(GENİNFO) Numarası'),
+)
+
 TOOLS = (
     ('', '------------'),
     ('SEKANS İŞLEMLERİ', 'SEKANS İŞLEMLERİ'),
