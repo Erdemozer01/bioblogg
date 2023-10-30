@@ -828,3 +828,6 @@ def TemperatureMeltingView(request):
             return "Sekans girilmedi"
 
     return HttpResponseRedirect("/laboratory/bioinformatic/app/temp-melt/")
+
+
+
