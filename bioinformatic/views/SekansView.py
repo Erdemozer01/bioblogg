@@ -3,7 +3,7 @@ from Bio.SeqUtils import MeltingTemp as mt
 import pandas as pd
 import plotly.express as px
 from Bio.Seq import Seq
-from Bio.SeqUtils import GC, gc_fraction
+from Bio.SeqUtils import gc_fraction
 from dash import html, dcc, Input, Output, ctx
 from django.shortcuts import *
 from django_plotly_dash import DjangoDash

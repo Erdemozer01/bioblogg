@@ -2,16 +2,17 @@ import os
 import gzip
 import subprocess, sys
 import Bio.Application
+import parmed
 from django.shortcuts import *
 from django.contrib import messages
-from bioinformatic.forms import FileReadingForm, MultipleSeqAlignmentFileForm, BlastForm
+from bioinformatic.forms import FileReadingForm, MultipleSeqAlignmentFileForm, BlastForm, MoleculeViewForm
 from bioinformatic.models import BioinformaticModel
 from Bio import SeqIO, SearchIO
 from Bio.SeqUtils import gc_fraction
 import pandas as pd
 import plotly.express as px
 from django_plotly_dash import DjangoDash
-from dash import Dash, html, dcc, dash_table, Output, Input
+from dash import Dash, html, dcc, dash_table, Output, Input, State
 import dash_bootstrap_components as dbc
 from pathlib import Path
 from Bio.Blast import NCBIWWW, NCBIXML
@@ -24,9 +25,8 @@ from Bio import Phylo
 import dash_cytoscape as cyto
 from bioinformatic.generate_tree import generate_elements
 import dash_bio as dashbio
-import plotly.graph_objs as go
-import time
-import numpy as np
+from dash_bio.utils import PdbParser, create_mol3d_style
+import dash_bio.utils.ngl_parser as ngl_parser
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -671,7 +671,6 @@ def blast(request):
             with open(blast_xml.file.path, "w") as out_handle:
                 out_handle.write(result_handle.read())
 
-
             blast_qresult = SearchIO.read(blast_xml.file.path, "blast-xml")
 
             blast_records = NCBIXML.parse(open(blast_xml.file.path, 'r'))
@@ -724,3 +723,96 @@ def blast(request):
             return HttpResponseRedirect("/laboratory/bioinformatic/app/blast/")
 
     return render(request, 'bioinformatic/form.html', {'form': form, 'title': 'BLAST'})
+
+
+def molecule_viewer(request):
+    if request.user.is_anonymous:
+        from django.conf import settings
+        messages.error(request, "Lütfen Giriş Yapınız")
+        return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
+
+    if BioinformaticModel.objects.filter(user=request.user, tool="molecule_view").exists():
+        BioinformaticModel.objects.filter(user=request.user, tool="molecule_view").delete()
+
+    external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+
+    app = DjangoDash('3d_molecule_view', external_stylesheets=external_stylesheets,
+
+                     title='3D MOLEKÜL GÖRÜNTÜLEME')
+
+    form = MoleculeViewForm(request.POST or None, request.FILES or None)
+
+    if request.method == "POST":
+
+        if form.is_valid():
+
+            if request.FILES['file'].size > 25 * 1024 * 1024:
+                messages.error(request, "Dosya boyutu en fazla 25mb olmalıdır.")
+                return HttpResponseRedirect(request.path)
+
+            file = form.cleaned_data["file"]
+
+            obj = BioinformaticModel.objects.create(
+                user=request.user,
+                tool="molecule_view",
+            )
+
+            file_obj = obj.records_files.create(file=file)
+
+            data_path = os.path.join(BASE_DIR, 'media', 'laboratory', f'{request.user}')
+
+            representation_options = [
+                {"label": "backbone", "value": "backbone"},
+                {"label": "ball+stick", "value": "ball+stick"},
+                {"label": "cartoon", "value": "cartoon"},
+                {"label": "hyperball", "value": "hyperball"},
+                {"label": "licorice", "value": "licorice"},
+                {"label": "axes+box", "value": "axes+box"},
+                {"label": "helixorient", "value": "helixorient"}
+            ]
+
+            app.layout = html.Div([
+                dcc.Dropdown(id="nglstyle-dropdown", options=representation_options,
+                             multi=True, value=["cartoon", "axes+box"]),
+                dcc.RadioItems(
+                    id="nglstyle-radio",
+                    options=[
+                        {'label': 'sideByside', 'value': "True"},
+                        {'label': 'Independent', 'value': "False"},
+                    ],
+                    value="False"
+                ),
+                dashbio.NglMoleculeViewer(id="nglstyle-ngl"),
+            ])
+
+            @app.callback(
+                Output("nglstyle-ngl", 'data'),
+                Output("nglstyle-ngl", "molStyles"),
+                Input("nglstyle-dropdown", "value"),
+                Input("nglstyle-radio", "value")
+            )
+            def return_molecule(style, sidebyside):
+
+                sidebyside_bool = sidebyside == "True"
+
+                molstyles_dict = {
+                    "representations": style,
+                    "chosenAtomsColor": "red",
+                    "chosenAtomsRadius": 1,
+                    "molSpacingXaxis": 100,
+                    "sideByside": sidebyside_bool
+                }
+
+                data_list = ngl_parser.get_data(
+                        data_path=data_path,
+                        pdb_id=file.name,
+                        color='red',
+                        reset_view=True,
+                        local=True
+                    )
+
+                return data_list, molstyles_dict
+
+        return HttpResponseRedirect("/laboratory/bioinformatic/app/3d_molecule_view/")
+
+    return render(request, 'bioinformatic/form.html', {'form': form, 'title': '3D MOLECULE GÖRÜNTÜLEME'})

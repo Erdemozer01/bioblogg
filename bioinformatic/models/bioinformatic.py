@@ -6,7 +6,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 def file_upload_to(instance, filename):
-    return 'laboratory/{username}/{username}_{filename}'.format(
+    return 'laboratory/{username}/{filename}'.format(
         username=instance.records.user, filename=filename)
 
 

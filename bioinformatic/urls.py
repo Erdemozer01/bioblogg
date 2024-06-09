@@ -17,6 +17,7 @@ urlpatterns = [
     path('file-reading/<user>/', views.FileReadingView.file_reading, name="file_reading"),
     path('phylo-tree-creating/', views.FileReadingView.PhylogeneticTree, name="pyhlo_tree"),
     path('blast/', views.FileReadingView.blast, name="blast"),
+    path('3d-molekul-goruntuleme/', views.FileReadingView.molecule_viewer, name="3d_molecule_view"),
 
     # Writing
     path('file-format-select/<user>/', views.FileWritingView.file_writing_format_select,

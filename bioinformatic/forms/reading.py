@@ -67,3 +67,16 @@ class BlastForm(forms.Form):
     database = forms.ChoiceField(choices=BLAST_DATABASE, label="Blast Veritabanı Seçiniz", widget=forms.Select(attrs={
         'class': 'custom-select'
     }))
+
+
+class MoleculeViewForm(forms.ModelForm):
+    file = forms.FileField(
+        label='Dosya',
+        help_text="Not : .pdb veya .cif uzanlı olmalıdır. Max. dosya boyutu 25 mb olmalıdır.",
+    )
+
+    class Meta:
+        model = BioinformaticModel
+        fields = ["file"]
+
+

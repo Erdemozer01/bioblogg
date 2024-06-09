@@ -1,6 +1,5 @@
 from django.shortcuts import *
 from pathlib import Path
-import os
 from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
@@ -8,7 +7,6 @@ from django.contrib import messages
 from bioinformatic.forms.file_convert import FileConvertForm
 from bioinformatic.models.bioinformatic import BioinformaticModel
 from django.utils.translation import gettext as _
-from django.utils.translation import ngettext_lazy
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
