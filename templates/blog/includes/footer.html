@@ -2,34 +2,33 @@
     <div class="container">
         <div class="row">
             <div class="col-lg-4">
-                <p><strong>BioBlog</strong> is a premium Bootstrap UI Kit built based on the newest design trend called
-                    Neumorphism.</p>
+                <p><strong>BioBlog,</strong> Blog, makale ve biyoinformatiksel işlemlerin yapıldığı web sitesidir.</p>
                 <ul class="d-flex list-unstyled mb-5 mb-lg-0">
                     <li class="mr-2">
-                        <a href="https://twitter.com/themesberg" target="_blank"
+                        <a href="#" target="_blank"
                            class="btn btn-icon-only btn-pill btn-primary" aria-label="twitter social link"
-                           data-toggle="tooltip" data-placement="top" title="Follow @themesberg on Twitter">
+                           data-toggle="tooltip" data-placement="top" title="Twitter">
                             <span aria-hidden="true" class="fab fa-twitter"></span>
                         </a>
                     </li>
                     <li class="mr-2">
-                        <a href="https://www.facebook.com/themesberg/" target="_blank"
+                        <a href="#" target="_blank"
                            class="btn btn-icon-only btn-pill btn-primary" aria-label="facebook social link"
-                           data-toggle="tooltip" data-placement="top" title="Like @themesberg on Facebook">
+                           data-toggle="tooltip" data-placement="top" title="Facebook">
                             <span aria-hidden="true" class="fab fa-facebook"></span>
                         </a>
                     </li>
                     <li class="mr-2">
-                        <a href="https://github.com/themesberg" target="_blank"
+                        <a href="#" target="_blank"
                            class="btn btn-icon-only btn-pill btn-primary" aria-label="github social link"
-                           data-toggle="tooltip" data-placement="top" title="Open source projects">
-                            <span aria-hidden="true" class="fab fa-github"></span>
+                           data-toggle="tooltip" data-placement="top" title="İnstagram">
+                            <span aria-hidden="true" class="fab fa-instagram"></span>
                         </a>
                     </li>
                     <li>
-                        <a href="https://dribbble.com/themesberg" target="_blank"
+                        <a href="#" target="_blank"
                            class="btn btn-icon-only btn-pill btn-primary" aria-label="dribbble social link"
-                           data-toggle="tooltip" data-placement="top" title="Follow us on Dribbble">
+                           data-toggle="tooltip" data-placement="top" title="Dribbble">
                             <span aria-hidden="true" class="fab fa-dribbble"></span>
                         </a>
                     </li>
@@ -40,7 +39,7 @@
                 <ul class="footer-links list-unstyled mt-2">
                     <li class="mb-1"><a class="p-2" target="_blank" href="{% url "blog:anasayfa" %}">Blog</a></li>
                     <li class="mb-1"><a class="p-2" target="_blank"
-                                        href="https://themesberg.com/products">Laboratuvar</a></li>
+                                        href="{% url 'lab_home' %}">Laboratuvarlar</a></li>
                     <li class="mb-1"><a class="p-2" target="_blank" href="{% url 'blog:about' %}">Hakkımızda</a></li>
                     <li><a class="p-2" target="_blank" href="{% url 'blog:blog_contact' %}">İletişim</a></li>
                 </ul>
