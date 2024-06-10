@@ -40,7 +40,7 @@
                         <li class="nav-item dropdown">
 
                             <a href="#" class="nav-link" data-toggle="dropdown">
-                                <span class="nav-link-inner-text">Laboratuvar</span>
+                                <span class="nav-link-inner-text">Laboratuvarlar</span>
                                 <span class="fas fa-angle-down nav-link-arrow ml-2"></span>
                             </a>
 
@@ -49,6 +49,8 @@
                                        href="{% url 'bioinformatic:home' %}">Biyoinformatik</a></li>
                                 <li><a class="dropdown-item" href="#">Biyoistatislik</a></li>
                                 <li><a class="dropdown-item" href="#">Coğrafi Bilgi Sistemleri</a></li>
+                                <li><a class="dropdown-item" href="{% url 'lab_home' %}">Laboratuvarlar Anasayfa</a>
+                                </li>
                             </ul>
                         </li>
 
@@ -205,7 +207,7 @@
         </nav>
     </header>
 
-{% elif 'bioinformatic' in request.path %}
+{% elif 'bioinformatic' or 'laboratuvarlar' in request.path %}
 
     <header class="header-global">
         <nav id="navbar-main" aria-label="Primary navigation"
@@ -247,7 +249,7 @@
 
                         <li class="nav-item dropdown">
                             <a href="#" class="nav-link" data-toggle="dropdown">
-                                <span class="nav-link-inner-text">Laboratuvar</span>
+                                <span class="nav-link-inner-text">Laboratuvarlar</span>
                                 <span class="fas fa-angle-down nav-link-arrow ml-2"></span>
                             </a>
                             <ul class="dropdown-menu">
@@ -255,6 +257,8 @@
                                        href="{% url 'bioinformatic:home' %}">Biyoinformatik</a></li>
                                 <li><a class="dropdown-item" href="#">Biyoistatislik</a></li>
                                 <li><a class="dropdown-item" href="#">Coğrafi Bilgi Sistemleri</a></li>
+                                <li><a class="dropdown-item" href="{% url 'lab_home' %}">Laboratuvarlar Anasayfa</a>
+                                </li>
                             </ul>
                         </li>
 
