@@ -800,7 +800,7 @@ def molecule_viewer(request):
 
                     html.H4("3D MOLEKÜL GÖRÜNTÜLEME", className="mt-3"),
 
-                    html.P(f' DOSYA ADI : {file.name},'),
+                    html.P(f'İD : {file.name[:4]},'),
 
                     html.Hr(),
 

@@ -1,12 +1,11 @@
 import time
 from django.db import models
 from django.utils import timezone
-from ckeditor_uploader.fields import RichTextUploadingField
-from ckeditor.fields import RichTextField
 from autoslug.fields import AutoSlugField
 from hitcount.models import HitCount, Hit
 from django.contrib.contenttypes.fields import GenericRelation
-from django_ckeditor_5.fields import CKEditor5Field,CKEditor5Widget
+from django_ckeditor_5.fields import CKEditor5Field, CKEditor5Widget
+
 num_time = time.time()
 
 
