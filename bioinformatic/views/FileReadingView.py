@@ -759,59 +759,106 @@ def molecule_viewer(request):
 
             file_obj = obj.records_files.create(file=file)
 
-            data_path = os.path.join(BASE_DIR, 'media', 'laboratory', f'{request.user}')
+            try:
 
-            representation_options = [
-                {"label": "backbone", "value": "backbone"},
-                {"label": "ball+stick", "value": "ball+stick"},
-                {"label": "cartoon", "value": "cartoon"},
-                {"label": "hyperball", "value": "hyperball"},
-                {"label": "licorice", "value": "licorice"},
-                {"label": "axes+box", "value": "axes+box"},
-                {"label": "helixorient", "value": "helixorient"}
+                parser = PdbParser(file_obj.file.path)
+
+                data = parser.mol3d_data()
+
+                styles = create_mol3d_style(
+                    data['atoms'], visualization_type='cartoon', color_element='residue'
+                )
+
+                df = pd.DataFrame(data["atoms"])
+                df = df.drop_duplicates(subset=['residue_name'])
+                df['positions'] = df['positions'].apply(lambda x: ', '.join(map(str, x)))
+
+            except ValueError:
+                messages.error(request, "Sayfayı yenilediğiniz İçin veriler kaybolmuştur")
+
+                return redirect('bioinformatic:3d_molecule_view')
+
+            except parmed.exceptions.FormatNotFound:
+
+                messages.error(request, "Hatalı Dosya Formatı")
+
+                return redirect('bioinformatic:3d_molecule_view')
+
+            columns = [
+                {'name': 'Seri', 'id': 'serial'},
+                {'name': 'Adı', 'id': 'name'},
+                {'name': 'ELEMENT', 'id': 'elem'},
+                {'name': 'POZİSYON', 'id': 'positions'},
+                {'name': 'Kütle Büyüklüğü', 'id': 'mass_magnitude'},
+                {'name': 'İNDEX', 'id': 'residue_index'},
+                {'name': 'Bölge Adı', 'id': 'residue_name'},
+                {'name': 'Zincir', 'id': 'chain'}
             ]
 
-            app.layout = html.Div([
-                dcc.Dropdown(id="nglstyle-dropdown", options=representation_options,
-                             multi=True, value=["cartoon", "axes+box"]),
-                dcc.RadioItems(
-                    id="nglstyle-radio",
-                    options=[
-                        {'label': 'sideByside', 'value': "True"},
-                        {'label': 'Independent', 'value': "False"},
-                    ],
-                    value="False"
-                ),
-                dashbio.NglMoleculeViewer(id="nglstyle-ngl"),
-            ])
+            app.layout = html.Div(
+                [
+
+                    html.H4("3D MOLEKÜL GÖRÜNTÜLEME", className="mt-3"),
+
+                    html.P(f' DOSYA ADI : {file.name},'),
+
+                    html.Hr(),
+
+                    dash_table.DataTable(
+                        id="zooming-specific-residue-table",
+                        columns=columns,
+                        data=df.to_dict("records"),
+                        row_selectable="single",
+                        page_size=10,
+                        filter_action='native',
+                        filter_options={"placeholder_text": "Filtrele"},
+                        editable=True,
+                        style_cell={'textAlign': 'center'},
+                        style_header={
+                            'backgroundColor': 'white',
+                            'fontWeight': 'bold'
+                        },
+                    ),
+                    html.Hr(),
+                    dashbio.Molecule3dViewer(
+                        id="zooming-specific-molecule3d-zoomto",
+                        modelData=data,
+                        styles=styles,
+                        style={'marginRight': 'auto', 'marginLeft': 'auto'},
+                        width=950, height=600
+                    ),
+                ], className="container"
+            )
 
             @app.callback(
-                Output("nglstyle-ngl", 'data'),
-                Output("nglstyle-ngl", "molStyles"),
-                Input("nglstyle-dropdown", "value"),
-                Input("nglstyle-radio", "value")
+                Output("zooming-specific-molecule3d-zoomto", "zoomTo"),
+                Output("zooming-specific-molecule3d-zoomto", "labels"),
+                Input("zooming-specific-residue-table", "selected_rows"),
+                prevent_initial_call=True
             )
-            def return_molecule(style, sidebyside):
+            def residue(selected_row):
+                row = df.iloc[selected_row]
+                row['positions'] = row['positions'].apply(lambda x: [float(x) for x in x.split(',')])
 
-                sidebyside_bool = sidebyside == "True"
+                return [
+                    {
+                        "sel": {"chain": row["chain"], "resi": row["residue_index"]},
+                        "animationDuration": 1500,
+                        "fixedPath": True,
+                    },
 
-                molstyles_dict = {
-                    "representations": style,
-                    "chosenAtomsColor": "red",
-                    "chosenAtomsRadius": 1,
-                    "molSpacingXaxis": 100,
-                    "sideByside": sidebyside_bool
-                }
+                    [
+                        {
+                            "text": "Bölge ADI: {}".format(row["residue_name"].values[0]),
+                            "position": {
+                                "x": row["positions"].values[0][0],
+                                "y": row["positions"].values[0][1],
+                                "z": row["positions"].values[0][2],
+                            },
+                        }
+                    ],
 
-                data_list = ngl_parser.get_data(
-                        data_path=data_path,
-                        pdb_id=file.name,
-                        color='red',
-                        reset_view=True,
-                        local=True
-                    )
-
-                return data_list, molstyles_dict
+                ]
 
         return HttpResponseRedirect("/laboratory/bioinformatic/app/3d_molecule_view/")
 
