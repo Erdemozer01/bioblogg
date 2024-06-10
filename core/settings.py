@@ -167,7 +167,6 @@ FILE_UPLOAD_HANDLERS = [
 CKEDITOR_5_ALLOW_ALL_FILE_TYPES = True
 CKEDITOR_5_UPLOAD_FILE_TYPES = ['jpeg', 'pdf', 'png']  # optional
 
-
 customColorPalette = [
     {
         'color': 'hsl(4, 90%, 58%)',
@@ -210,11 +209,10 @@ CKEDITOR_5_CONFIGS = {
             '|',
             'blockQuote',
         ],
-        'toolbar': ['heading', '|', "Alignment", '|', 'bold', 'italic', 'link', 'underline',
-                    'strikethrough', 'code', 'highlight', '|', 'codeBlock',
-                    'bulletedList', 'numberedList', 'fileUpload', 'imageUpload', '|','fontSize',
-                    'fontFamily', 'fontColor', 'fontBackgroundColor', 'mediaEmbed', 'removeFormat',
-                    'insertTable', "fullPage"],
+        'toolbar': ['undo', '|', 'redo', '|', 'heading', '|', "Alignment", '|', 'bold', 'italic', 'link', 'underline',
+                    'strikethrough', 'highlight', '|', 'codeBlock', 'bulletedList', 'numberedList', '|',
+                    'fileUpload', 'imageUpload', 'mediaEmbed', 'exportPdf', '|', 'fontSize', 'fontFamily', 'fontColor',
+                    'fontBackgroundColor', 'insertTable', ],
         'image': {
             'toolbar': ['imageTextAlternative', '|', 'imageStyle:alignLeft',
                         'imageStyle:alignRight', 'imageStyle:alignCenter', 'imageStyle:side', '|'],
@@ -247,6 +245,7 @@ CKEDITOR_5_CONFIGS = {
                 {'model': 'heading3', 'view': 'h3', 'title': 'Heading 3', 'class': 'ck-heading_heading3'}
             ]
         }, 'language': 'tr',
+
     },
     'list': {
         'properties': {
