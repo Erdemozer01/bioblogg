@@ -20,7 +20,8 @@
     <meta name="msapplication-TileColor" content="#ffffff">
     <meta name="theme-color" content="#ffffff">
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
 
     <link rel="stylesheet" href="/static/blog/assets/css/cover.css?{% now "U" %}">
 
@@ -93,17 +94,32 @@
             </nav>
         </div>
     </header>
+    {% if 'biyoistatislik' in request.build_absolute_uri %}
+        <main class="px-3">
+            <marquee class="text-center" behavior="slide" direction="up"><h1>Yakında...</h1>
+            </marquee>
+        </main>
+    {% elif 'cbs' in request.path %}
+        <main class="px-3">
+            <marquee class="text-center" behavior="slide" direction="up"><h1>Yakında...</h1>
+            </marquee>
+        </main>
 
-    <main class="px-3">
-        <marquee class="text-center" behavior="slide" direction="up" ><h1>BioBlog Sitesine Hoş geldiniz.</h1></marquee>
-        <p class="lead text-center">
-            <a href="{% url 'blog:about' %}" class="btn btn-lg btn-secondary fw-bold border-white bg-white">Ayrıntılı bilgi &raquo; </a>
-        </p>
+    {% else %}
+        <main class="px-3">
+            <marquee class="text-center" behavior="slide" direction="up"><h1>BioBlog Sitesine Hoş geldiniz.</h1>
+            </marquee>
+            <p class="lead text-center">
+                <a href="{% url 'blog:about' %}" class="btn btn-lg btn-secondary fw-bold border-white bg-white">Ayrıntılı
+                    bilgi &raquo; </a>
+            </p>
+        </main>
+    {% endif %}
 
-    </main>
 
     <footer class="mt-auto text-white-50">
         <p> &copy; BioBlog 2022 - {% now "Y" %} </p>
+        <p> ( Geliştirme Aşamasında )</p>
     </footer>
 
 </div>

@@ -6,6 +6,7 @@ from bioinformatic.models.article import ArticleSearchModel
 
 
 def pubmed(request):
+
     if request.user.is_anonymous:
         from django.conf import settings
         messages.error(request, "Lütfen Giriş Yapınız")

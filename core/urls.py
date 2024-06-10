@@ -9,7 +9,7 @@ from blog.views import ArchiveView
 urlpatterns = [
                   path('admin/', admin.site.urls),
                   path('accounts/', include('django.contrib.auth.urls')),
-                  path('laboratory/bioinformatic/', include('django_plotly_dash.urls')),
+                  path('laboratuvarlar/bioinformatic-laboratuvari/', include('django_plotly_dash.urls')),
                   path("ckeditor5/", include('django_ckeditor_5.urls')),
                   path('blog/', include("blog.urls", namespace="blog")),
                   path('accounts/', include("accounts.urls", namespace="accounts")),
@@ -17,7 +17,12 @@ urlpatterns = [
                   path('laboratuvarlar/bioinformatic/', include("bioinformatic.urls", namespace="bioinformatic")),
                   path('archive/<int:year>/<int:month>/', ArchiveView.as_view(), name="archive"),
                   path('', generic.TemplateView.as_view(template_name="cover.html"), name="anasayfa"),
-                  path('laboratuvarlar', generic.TemplateView.as_view(template_name="laboratory.html"), name="lab_home"),
+                  path('laboratuvarlar/', generic.TemplateView.as_view(template_name="laboratory.html"),
+                       name="lab_home"),
+                  path('laboratuvarlar/biyoistatislik/', generic.TemplateView.as_view(template_name="cover.html"),
+                       name="biyoistatislik"),
+                  path('laboratuvarlar/cbs/', generic.TemplateView.as_view(template_name="cover.html"), name="cbs"),
+
               ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 urlpatterns += staticfiles_urlpatterns()
