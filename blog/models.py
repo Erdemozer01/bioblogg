@@ -6,7 +6,7 @@ from ckeditor.fields import RichTextField
 from autoslug.fields import AutoSlugField
 from hitcount.models import HitCount, Hit
 from django.contrib.contenttypes.fields import GenericRelation
-
+from django_ckeditor_5.fields import CKEditor5Field,CKEditor5Widget
 num_time = time.time()
 
 
@@ -39,7 +39,7 @@ def extra_img_upload_to(instance, filename):
 class Category(models.Model):
     image = models.ImageField(upload_to='blog/category/', verbose_name='Kategori Fotosu:')
     title = models.CharField(max_length=100, verbose_name='Kategori:')
-    explain = RichTextField(verbose_name='Kategori Tanımı:', config_name="blog")
+    explain = CKEditor5Field(verbose_name='Kategori Tanımı:', config_name='extends')
     slug = AutoSlugField(populate_from='title', unique=True)
 
     publish = models.DateTimeField(default=timezone.now, verbose_name='Yayınlama Tarihi')
@@ -69,7 +69,7 @@ class Posts(models.Model):
     category = models.ForeignKey(Category, verbose_name="Kategori", related_name='post', on_delete=models.CASCADE)
     cover = models.ImageField(upload_to=cover_upload_to, verbose_name="Gönderi Fotosu:")
     title = models.CharField(max_length=250, verbose_name="Başlık:", blank=False)
-    text = RichTextUploadingField(verbose_name='İçerik', blank=False)
+    text = CKEditor5Field(verbose_name='İçerik', config_name='extends')
     slug = AutoSlugField(populate_from="title", unique=True)
     author = models.ForeignKey('auth.User', on_delete=models.CASCADE, verbose_name='Yazar')
 

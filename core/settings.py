@@ -37,8 +37,7 @@ INSTALLED_APPS = [
     'bootstrap4',
     'django_cleanup',
     'hitcount',
-    'ckeditor',
-    'ckeditor_uploader',
+    'django_ckeditor_5',
     'channels',
     'dpd_components',
 ]
@@ -141,8 +140,6 @@ EMAIL_HOST_PASSWORD = 'izcberolyvhwuvol'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CKEDITOR_UPLOAD_PATH = "uploads/"
-
 X_FRAME_OPTIONS = 'SAMEORIGIN'
 
 AUTO_LOGOUT = {'IDLE_TIME': 86400}
@@ -165,31 +162,97 @@ FILE_UPLOAD_HANDLERS = [
     "django.core.files.uploadhandler.TemporaryFileUploadHandler",
 ]
 
-CKEDITOR_CONFIGS = {
+CKEDITOR_5_ALLOW_ALL_FILE_TYPES = True
+CKEDITOR_5_UPLOAD_FILE_TYPES = ['jpeg', 'pdf', 'png']  # optional
+
+
+customColorPalette = [
+    {
+        'color': 'hsl(4, 90%, 58%)',
+        'label': 'Red'
+    },
+    {
+        'color': 'hsl(340, 82%, 52%)',
+        'label': 'Pink'
+    },
+    {
+        'color': 'hsl(291, 64%, 42%)',
+        'label': 'Purple'
+    },
+    {
+        'color': 'hsl(262, 52%, 47%)',
+        'label': 'Deep Purple'
+    },
+    {
+        'color': 'hsl(231, 48%, 48%)',
+        'label': 'Indigo'
+    },
+    {
+        'color': 'hsl(207, 90%, 54%)',
+        'label': 'Blue'
+    },
+]
+
+CKEDITOR_5_CONFIGS = {
     'default': {
-        'toolbar': 'full',
-        'height': 'auto',
-        'width': 'auto',
+        'toolbar': ['heading', '|', 'bold', 'italic', 'link',
+                    'bulletedList', 'numberedList', 'blockQuote', 'imageUpload', 'fontSize', 'fontFamily',
+                    'fontColor', ],
+
     },
-    'blog': {
-        'height': 'auto',
-        'width': '%100',
-        'toolbar_Basic': [
-            ['Source', '-', 'Bold', 'Italic']
+    'extends': {
+        'blockToolbar': [
+            'paragraph', 'heading1', 'heading2', 'heading3',
+            '|',
+            'bulletedList', 'numberedList',
+            '|',
+            'blockQuote',
         ],
-        'toolbar_BlogToolbarConfig': [
-            {'name': 'styles', 'items': ['Format', 'Font', 'FontSize']},
-            {'name': 'basicstyles',
-             'items': ['JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock', '-', 'Bold', 'Italic',
-                       'Underline', 'Strike', 'Subscript', 'Superscript', 'RemoveFormat', 'TextColor', 'Maximize']},
-            {'name': 'paragraph',
-             'items': ['Blockquote', '-', 'NumberedList', 'BulletedList', 'ExportPdf', ]},
-            {'name': 'insert', 'items': ['Flash', 'Table', 'Smiley', 'SpecialChar']},
-            {'name': 'yourcustomtools', 'items': ['Undo', 'Redo']},
-            {'name': 'links', 'items': ['Link', 'Unlink', '-', ]},
-        ],
-        'toolbar': 'BlogToolbarConfig',
-        'tabSpaces': 4,
-        'mathJaxLib': '//cdnjs.cloudflare.com/ajax/libs/mathjax/3.0.0/es5/latest?tex-mml-chtml.js',
+        'toolbar': ['heading', '|', "Alignment", '|', 'bold', 'italic', 'link', 'underline',
+                    'strikethrough',
+                    'code', 'highlight', '|', 'codeBlock', 'sourceEditing',
+                    'bulletedList', 'numberedList', 'fileUpload', 'imageUpload', '|',
+                    'fontSize', 'fontFamily', 'fontColor', 'fontBackgroundColor', 'mediaEmbed', 'removeFormat',
+                    'insertTable', ],
+        'image': {
+            'toolbar': ['imageTextAlternative', '|', 'imageStyle:alignLeft',
+                        'imageStyle:alignRight', 'imageStyle:alignCenter', 'imageStyle:side', '|'],
+            'styles': [
+                'full',
+                'side',
+                'alignLeft',
+                'alignRight',
+                'alignCenter',
+            ]
+
+        },
+        'table': {
+            'contentToolbar': ['tableColumn', 'tableRow', 'mergeTableCells',
+                               'tableProperties', 'tableCellProperties'],
+            'tableProperties': {
+                'borderColors': customColorPalette,
+                'backgroundColors': customColorPalette
+            },
+            'tableCellProperties': {
+                'borderColors': customColorPalette,
+                'backgroundColors': customColorPalette
+            }
+        },
+        'heading': {
+            'options': [
+                {'model': 'paragraph', 'title': 'Paragraph', 'class': 'ck-heading_paragraph'},
+                {'model': 'heading1', 'view': 'h1', 'title': 'Heading 1', 'class': 'ck-heading_heading1'},
+                {'model': 'heading2', 'view': 'h2', 'title': 'Heading 2', 'class': 'ck-heading_heading2'},
+                {'model': 'heading3', 'view': 'h3', 'title': 'Heading 3', 'class': 'ck-heading_heading3'}
+            ]
+        }, 'language': 'tr',
     },
+    'list': {
+        'properties': {
+            'styles': 'true',
+            'startIndex': 'true',
+            'reversed': 'true',
+        }
+    },
+
 }

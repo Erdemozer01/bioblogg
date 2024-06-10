@@ -37,6 +37,9 @@
                         {% if "file-reading" in url %}
                             <a href="{{ url }}" class="btn btn-block btn-primary">Geri</a>
                         {% endif %}
+                        {% if "makale-arama" in url %}
+                            <a href="{{ url }}" class="btn btn-block btn-primary">Geri</a>
+                        {% endif %}
                         <a href="{% url "blog:anasayfa" %}" class="btn btn-block btn-primary">Anasayfa</a>
                     </div>
 

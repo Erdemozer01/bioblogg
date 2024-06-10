@@ -1,6 +1,5 @@
 from django import forms
 from blog.models import Comments
-from ckeditor.widgets import CKEditorWidget
 
 
 class AddCommentForm(forms.ModelForm):

@@ -5,7 +5,7 @@ app_name = "bioinformatic"
 
 urlpatterns = [
     # Sekans
-    path('anasayfa/', views.BioinformaticHomeView.as_view(), name="home"),
+    path('anasayfa/', views.bioinformatic_home, name="home"),
     path('dna-sekans-okuması/', views.SekansView.sequence_analiz, name="dna_seq_read"),
     path('dna-sekans-kesme/', views.SekansView.Kmer_SeqSlicing, name="dna_seq_slice"),
     path('dna-sekans-translate/', views.SekansView.translation, name="dna_seq_translate"),
@@ -33,4 +33,7 @@ urlpatterns = [
 
     # FileConvert
     path('dosya-dönüştürme/', views.FileConvert, name='file_convert'),
+
+    # FileConvert
+    path('makale-arama/', views.article.pubmed, name='article'),
 ]
