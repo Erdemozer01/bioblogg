@@ -17,6 +17,7 @@ urlpatterns = [
                   path('laboratory/bioinformatic/', include("bioinformatic.urls", namespace="bioinformatic")),
                   path('archive/<int:year>/<int:month>/', ArchiveView.as_view(), name="archive"),
                   path('', generic.TemplateView.as_view(template_name="cover.html"), name="anasayfa"),
+                  path('laboratuvarlar', generic.TemplateView.as_view(template_name="laboratory.html"), name="lab_home"),
               ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 urlpatterns += staticfiles_urlpatterns()

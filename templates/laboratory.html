@@ -1,0 +1,69 @@
+{% extends "blog/layouts/base.html" %}
+{% load static %}
+{% load bootstrap4 %}
+{% block title %} Laboratuvarlar {% endblock %}
+
+
+{% block content %}
+
+    <main>
+
+        <div class="section-header pb-6 bg-primary overflow-hidden text-center border-bottom border-light">
+            <div class="container z-2">
+                <div class="row mb-4 justify-content-center">
+                    <div class="col-12 col-md-8 col-lg-7 mt-6">
+                        <h1 class="display-4 mb-4">LABORATUVARLAR</h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <section class="section bg-primary text-dark section-lg">
+            <div class="container">
+                <div class="row mb-3">
+
+                    <div class="col-12 col-md-6 col-lg-4 mb-5">
+                        <a href="{% url 'bioinformatic:home' %}">
+                            <div class="card bg-primary border-light shadow-soft">
+                                <img src="{% static 'bioinformatic/sequence.jpg' %}"
+                                     class="card-img-top rounded-top"
+                                     alt="DNA SEKANS ANALİZİ">
+                                <div class="card-body">
+                                    <h3 class="h5 card-title mt-3">BİYOİNFORMATİK LABORATUVARI</h3>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+
+                    <div class="col-12 col-md-6 col-lg-4 mb-5">
+                        <a href="#">
+                            <div class="card bg-primary border-light shadow-soft">
+                                <img src="{% static 'bioinformatic/protein_sentezi.jpg' %}"
+                                     class="card-img-top rounded-top"
+                                     alt="BİYOİSTATİSLİK LABORATUVARI">
+                                <div class="card-body">
+                                    <h3 class="h5 card-title mt-3">BİYOİSTATİSLİK LABORATUVARI</h3>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <a href="#">
+                            <div class="card bg-primary border-light shadow-soft">
+                                <img src="{% static 'bioinformatic/5138210.jpg' %}"
+                                     class="card-img-top rounded-top"
+                                     alt="COĞRAFİ BİLGİ SİSTEMLERİ LABORAATUVARI">
+                                <div class="card-body">
+                                    <h3 class="h5 card-title mt-3">COĞRAFİ BİLGİ SİSTEMLERİ LABORAATUVARI</h3>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+    </main>
+
+{% endblock %}
