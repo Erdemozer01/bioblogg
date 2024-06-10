@@ -14,7 +14,7 @@ urlpatterns = [
                   path('blog/', include("blog.urls", namespace="blog")),
                   path('accounts/', include("accounts.urls", namespace="accounts")),
                   path('dashboard/', include("dashboard.urls", namespace="dashboard")),
-                  path('laboratory/bioinformatic/', include("bioinformatic.urls", namespace="bioinformatic")),
+                  path('laboratuvarlar/bioinformatic/', include("bioinformatic.urls", namespace="bioinformatic")),
                   path('archive/<int:year>/<int:month>/', ArchiveView.as_view(), name="archive"),
                   path('', generic.TemplateView.as_view(template_name="cover.html"), name="anasayfa"),
                   path('laboratuvarlar', generic.TemplateView.as_view(template_name="laboratory.html"), name="lab_home"),
