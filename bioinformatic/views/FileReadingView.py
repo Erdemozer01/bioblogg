@@ -12,7 +12,7 @@ from Bio.SeqUtils import gc_fraction
 import pandas as pd
 import plotly.express as px
 from django_plotly_dash import DjangoDash
-from dash import Dash, html, dcc, dash_table, Output, Input, State
+from dash import Dash, dcc, html, dash_table, Input, Output, State, callback
 import dash_bootstrap_components as dbc
 from pathlib import Path
 from Bio.Blast import NCBIWWW, NCBIXML
@@ -26,7 +26,12 @@ import dash_cytoscape as cyto
 from bioinformatic.generate_tree import generate_elements
 import dash_bio as dashbio
 from dash_bio.utils import PdbParser, create_mol3d_style
-import dash_bio.utils.ngl_parser as ngl_parser
+
+import base64
+import datetime
+import io
+
+import pandas as pd
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -332,7 +337,7 @@ def file_reading(request, user):
                 title=f"{file_format} dosyası okuması sonuçları".upper()
             )
 
-            if file_format == "fasta":
+            if file_format == "fasta" or 'pdb':
 
                 df_TABLE = pd.DataFrame(
                     {
@@ -346,7 +351,7 @@ def file_reading(request, user):
                 file_reading_dash_app.layout = html.Div(
                     children=[
 
-                        html.H4("Fasta dosyası okuması", className="fw-bolder text-primary m-2 "),
+                        html.H4(f"{file_format} dosyası okuması", className="fw-bolder text-primary m-2 "),
 
                         html.Hr(className="border border-danger"),
 
@@ -617,10 +622,9 @@ def file_reading(request, user):
                         return True
                     return False
 
-            return HttpResponseRedirect(f"/laboratory/bioinformatic/app/{file_format}-dosya-sonuc")
+            return HttpResponseRedirect(f"/laboratuvarlar/bioinformatic-laboratuvari/app/{file_format}-dosya-sonuc")
 
         else:
-
             form = FileReadingForm()
 
     return render(request, "bioinformatic/form.html", {'form': form, 'title': 'DOSYA OKUMASI'})
@@ -720,7 +724,7 @@ def blast(request):
 
             blast_obj.delete()
 
-            return HttpResponseRedirect("/laboratory/bioinformatic/app/blast/")
+            return HttpResponseRedirect("/laboratuvarlar/bioinformatic-laboratuvari/app/blast/")
 
     return render(request, 'bioinformatic/form.html', {'form': form, 'title': 'BLAST'})
 
@@ -860,6 +864,109 @@ def molecule_viewer(request):
 
                 ]
 
-        return HttpResponseRedirect("/laboratory/bioinformatic/app/3d_molecule_view/")
+        return HttpResponseRedirect("/laboratuvarlar/bioinformatic-laboratuvari/app/3d_molecule_view/")
 
     return render(request, 'bioinformatic/form.html', {'form': form, 'title': '3D MOLECULE GÖRÜNTÜLEME'})
+
+
+def dash_fileupload(request):
+    external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+    app = DjangoDash('3d_molecule_view', external_stylesheets=external_stylesheets,
+                     title='3D MOLEKÜL GÖRÜNTÜLEME')
+
+    app.layout = html.Div([
+        dcc.Upload(
+            id='upload-data',
+            children=html.Div([
+                'Drag and Drop or ',
+                html.A('Select Files')
+            ]),
+            style={
+                'width': '100%',
+                'height': '60px',
+                'lineHeight': '60px',
+                'borderWidth': '1px',
+                'borderStyle': 'dashed',
+                'borderRadius': '5px',
+                'textAlign': 'center',
+                'margin': '10px'
+            },
+            # Allow multiple files to be uploaded
+            multiple=True
+        ),
+        html.Div(id='output-data-upload'),
+    ])
+
+    def parse_contents(contents, filename, date):
+        content_type, content_string = contents.split(',')
+
+        decoded = base64.b64decode(content_string)
+        try:
+            if 'csv' in filename:
+                # Assume that the user uploaded a CSV file
+                df = pd.read_csv(
+                    io.StringIO(decoded.decode('utf-8')))
+            elif 'xls' in filename:
+                # Assume that the user uploaded an excel file
+                df = pd.read_excel(io.BytesIO(decoded))
+        except Exception as e:
+            print(e)
+            return html.Div([
+                'There was an error processing this file.'
+            ])
+
+        return html.Div([
+            html.H5(filename),
+            html.H6(datetime.datetime.fromtimestamp(date)),
+
+            dash_table.DataTable(
+                df.to_dict('records'),
+                [{'name': i, 'id': i} for i in df.columns]
+            ),
+
+            html.Hr(),  # horizontal line
+
+            # For debugging, display the raw contents provided by the web browser
+            html.Div('Raw Content'),
+            html.Pre(contents[0:200] + '...', style={
+                'whiteSpace': 'pre-wrap',
+                'wordBreak': 'break-all'
+            })
+        ])
+
+    def parse_contents(contents, filename, date):
+        content_type, content_string = contents.split(',')
+
+        decoded = base64.b64decode(content_string)
+        try:
+            if 'csv' in filename:
+                # Assume that the user uploaded a CSV file
+                df = pd.read_csv(
+                    io.StringIO(decoded.decode('utf-8')))
+            elif 'xls' in filename:
+                # Assume that the user uploaded an excel file
+                df = pd.read_excel(io.BytesIO(decoded))
+        except Exception as e:
+            print(e)
+            return html.Div([
+                'There was an error processing this file.'
+            ])
+
+        return html.Div([
+            html.H5(filename),
+            html.H6(datetime.datetime.fromtimestamp(date)),
+
+            dash_table.DataTable(
+                df.to_dict('records'),
+                [{'name': i, 'id': i} for i in df.columns]
+            ),
+
+            html.Hr(),  # horizontal line
+
+            # For debugging, display the raw contents provided by the web browser
+            html.Div('Raw Content'),
+            html.Pre(contents[0:200] + '...', style={
+                'whiteSpace': 'pre-wrap',
+                'wordBreak': 'break-all'
+            })
+        ])

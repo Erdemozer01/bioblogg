@@ -34,6 +34,7 @@ urlpatterns = [
     # FileConvert
     path('dosya-dönüştürme/', views.FileConvert, name='file_convert'),
 
-    # FileConvert
+    # Makale
     path('makale-arama/', views.article.pubmed, name='article'),
+
 ]

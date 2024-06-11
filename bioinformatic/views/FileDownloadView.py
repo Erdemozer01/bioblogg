@@ -128,7 +128,7 @@ def EntrezDownload(request):
         else:
             return "Sekans girilmedi"
 
-    return HttpResponseRedirect("/laboratory/bioinformatic/app/temp-melt/")
+    return HttpResponseRedirect("laboratuvarlar/bioinformatic-laboratuvari/app/temp-melt/")
 
 
 def download_file(request):
