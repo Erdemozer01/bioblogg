@@ -4,7 +4,6 @@
 {% categories_large as large %}
 
 {% if 'blog' in request.path %}
-
     <header class="header-global">
         <nav id="navbar-main" aria-label="Primary navigation"
              class="navbar navbar-main navbar-expand-lg navbar-theme-primary headroom navbar-light navbar-transparent navbar-theme-primary">
@@ -53,7 +52,6 @@
                                 </li>
                             </ul>
                         </li>
-
                         <li class="nav-item dropdown mega-dropdown">
                             <a href="{% url "blog:categories" %}" class="nav-link" data-toggle="dropdown">
                                 <span class="nav-link-inner-text">Kategoriler</span>
@@ -135,10 +133,12 @@
                                 <li><a class="dropdown-item" href="#">Gizlilik</a></li>
                             </ul>
                         </li>
+                    
                     </ul>
                 </div>
 
                 {% if request.user.is_authenticated %}
+                    
                     <div class="d-flex align-items-center">
                         <div class="dropdown pl-5">
 
@@ -183,7 +183,9 @@
                                 aria-controls="navbar_global" aria-expanded="false" aria-label="Toggle navigation"><span
                                 class="navbar-toggler-icon"></span></button>
                     </div>
+                    
                 {% else %}
+                    
                     <div class="d-flex align-items-center">
                         <a href="{% url "accounts:register" %}"
                            class="btn btn-primary btn-pill animate-up-3 text-secondary d-none d-md-inline-block mr-3">
@@ -206,17 +208,15 @@
             </div>
         </nav>
     </header>
-
 {% elif 'bioinformatic' or 'laboratuvarlar' in request.path %}
-
     <header class="header-global">
         <nav id="navbar-main" aria-label="Primary navigation"
              class="navbar navbar-main navbar-expand-lg navbar-theme-primary headroom navbar-light navbar-transparent navbar-theme-primary">
             <div class="container position-relative">
 
                 <a class="navbar-brand shadow-soft py-2 px-3 rounded border border-light mr-lg-4"
-                   href="{% url "bioinformatic:home" %}">
-                    <span>Lab.</span>
+                   href="{% url "lab_home" %}">
+                    <span>Laboratuvar</span>
                 </a>
 
                 <div class="navbar-collapse collapse" id="navbar_global">
@@ -226,7 +226,7 @@
                             <div class="col-6 collapse-brand">
                                 <a href="{% url "bioinformatic:home" %}"
                                    class="navbar-brand shadow-soft py-2 px-3 rounded border border-light">
-                                    Lab.
+                                    Laboratuvar
                                 </a>
                             </div>
 
