@@ -182,10 +182,10 @@ def alignment_score(request):
 
 
 def sequence_analiz(request):
-    external_stylesheets = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css']
+    external_stylesheets = [dbc.themes.MORPH]
     external_scripts = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js']
     sequence_analiz = DjangoDash("sequence_analiz", external_stylesheets=external_stylesheets,
-                                 external_scripts=external_scripts, add_bootstrap_links=True, title='Sekans Analiz')
+                                 external_scripts=external_scripts, title='Sekans Analiz')
 
     sequence_analiz.layout = html.Div(
 
@@ -200,14 +200,18 @@ def sequence_analiz(request):
 
             html.Div(
                 [
-                    dcc.Textarea(id="sekans", placeholder="Sekans Giriniz",
+                    html.Label("Nükleotit tipi"),
+
+                    dcc.Dropdown(id="nuc_type", options={
+                        "1": "DNA",
+                        "2": "RNA",
+                        "3": "PROTEİN",
+                    }, value="1", searchable=True, className="form-control mb-1", ),
+
+                    html.Label("Sekans"),
+                    dcc.Textarea(id="sequence", placeholder="Sekans Giriniz",
                                  className="form-control mb-1", style={'height': 200}),
-                    dcc.Input(id="start", type="number", placeholder="Sekans başlangıcı", min=0,
-                              style={'marginLeft': '2px'}),
-                    dcc.Input(id="stop", type="number", placeholder="Sekans bitişi", min=0,
-                              style={'marginLeft': '2px'}),
-                    dcc.Input(id="discard", type="text", placeholder="İstenmeyen sekans dizisi",
-                              style={'marginLeft': '2px'}),
+
                 ]
             ),
 
@@ -217,73 +221,116 @@ def sequence_analiz(request):
 
     @sequence_analiz.callback(
         Output("output", "children"),
-        Input("sekans", "value"),
-        Input("start", "value"),
-        Input("stop", "value"),
-        Input("discard", "value"),
+        Input("sequence", "value"),
+        Input("nuc_type", "value"),
     )
-    def update_output(sekans, start, stop, discard):
-        sekans = str(sekans).replace(" ", "")
-        sekans = str(sekans).replace("\n", "")
-        sekans = str(sekans).replace("\t", "")
-        sekans = str(sekans).replace("\r", "")
-        sekans = str(sekans).replace("0", "")
-        sekans = str(sekans).replace("1", "")
-        sekans = str(sekans).replace("2", "")
-        sekans = str(sekans).replace("3", "")
-        sekans = str(sekans).replace("4", "")
-        sekans = str(sekans).replace("5", "")
-        sekans = str(sekans).replace("6", "")
-        sekans = str(sekans).replace("7", "")
-        sekans = str(sekans).replace("8", "")
-        sekans = str(sekans).replace("9", "")
-        sekans = str(sekans).upper().replace("NONE", "")
+    def update_output(sequence, nuc_type):
 
-        if discard:
-            sekans = sekans.replace(str(discard).upper(), "")
+        if sequence:
+            if nuc_type == "1":
+                sequence = sequence.upper()
+                ig = []
+                for i in sequence:
+                    if not i in ['A', 'C', 'G', 'T']:
+                        ig.append(i)
 
-        if start or stop:
-            sekans = sekans[start:stop]
+                for i in ig:
+                    if i in sequence:
+                        sequence = sequence.replace(i, "")
+                nuc_df = pd.DataFrame({
+                    'positions': [pos for pos in range(len(sequence))],
+                    'nucleotit': [seq for seq in sequence]
+                })
 
-        nuc_df = pd.DataFrame({
-            'positions': [pos + 1 for pos in range(len(sekans))],
-            'nucleotit': [seq for seq in sekans]
-        })
+                a = nuc_df[(nuc_df['nucleotit']) == "A"]
+                t = nuc_df[(nuc_df['nucleotit']) == "T"]
+                g = nuc_df[(nuc_df['nucleotit']) == "G"]
+                c = nuc_df[(nuc_df['nucleotit']) == "C"]
 
-        a = nuc_df[(nuc_df['nucleotit']) == "A"]
-        t = nuc_df[(nuc_df['nucleotit']) == "T"]
-        g = nuc_df[(nuc_df['nucleotit']) == "G"]
-        c = nuc_df[(nuc_df['nucleotit']) == "C"]
+                return html.Div([
+                    html.Hr(),
 
-        return html.Div([
-            html.Hr(),
+                    html.P(
+                        f"SEKANS UZUNLUĞU: {len(sequence)}, %GC: {gc_fraction(sequence)}," +
+                        f"  A: {sequence.count('A')}, T: {sequence.count('T')}, G: {sequence.count('G')}, C: {sequence.count('C')}",
+                        style={'marginTop': '10px'}
+                    ),
 
-            html.P(
-                f"SEKANS UZUNLUĞU: {len(sekans)}, %GC: {gc_fraction(sekans)}," +
-                f"  A: {sekans.count('A')}, T: {sekans.count('T')}, G: {sekans.count('G')}, C: {sekans.count('C')}",
-                style={'marginTop': '10px'}
-            ),
+                    html.Hr(),
 
-            html.Hr(),
+                    html.Div([
 
-            html.Div([
+                        html.P("Grafikler", className='text-primary'),
 
-                html.P("Grafik", className='text-primary'),
+                        dcc.Graph(
+                            figure=ff.create_distplot(
+                                [a['positions'], t['positions'], g['positions'], c['positions']],
+                                ['A', 'T', 'G', 'C'],
+                                bin_size=[.1, .25, .5, 1], show_hist=False,
+                                curve_type="normal",
+                            ).update_layout({'title': 'Nükleotit Dağılım Grafiği'}), className="mb-3"),
 
-                dcc.Graph(
-                    figure=ff.create_distplot(
-                        [a['positions'], t['positions'], g['positions'], c['positions']],
-                        ['A', 'T', 'G', 'C'],
-                        bin_size=[.1, .25, .5, 1], show_hist=False,
-                        curve_type="normal",
-                    ).update_layout({'title': 'Nükleotit Dağılım GRAFİĞİ'})),
+                        dcc.Graph(figure=px.histogram(
+                            nuc_df.to_dict("records"), x="nucleotit", color="nucleotit",
+                            title="Nükleotit Sayıları",
+                        ).update_yaxes(title="Nükletotit Sayısı").update_xaxes(title="Nükleotit"), className="mb-3")
+                    ])
+                ], style={'marginTop': "2%", 'margin': 20})
 
-                dcc.Graph(figure=px.histogram(
-                    nuc_df.to_dict("records"), x="nucleotit", color="nucleotit",
-                    title="Nükleotit Sayıları",
-                ).update_yaxes(title="Nükletotit Sayısı").update_xaxes(title="Nükleotit")),
-            ])
-        ], style={'marginTop': "2%", 'margin': 20})
+            elif nuc_type == "2":
+                sequence = sequence.upper()
+                ig = []
+                for i in sequence:
+                    if not i in ['A', 'C', 'G', 'U']:
+                        ig.append(i)
+
+                for i in ig:
+                    if i in sequence:
+                        sequence = sequence.replace(i, "")
+
+                nuc_df = pd.DataFrame({
+                    'positions': [pos for pos in range(len(sequence))],
+                    'nucleotit': [seq for seq in sequence]
+                })
+
+                a = nuc_df[(nuc_df['nucleotit']) == "A"]
+                t = nuc_df[(nuc_df['nucleotit']) == "U"]
+                g = nuc_df[(nuc_df['nucleotit']) == "G"]
+                c = nuc_df[(nuc_df['nucleotit']) == "C"]
+
+                return html.Div([
+                    html.Hr(),
+
+                    html.P(
+                        f"SEKANS UZUNLUĞU: {len(sequence)}, %GC: {gc_fraction(sequence)}," +
+                        f"  A: {sequence.count('A')}, U: {sequence.count('U')}, G: {sequence.count('G')}, C: {sequence.count('C')}",
+                        style={'marginTop': '10px'}
+                    ),
+
+                    html.Hr(),
+
+                    html.Div([
+
+                        html.P("Grafikler", className='text-primary'),
+
+                        dcc.Graph(
+                            figure=ff.create_distplot(
+                                [a['positions'], t['positions'], g['positions'], c['positions']],
+                                ['A', 'U', 'G', 'C'],
+                                bin_size=[.1, .25, .5, 1], show_hist=False,
+                                curve_type="normal",
+                            ).update_layout({'title': 'Nükleotit Dağılım Grafiği'}), className="mb-3"),
+
+                        dcc.Graph(figure=px.histogram(
+                            nuc_df.to_dict("records"), x="nucleotit", color="nucleotit",
+                            title="Nükleotit Sayıları",
+                        ).update_yaxes(title="Nükletotit Sayısı").update_xaxes(title="Nükleotit"), className="mb-3")
+                    ])
+                ], style={'marginTop': "2%", 'margin': 20})
+
+        else:
+            return html.P("Henüz bir sekans dizisi girmediniz ! ".upper(),
+                          className='text-danger mx-auto text-center mt-3')
 
     return HttpResponseRedirect("/laboratuvarlar/bioinformatic-laboratuvari/app/sequence_analiz/")
 
@@ -598,7 +645,6 @@ def create_frame_seq(request):
                 sticky="top",
             ),
 
-
             html.P("Sekans"),
 
             dcc.Textarea(id="sekans", placeholder="Sekans Giriniz",
@@ -717,7 +763,7 @@ def create_frame_seq(request):
 
 
 def TemperatureMeltingView(request):
-    external_stylesheets = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css']
+    external_stylesheets = [dbc.themes.MORPH]
     external_scripts = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js']
 
     mt_app = DjangoDash('temp-melt', external_stylesheets=external_stylesheets, external_scripts=external_scripts,
@@ -828,6 +874,3 @@ def TemperatureMeltingView(request):
             return "Sekans girilmedi"
 
     return HttpResponseRedirect("/laboratuvarlar/bioinformatic-laboratuvari/app/temp-melt/")
-
-
-
