@@ -2,7 +2,6 @@
 from Bio import Entrez
 from bioinformatic.forms import ArticleForm, EntrezSelectForm
 from django.shortcuts import *
-from django.contrib import messages
 from django_plotly_dash import DjangoDash
 from dash import dcc, html, Input, Output
 import dash_bootstrap_components as dbc
@@ -11,11 +10,6 @@ from Bio import Medline
 
 
 def entrez_tools(request):
-    if request.user.is_anonymous:
-        from django.conf import settings
-        messages.error(request, "Lütfen Giriş Yapınız")
-        return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
-
     form = EntrezSelectForm(request.POST or None)
 
     if request.method == "POST":
@@ -34,15 +28,22 @@ def entrez_tools(request):
 
                 app.layout = html.Div([
 
+                    ## NAVBAR ##
+
                     dbc.NavbarSimple(
                         children=[
-                            dbc.NavItem(dbc.NavLink("Entrez Araçları", href=HttpResponseRedirect(
+                            dbc.NavItem(dbc.NavLink("Blog", href=HttpResponseRedirect(
                                 reverse("bioinformatic:entrez_tools")).url, external_link=True)),
                             dbc.DropdownMenu(
                                 children=[
-
-                                    dbc.DropdownMenuItem("BLOG",
-                                                         href=HttpResponseRedirect(reverse("blog:anasayfa")).url,
+                                    dbc.DropdownMenuItem("Biyoinformatik",
+                                                         href=HttpResponseRedirect(reverse("bioinformatic:home")).url,
+                                                         external_link=True),
+                                    dbc.DropdownMenuItem("Biyoinformatik",
+                                                         href=HttpResponseRedirect(reverse("biyoistatislik")).url,
+                                                         external_link=True),
+                                    dbc.DropdownMenuItem("Coğrafi Bilgi sistemleri",
+                                                         href=HttpResponseRedirect(reverse("cbs")).url,
                                                          external_link=True),
                                     dbc.DropdownMenuItem("Laboratuvarlar",
                                                          href=HttpResponseRedirect(reverse("lab_home")).url,
@@ -50,11 +51,12 @@ def entrez_tools(request):
                                 ],
                                 nav=True,
                                 in_navbar=True,
-                                label="DİĞER",
+                                label="Laboratuvarlar",
+
                             ),
                         ],
-                        brand="Biyoinformatik",
-                        brand_href=HttpResponseRedirect(reverse("bioinformatic:home")).url,
+                        brand="Entrez Araçları",
+                        brand_href=HttpResponseRedirect(reverse("bioinformatic:entrez_tools")).url,
                         color="primary",
                         dark=True,
                         brand_external_link=True
@@ -64,7 +66,7 @@ def entrez_tools(request):
 
                     html.Div(
                         [
-                            html.H4('20 GÜNCEL MAKALE ARAMA', className='text-primary'),
+                            html.P('GÜNCEL MAKALE ARAMA', className='text-primary', style={'marginLeft': "1%"}),
 
                             html.Hr(),
 
@@ -128,7 +130,7 @@ def entrez_tools(request):
                         return [dbc.Table.from_dataframe(df, striped=True, bordered=True, hover=True)]
 
                     else:
-                        return "ARANACAK TERİM GİRİNİZ"
+                        return html.P("ARANACAK TERİM GİRİNİZ", className="text-center text-danger")
 
                 return HttpResponseRedirect("/laboratuvarlar/bioinformatic-laboratuvari/app/entrez-makale/")
 

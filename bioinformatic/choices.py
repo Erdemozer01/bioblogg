@@ -15,8 +15,8 @@ BLAST_DATABASE = (
 
 ENTREZ_SELECT = (
     ('', '------------'),
-    ('art', '20 GÜNCEL MAKALE ARAMA'),
-    ('nuc', 'NÜKLEOTİT'),
+    ('art', 'GÜNCEL MAKALE ARAMA'),
+    ('nuc', 'NUCLEOTIDE'),
 )
 
 RECORD_FORMAT = (
