@@ -23,7 +23,6 @@ from Bio import AlignIO
 from Bio.Phylo.TreeConstruction import DistanceTreeConstructor, DistanceCalculator
 from Bio import Phylo
 import dash_cytoscape as cyto
-from bioinformatic.generate_tree import generate_elements
 import dash_bio as dashbio
 from dash_bio.utils import PdbParser, create_mol3d_style
 
@@ -741,7 +740,6 @@ def molecule_viewer(request):
     external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
     app = DjangoDash('3d_molecule_view', external_stylesheets=external_stylesheets,
-
                      title='3D MOLEKÜL GÖRÜNTÜLEME')
 
     form = MoleculeViewForm(request.POST or None, request.FILES or None)

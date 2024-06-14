@@ -13,6 +13,12 @@ BLAST_DATABASE = (
     ('nt', 'nt'),
 )
 
+ENTREZ_SELECT = (
+    ('', '------------'),
+    ('art', '20 GÜNCEL MAKALE ARAMA'),
+    ('nuc', 'NÜKLEOTİT'),
+)
+
 RECORD_FORMAT = (
     ('', '------------'),
     ('file', 'DOSYA'),

@@ -25,7 +25,7 @@ def alignment_score(request):
     external_scripts = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js']
 
     alignment_score = DjangoDash('alignment_score', external_stylesheets=external_stylesheets,
-                                 external_scripts=external_scripts, add_bootstrap_links=True, title="ALİGNMENT SKOR")
+                                 external_scripts=external_scripts, title="ALİGNMENT SKOR")
 
     alignment_score.layout = html.Div(
 
@@ -497,7 +497,7 @@ def Kmer_SeqSlicing(request):
     external_stylesheets = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css']
     external_scripts = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js']
     seq_input = DjangoDash('kmer_seq_slicing', external_stylesheets=external_stylesheets,
-                           external_scripts=external_scripts, add_bootstrap_links=True, title='Kmer oluşturma')
+                           external_scripts=external_scripts, title='Kmer oluşturma')
 
     seq_input.layout = html.Div(
 
@@ -624,7 +624,7 @@ def create_frame_seq(request):
     external_scripts = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js']
 
     frame_seq_app = DjangoDash('create_frame_seq', external_stylesheets=external_stylesheets,
-                               external_scripts=external_scripts, add_bootstrap_links=True,
+                               external_scripts=external_scripts,
                                title='Çerçeve sekans oluşturma'.upper())
 
     frame_seq_app.layout = html.Div(

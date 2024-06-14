@@ -5,4 +5,4 @@ from .FileWritingView import file_writing_format_select, CreateFileView, RecordD
     FileWritingListView
 from .FileDownloadView import download_file
 from .FileConvertView import FileConvert
-from . import article
+from .entrez import entrez_tools

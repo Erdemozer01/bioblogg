@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import FileModel, BioinformaticModel, RecordModel, ArticleSearchModel
+from .models import FileModel, BioinformaticModel, RecordModel
 
 admin.AdminSite.login_template = "registration/login.html"
 admin.AdminSite.site_header = "BioBlog"
@@ -26,9 +26,3 @@ class BioinformaticModelAdmin(admin.ModelAdmin):
         FileModelModelInline,
         CreateDatabaseModelInline
     ]
-
-
-@admin.register(ArticleSearchModel)
-class ArticleSearchModelAdmin(admin.ModelAdmin):
-    list_display = ['user', "title", 'article_id', 'created']
-    search_fields = ['user']
