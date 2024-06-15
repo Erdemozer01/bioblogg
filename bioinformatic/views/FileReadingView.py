@@ -9,10 +9,10 @@ from bioinformatic.forms import FileReadingForm, MultipleSeqAlignmentFileForm, B
 from bioinformatic.models import BioinformaticModel
 from Bio import SeqIO, SearchIO
 from Bio.SeqUtils import gc_fraction
-import pandas as pd
+from bioinformatic.generate_tree import generate_elements
 import plotly.express as px
 from django_plotly_dash import DjangoDash
-from dash import Dash, dcc, html, dash_table, Input, Output, State, callback
+from dash import Dash, dcc, html, dash_table, Input, Output
 import dash_bootstrap_components as dbc
 from pathlib import Path
 from Bio.Blast import NCBIWWW, NCBIXML
