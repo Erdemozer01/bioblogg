@@ -286,7 +286,7 @@ def PhylogeneticTree(request):
 
                 return stylesheet + children_style
 
-        return HttpResponseRedirect(f"/laboratory/bioinformatic/app/{tree_alg}")
+        return HttpResponseRedirect(f"/laboratuvarlar/bioinformatic/app/{tree_alg}")
 
     return render(request, 'bioinformatic/form.html', {'form': form, 'title': 'Filogeneni ve Alignment Haritası'})
 
