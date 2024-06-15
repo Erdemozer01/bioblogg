@@ -216,23 +216,38 @@ def PhylogeneticTree(request):
             tree_app.layout = html.Div(
                 [
 
+                    ## NAVBAR ##
+
                     dbc.NavbarSimple(
                         children=[
-                            html.A(
-                                [dbc.NavItem(dbc.NavLink("Biyoinformatik", className="text-white"))],
-                                href=redirect("bioinformatic:home").url
-                            ),
+                            dbc.NavItem(dbc.NavLink("Blog", href=HttpResponseRedirect(
+                                reverse("bioinformatic:entrez_tools")).url, external_link=True)),
+                            dbc.DropdownMenu(
+                                children=[
+                                    dbc.DropdownMenuItem("Biyoinformatik",
+                                                         href=HttpResponseRedirect(reverse("bioinformatic:home")).url,
+                                                         external_link=True),
+                                    dbc.DropdownMenuItem("Biyoinformatik",
+                                                         href=HttpResponseRedirect(reverse("biyoistatislik")).url,
+                                                         external_link=True),
+                                    dbc.DropdownMenuItem("Coğrafi Bilgi sistemleri",
+                                                         href=HttpResponseRedirect(reverse("cbs")).url,
+                                                         external_link=True),
+                                    dbc.DropdownMenuItem("Laboratuvarlar",
+                                                         href=HttpResponseRedirect(reverse("lab_home")).url,
+                                                         external_link=True),
+                                ],
+                                nav=True,
+                                in_navbar=True,
+                                label="Laboratuvarlar",
 
-                            html.A(
-                                [dbc.NavItem(dbc.NavLink("Geri", className="text-white")), ],
-                                href=redirect("bioinformatic:pyhlo_tree").url,
                             ),
-
                         ],
-                        brand="Filogenetik ağaç oluşturma".title(),
-                        brand_href=str(request.path),
+                        brand="FİLOGENİ",
+                        brand_href=HttpResponseRedirect(reverse("bioinformatic:pyhlo_tree")).url,
                         color="primary",
-                        sticky="top",
+                        dark=True,
+                        brand_external_link=True
                     ),
 
                     html.P(f"{tools} aracıyla {tree_alg} ağacı oluşturuldu".upper(),
