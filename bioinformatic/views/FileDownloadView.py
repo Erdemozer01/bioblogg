@@ -6,6 +6,7 @@ from bioinformatic.models.bioinformatic import BioinformaticModel
 from dash import html, Output, Input, dcc
 from django_plotly_dash import DjangoDash
 import dash_bootstrap_components as dbc
+from Bio.SeqUtils import MeltingTemp as mt
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent

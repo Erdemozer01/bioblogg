@@ -4,11 +4,11 @@ from bioinformatic.choices import *
 
 class FileConvertForm(forms.Form):
     molecule = forms.ChoiceField(
-        choices=MOLECULE_TYPE, label="Molekük tipi",
+        choices=MOLECULE_TYPE, label="Molekül tipi",
         widget=forms.Select(attrs={'class': 'custom-select'})
     )
     reading_file_format = forms.ChoiceField(
-        choices=READ_FILE_FORMAT, label="Dönüştürüleck dosya formatı",
+        choices=READ_FILE_FORMAT, label="Dönüştürülecek dosya formatı",
         widget=forms.Select(attrs={'class': 'custom-select'})
     )
     writing_file_format = forms.ChoiceField(
