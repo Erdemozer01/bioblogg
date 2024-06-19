@@ -6,7 +6,8 @@ from textwrap import dedent as s
 from django.shortcuts import *
 import dash_core_components as dcc
 import dash_daq as daq
-import dash_html_components as html
+from dash import Dash, dcc, html, dash_table, Input, Output
+from Bio import SeqIO
 from django_plotly_dash import DjangoDash
 import dash_bootstrap_components as dbc
 from sklearn import datasets
@@ -19,7 +20,6 @@ import json
 from reportlab.lib import colors
 from reportlab.lib.units import cm
 from Bio.Graphics import GenomeDiagram
-from Bio import SeqIO
 
 
 DATAPATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
@@ -227,7 +227,8 @@ controls = dbc.Card(
                                 'margin-top': '3%',
                             }
                         ),
-                        dcc.Input(id='fragment', type='number', min=1, max=10, step=1, className='form-control', value=1),
+                        dcc.Input(id='fragment', type='number', min=1, max=10, step=1, className='form-control',
+                                  value=1),
                     ],
                 ),
             ]),
@@ -302,9 +303,11 @@ def molecule_demo(request):
 
         @app.callback(
             Output('output', 'children'),
-            Input('mol3d-style', 'value'),
+            Input('fragment', 'value'),
+            Input('dropdown-styles', 'value'),
         )
-        def
+        def GenomeDiagramUpdate(style):
+            pass
 
         return HttpResponseRedirect("/laboratuvarlar/bioinformatic-laboratuvari/app/molecule-demo/")
 
