@@ -80,3 +80,12 @@ class MoleculeViewForm(forms.ModelForm):
         fields = ["file"]
 
 
+class CircosForm(forms.ModelForm):
+    file = forms.FileField(
+        label='Dosya',
+    )
+
+    class Meta:
+        model = BioinformaticModel
+        fields = ['reading_file_format', "file"]
+        widgets = {'reading_file_format': forms.Select(attrs={'class': 'form-control'})}

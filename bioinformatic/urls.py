@@ -37,4 +37,7 @@ urlpatterns = [
     # Entrez Tools
     path('entrez-tools/', views.entrez_tools, name='entrez_tools'),
 
+    # Entrez Tools
+    path('molecule-demo/', views.molecule_demo, name='molecule_demo'),
+
 ]
