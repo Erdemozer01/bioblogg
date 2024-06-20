@@ -5,5 +5,5 @@ from .FileWritingView import file_writing_format_select, CreateFileView, RecordD
     FileWritingListView
 from .FileDownloadView import download_file
 from .FileConvertView import FileConvert
-from .entrez import entrez_tools
+from .entrez import ArticleView
 from .genome_diagram import DiagramView

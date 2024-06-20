@@ -34,8 +34,8 @@ urlpatterns = [
     # FileConvert
     path('dosya-dönüştürme/', views.FileConvert, name='file_convert'),
 
-    # Entrez Tools
-    path('entrez-tools/', views.entrez_tools, name='entrez_tools'),
+
+    path('makale-arama/', views.ArticleView, name='article_search'),
 
 
     path('gen-diagram/', views.DiagramView, name='genome_diagram'),

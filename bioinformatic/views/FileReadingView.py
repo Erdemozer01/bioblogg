@@ -845,7 +845,7 @@ def molecule_viewer(request):
 
                     ## NAVBAR ##
 
-                    dbc.NavbarSimple(
+                    dbc.NavbarSimple(className="mt-4",
                         children=[
                             dbc.NavItem(dbc.NavLink("Blog", href=HttpResponseRedirect(
                                 reverse("bioinformatic:entrez_tools")).url, external_link=True)),
@@ -883,15 +883,7 @@ def molecule_viewer(request):
                         [
                             dbc.Col(
                                 [
-                                    dcc.Dropdown(
-                                        id='dropdown-styles',
-                                        options=[
-                                            {'label': 'Sticks', 'value': 'stick'},
-                                            {'label': 'Cartoon', 'value': 'cartoon'},
-                                            {'label': 'Spheres', 'value': 'sphere'},
-                                        ],
-                                        value='cartoon'
-                                    ),
+
                                     dash_table.DataTable(
                                         id="zooming-specific-residue-table",
                                         columns=columns,
@@ -913,13 +905,13 @@ def molecule_viewer(request):
                                     modelData=data,
                                     styles=styles,
                                     style={'marginRight': 'auto', 'marginLeft': 'auto'},
-                                    width=700
-                                ), md=8, lg=8, xl=8, className="margin-right-5"
+                                    width=750
+                                ), md=8, lg=8, xl=8, className="mx-auto"
                             ),
                         ],
                         align="center",
                     ),
-                ], fluid=True, className="shadow-lg p-3 mb-5 bg-body rounded mt-3",
+                ], fluid=True, className="shadow-lg mb-5 bg-body rounded",
             )
 
             @app.callback(
