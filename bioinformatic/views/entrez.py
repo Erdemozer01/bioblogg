@@ -48,7 +48,8 @@ def ArticleView(request):
             brand_href=HttpResponseRedirect(reverse("bioinformatic:article_search")).url,
             color="primary",
             dark=True,
-            brand_external_link=True, sticky='top',
+            brand_external_link=True,
+            sticky='top',
             className="shadow-lg p-3 bg-body rounded"
         ),
 

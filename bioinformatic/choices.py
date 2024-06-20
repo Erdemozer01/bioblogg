@@ -82,7 +82,6 @@ READ_FILE_FORMAT = [
     ("nib", "nib".upper()),
     ("nexus", "nexus".upper()),
     ("pdb-atom", "pdb-atom".upper()),
-    ("pdb-seqres", "pdb-seqres".upper()),
     ("phd", "phd".upper()),
     ("phylip", "phylip".upper()),
     ("pir", "pir".upper()),

@@ -315,7 +315,7 @@ def DiagramView(request):
         BioinformaticModel.objects.filter(user=request.user, tool="circos").delete()
 
     app = DjangoDash(name='gen-diyagram-sonuc', external_stylesheets=external_stylesheets,
-                     title='Genom Diyagram')
+                     title='Genom Diyagram', add_bootstrap_links=True)
 
     form = CircosForm(request.POST or None, request.FILES or None)
 
@@ -369,7 +369,9 @@ def DiagramView(request):
                         brand_href=HttpResponseRedirect(reverse("bioinformatic:genome_diagram")).url,
                         color="primary",
                         dark=True,
-                        brand_external_link=True
+                        brand_external_link=True,
+                        sticky='top',
+                        className="shadow-lg p-3 bg-body rounded"
                     ),
                     html.Hr(),
                     dbc.Row(

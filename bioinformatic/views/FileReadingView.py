@@ -25,11 +25,6 @@ from Bio import Phylo
 import dash_cytoscape as cyto
 import dash_bio as dashbio
 from dash_bio.utils import PdbParser, create_mol3d_style
-
-import base64
-import datetime
-import io
-
 import pandas as pd
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -311,8 +306,7 @@ def file_reading(request):
         messages.error(request, "Lütfen Giriş Yapınız")
         return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
 
-    external_stylesheets = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css']
-    external_scripts = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js']
+    external_stylesheets = [dbc.themes.BOOTSTRAP]
 
     if BioinformaticModel.objects.filter(user=request.user, tool="DOSYA OKUMA").exists():
         BioinformaticModel.objects.filter(user=request.user, tool="DOSYA OKUMA").delete()
@@ -346,11 +340,11 @@ def file_reading(request):
             file_reading_dash_app = DjangoDash(
                 name=f"{file_format}-dosya-sonuc",
                 external_stylesheets=external_stylesheets,
-                external_scripts=external_scripts,
-                title=f"{file_format} dosyası okuması sonuçları".upper()
+                title=f"{file_format} dosyası okuması sonuçları".upper(),
+                add_bootstrap_links=True
             )
 
-            if file_format == "fasta" or 'pdb':
+            if file_format == "fasta":
 
                 df_TABLE = pd.DataFrame(
                     {
@@ -664,6 +658,111 @@ def file_reading(request):
                         return True
                     return False
 
+            elif file_format == "pdb-atom" or "cif-atom":
+
+                parser = PdbParser(file_obj.file.path)
+
+                data = parser.mol3d_data()
+
+                df = pd.DataFrame(data["atoms"])
+
+                df = df.drop_duplicates(subset=['residue_name'])
+
+                df_TABLE = pd.DataFrame(
+                    {
+                        'id': str(rec.id),
+                        'description': str(rec.description),
+                        'seq': str(rec.seq),
+                        'seq_len': len(str(rec.seq)),
+                        'gc': gc_fraction(rec.seq) * 100
+                    } for rec in records)
+
+                columns = [
+                    {'name': 'Seri', 'id': 'serial'},
+                    {'name': 'Adı', 'id': 'name'},
+                    {'name': 'ELEMENT', 'id': 'elem'},
+                    {'name': 'Pozisyon', 'id': 'positions'},
+                    {'name': 'Kütle Büyüklüğü', 'id': 'mass_magnitude'},
+                    {'name': 'İndex', 'id': 'residue_index'},
+                    {'name': 'Bölge Adı', 'id': 'residue_name'},
+                    {'name': 'Zincir', 'id': 'chain'}
+                ]
+
+                file_reading_dash_app.layout = dbc.Container(
+                    children=[
+
+                        dbc.NavbarSimple(
+                            children=[
+                                dbc.NavItem(dbc.NavLink("Blog", href=HttpResponseRedirect(
+                                    reverse("blog:anasayfa")).url, external_link=True)),
+                                dbc.DropdownMenu(
+                                    children=[
+                                        dbc.DropdownMenuItem("Biyoinformatik",
+                                                             href=HttpResponseRedirect(
+                                                                 reverse("bioinformatic:home")).url,
+                                                             external_link=True),
+                                        dbc.DropdownMenuItem("Biyoistatislik",
+                                                             href=HttpResponseRedirect(reverse("biyoistatislik")).url,
+                                                             external_link=True),
+                                        dbc.DropdownMenuItem("Coğrafi Bilgi sistemleri",
+                                                             href=HttpResponseRedirect(reverse("cbs")).url,
+                                                             external_link=True),
+                                        dbc.DropdownMenuItem("Laboratuvarlar",
+                                                             href=HttpResponseRedirect(reverse("lab_home")).url,
+                                                             external_link=True),
+                                    ],
+                                    nav=True,
+                                    in_navbar=True,
+                                    label="Laboratuvarlar",
+
+                                ),
+                            ],
+                            brand=f'{file_format} DOSYASI OKUMASI'.upper(),
+                            brand_href=HttpResponseRedirect(reverse("bioinformatic:file_reading")).url,
+                            color="primary",
+                            dark=True,
+                            brand_external_link=True,
+                            sticky='top',
+                            className="shadow-lg p-3 bg-body rounded mb-5"
+                        ),
+
+                        dbc.Row(
+                            [
+                                dbc.Col(
+                                    [
+                                        dash_table.DataTable(
+                                            id="zooming-specific-residue-table",
+                                            columns=columns,
+                                            data=df.to_dict("records"),
+                                            page_size=10,
+                                            filter_action='native',
+                                            filter_options={"placeholder_text": "Filtrele..."},
+                                            editable=True,
+                                            style_cell={'textAlign': 'center'},
+                                            style_header={
+                                                'backgroundColor': 'white',
+                                                'fontWeight': 'bold'
+                                            }),
+                                    ], md=6, lg=6, xl=6, className="mb-5"
+
+                                ),
+
+                                dbc.Col(
+                                    dcc.Graph(figure=px.pie(
+                                        data_frame=df_TABLE.to_dict("records"),
+                                        names=[j for seq in df_TABLE['seq'] for j in seq],
+                                        labels={'seq': "Nükleotit"}, title="Nükleotitler"),
+                                        responsive=True),
+                                    md=6, lg=6, xl=6, className="mb-5"
+                                ),
+                            ],
+
+                        ),
+
+                    ],
+                    fluid=True, className="shadow-lg p-3 mb-5 bg-body rounded",
+                )
+
             return HttpResponseRedirect(f"/laboratuvarlar/bioinformatic-laboratuvari/app/{file_format}-dosya-sonuc")
 
         else:
@@ -845,23 +944,26 @@ def molecule_viewer(request):
 
                     ## NAVBAR ##
 
-                    dbc.NavbarSimple(className="mt-4",
+                    dbc.NavbarSimple(
                         children=[
                             dbc.NavItem(dbc.NavLink("Blog", href=HttpResponseRedirect(
-                                reverse("bioinformatic:entrez_tools")).url, external_link=True)),
+                                reverse("blog:anasayfa")).url, external_link=True)),
                             dbc.DropdownMenu(
                                 children=[
                                     dbc.DropdownMenuItem("Biyoinformatik",
-                                                         href=HttpResponseRedirect(reverse("bioinformatic:home")).url,
+                                                         href=HttpResponseRedirect(
+                                                             reverse("bioinformatic:home")).url,
                                                          external_link=True),
                                     dbc.DropdownMenuItem("Biyoistatislik",
-                                                         href=HttpResponseRedirect(reverse("biyoistatislik")).url,
+                                                         href=HttpResponseRedirect(
+                                                             reverse("biyoistatislik")).url,
                                                          external_link=True),
                                     dbc.DropdownMenuItem("Coğrafi Bilgi sistemleri",
                                                          href=HttpResponseRedirect(reverse("cbs")).url,
                                                          external_link=True),
                                     dbc.DropdownMenuItem("Laboratuvarlar",
-                                                         href=HttpResponseRedirect(reverse("lab_home")).url,
+                                                         href=HttpResponseRedirect(
+                                                             reverse("lab_home")).url,
                                                          external_link=True),
                                 ],
                                 nav=True,
@@ -874,7 +976,9 @@ def molecule_viewer(request):
                         brand_href=HttpResponseRedirect(reverse("bioinformatic:3d_molecule_view")).url,
                         color="primary",
                         dark=True,
-                        brand_external_link=True
+                        brand_external_link=True,
+                        sticky='top',
+                        className="shadow-lg p-3 bg-body rounded",
                     ),
 
                     html.Hr(),
@@ -940,8 +1044,7 @@ def molecule_viewer(request):
                                 "z": row["positions"].values[0][2],
                             },
                         }
-                    ],
-
+                    ]
                 ]
 
         return HttpResponseRedirect("/laboratuvarlar/bioinformatic-laboratuvari/app/3d_molecule_view/")
