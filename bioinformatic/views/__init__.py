@@ -6,4 +6,4 @@ from .FileWritingView import file_writing_format_select, CreateFileView, RecordD
 from .FileDownloadView import download_file
 from .FileConvertView import FileConvert
 from .entrez import entrez_tools
-from .MOLECULE_DEMO import molecule_demo
+from .genome_diagram import DiagramView

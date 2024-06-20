@@ -4,13 +4,10 @@ def generate_elements(tree, xlen=30, ylen=30, grabbable=True):
     def get_col_positions(tree, column_width=80):
         taxa = tree.get_terminals()
 
-        # Some constants for the drawing calculations
         max_label_width = max(len(str(taxon)) for taxon in taxa)
         drawing_width = column_width - max_label_width - 1
 
-        """Create a mapping of each clade to its column position."""
         depths = tree.depths()
-        # If there are no branch lengths, assume unit branch lengths
         if not max(depths.values()):
             depths = tree.depths(unit_branch_lengths=True)
             # Potential drawing overflow due to rounding -- 1 char per tree layer

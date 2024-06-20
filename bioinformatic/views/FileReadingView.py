@@ -217,7 +217,6 @@ def PhylogeneticTree(request):
                 [
 
                     ## NAVBAR ##
-
                     dbc.NavbarSimple(
                         children=[
                             dbc.NavItem(dbc.NavLink("Blog", href=HttpResponseRedirect(
@@ -306,7 +305,7 @@ def PhylogeneticTree(request):
     return render(request, 'bioinformatic/form.html', {'form': form, 'title': 'Filogeneni ve Alignment Haritası'})
 
 
-def file_reading(request, user):
+def file_reading(request):
     if request.user.is_anonymous:
         from django.conf import settings
         messages.error(request, "Lütfen Giriş Yapınız")
@@ -335,7 +334,7 @@ def file_reading(request, user):
                 user=request.user,
                 molecule=molecule,
                 reading_file_format=file_format,
-                tool="DOSYA OKUMA",
+                tool=f"DOSYA OKUMASI",
             )
 
             file_obj = obj.records_files.create(file=file)
@@ -365,8 +364,38 @@ def file_reading(request, user):
                 file_reading_dash_app.layout = html.Div(
                     children=[
 
-                        html.H4(f"{file_format} dosyası okuması", className="fw-bolder text-primary m-2 "),
+                        dbc.NavbarSimple(
+                            children=[
+                                dbc.NavItem(dbc.NavLink("Blog", href=HttpResponseRedirect(
+                                    reverse("blog:anasayfa")).url, external_link=True)),
+                                dbc.DropdownMenu(
+                                    children=[
+                                        dbc.DropdownMenuItem("Biyoinformatik",
+                                                             href=HttpResponseRedirect(
+                                                                 reverse("bioinformatic:home")).url,
+                                                             external_link=True),
+                                        dbc.DropdownMenuItem("Biyoistatislik",
+                                                             href=HttpResponseRedirect(reverse("biyoistatislik")).url,
+                                                             external_link=True),
+                                        dbc.DropdownMenuItem("Coğrafi Bilgi sistemleri",
+                                                             href=HttpResponseRedirect(reverse("cbs")).url,
+                                                             external_link=True),
+                                        dbc.DropdownMenuItem("Laboratuvarlar",
+                                                             href=HttpResponseRedirect(reverse("lab_home")).url,
+                                                             external_link=True),
+                                    ],
+                                    nav=True,
+                                    in_navbar=True,
+                                    label="Laboratuvarlar",
 
+                                ),
+                            ],
+                            brand=f'{file_format} DOSYASI OKUMASI'.upper(),
+                            brand_href=HttpResponseRedirect(reverse("bioinformatic:file_reading")).url,
+                            color="primary",
+                            dark=True,
+                            brand_external_link=True
+                        ),
                         html.Hr(className="border border-danger"),
 
                         dag.AgGrid(
@@ -413,7 +442,6 @@ def file_reading(request, user):
 
                         html.Hr(className="border border-danger"),
                     ],
-
                     style={"margin": 30},
                 )
 
@@ -752,7 +780,7 @@ def molecule_viewer(request):
     if BioinformaticModel.objects.filter(user=request.user, tool="molecule_view").exists():
         BioinformaticModel.objects.filter(user=request.user, tool="molecule_view").delete()
 
-    external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+    external_stylesheets = [dbc.themes.BOOTSTRAP]
 
     app = DjangoDash('3d_molecule_view', external_stylesheets=external_stylesheets,
                      title='3D MOLEKÜL GÖRÜNTÜLEME')
@@ -805,14 +833,14 @@ def molecule_viewer(request):
                 {'name': 'Seri', 'id': 'serial'},
                 {'name': 'Adı', 'id': 'name'},
                 {'name': 'ELEMENT', 'id': 'elem'},
-                {'name': 'POZİSYON', 'id': 'positions'},
+                {'name': 'Pozisyon', 'id': 'positions'},
                 {'name': 'Kütle Büyüklüğü', 'id': 'mass_magnitude'},
-                {'name': 'İNDEX', 'id': 'residue_index'},
+                {'name': 'İndex', 'id': 'residue_index'},
                 {'name': 'Bölge Adı', 'id': 'residue_name'},
                 {'name': 'Zincir', 'id': 'chain'}
             ]
 
-            app.layout = html.Div(
+            app.layout = dbc.Container(
                 [
 
                     ## NAVBAR ##
@@ -826,7 +854,7 @@ def molecule_viewer(request):
                                     dbc.DropdownMenuItem("Biyoinformatik",
                                                          href=HttpResponseRedirect(reverse("bioinformatic:home")).url,
                                                          external_link=True),
-                                    dbc.DropdownMenuItem("Biyoinformatik",
+                                    dbc.DropdownMenuItem("Biyoistatislik",
                                                          href=HttpResponseRedirect(reverse("biyoistatislik")).url,
                                                          external_link=True),
                                     dbc.DropdownMenuItem("Coğrafi Bilgi sistemleri",
@@ -849,35 +877,49 @@ def molecule_viewer(request):
                         brand_external_link=True
                     ),
 
-
-                    html.P(f'İD : {file.name[:4]},'),
-
                     html.Hr(),
 
-                    dash_table.DataTable(
-                        id="zooming-specific-residue-table",
-                        columns=columns,
-                        data=df.to_dict("records"),
-                        row_selectable="single",
-                        page_size=10,
-                        filter_action='native',
-                        filter_options={"placeholder_text": "Filtrele"},
-                        editable=True,
-                        style_cell={'textAlign': 'center'},
-                        style_header={
-                            'backgroundColor': 'white',
-                            'fontWeight': 'bold'
-                        },
+                    dbc.Row(
+                        [
+                            dbc.Col(
+                                [
+                                    dcc.Dropdown(
+                                        id='dropdown-styles',
+                                        options=[
+                                            {'label': 'Sticks', 'value': 'stick'},
+                                            {'label': 'Cartoon', 'value': 'cartoon'},
+                                            {'label': 'Spheres', 'value': 'sphere'},
+                                        ],
+                                        value='cartoon'
+                                    ),
+                                    dash_table.DataTable(
+                                        id="zooming-specific-residue-table",
+                                        columns=columns,
+                                        data=df.to_dict("records"),
+                                        row_selectable="single",
+                                        page_size=10,
+                                        filter_action='native',
+                                        filter_options={"placeholder_text": "Filtrele"},
+                                        editable=True,
+                                        style_cell={'textAlign': 'center'},
+                                        style_header={
+                                            'backgroundColor': 'white',
+                                            'fontWeight': 'bold'
+                                        })
+                                ], md=4, lg=4, xl=4, className="mb-3"),
+                            dbc.Col(
+                                dashbio.Molecule3dViewer(
+                                    id="zooming-specific-molecule3d-zoomto",
+                                    modelData=data,
+                                    styles=styles,
+                                    style={'marginRight': 'auto', 'marginLeft': 'auto'},
+                                    width=700
+                                ), md=8, lg=8, xl=8, className="margin-right-5"
+                            ),
+                        ],
+                        align="center",
                     ),
-                    html.Hr(),
-                    dashbio.Molecule3dViewer(
-                        id="zooming-specific-molecule3d-zoomto",
-                        modelData=data,
-                        styles=styles,
-                        style={'marginRight': 'auto', 'marginLeft': 'auto'},
-                        width=950, height=600
-                    ),
-                ], className="container"
+                ], fluid=True, className="shadow-lg p-3 mb-5 bg-body rounded mt-3",
             )
 
             @app.callback(

@@ -81,11 +81,9 @@ class MoleculeViewForm(forms.ModelForm):
 
 
 class CircosForm(forms.ModelForm):
-    file = forms.FileField(
-        label='Dosya',
-    )
+    file = forms.FileField(label='Genbank Dosyası', help_text='Çoklu kayıt girmeyiniz.')
 
     class Meta:
         model = BioinformaticModel
-        fields = ['reading_file_format', "file"]
-        widgets = {'reading_file_format': forms.Select(attrs={'class': 'form-control'})}
+        fields = ["file"]
+        widgets = {'file': forms.ClearableFileInput(attrs={'class': 'form-control'})}

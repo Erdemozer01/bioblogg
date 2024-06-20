@@ -193,4 +193,4 @@ def entrez_tools(request):
                     style={'marginTop': "2%"}, className='float-center m-5'
                 )
 
-    return render(request, "bioinformatic/form.html", {'form': form, 'title': "ENTREZ ARAÇLARI"})
+    return render(request, "bioinformatic/form.html", {'form': form, 'title': "GÜNCEL MAKALE ARAMA"})

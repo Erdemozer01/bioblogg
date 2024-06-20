@@ -14,7 +14,7 @@ urlpatterns = [
     path('temperature-melting/', views.SekansView.TemperatureMeltingView, name="temp_melt"),
 
     # Reading
-    path('file-reading/<user>/', views.FileReadingView.file_reading, name="file_reading"),
+    path('file-reading/', views.FileReadingView.file_reading, name="file_reading"),
     path('phylo-tree-creating/', views.FileReadingView.PhylogeneticTree, name="pyhlo_tree"),
     path('blast/', views.FileReadingView.blast, name="blast"),
     path('3d-molekul-goruntuleme/', views.FileReadingView.molecule_viewer, name="3d_molecule_view"),
@@ -37,7 +37,7 @@ urlpatterns = [
     # Entrez Tools
     path('entrez-tools/', views.entrez_tools, name='entrez_tools'),
 
-    # Entrez Tools
-    path('molecule-demo/', views.molecule_demo, name='molecule_demo'),
+
+    path('gen-diagram/', views.DiagramView, name='genome_diagram'),
 
 ]
