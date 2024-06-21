@@ -12,12 +12,20 @@ import plotly.figure_factory as ff
 from Bio import Align
 from Bio.Align import substitution_matrices
 import dash_bootstrap_components as dbc
-
-from django.contrib import messages
+from django.views.generic import *
+from dash_bio import SequenceViewer
 
 from Bio import Phylo, SeqIO
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
+
+proteinler = {
+    'CYS': 'C', 'ASP': 'D', 'SER': 'S', 'GLN': 'Q', 'LYS': 'K',
+    'ILE': 'I', 'PRO': 'P', 'THR': 'T', 'PHE': 'F', 'ASN': 'N',
+    'GLY': 'G', 'HIS': 'H', 'LEU': 'L', 'ARG': 'R', 'TRP': 'W',
+    'ALA': 'A', 'VAL': 'V', 'GLU': 'E', 'TYR': 'Y', 'MET': 'M',
+    'stop': '*'
+}
 
 
 def alignment_score(request):
@@ -216,7 +224,7 @@ def sequence_analiz(request):
 
                     ),
                 ],
-                brand="Sekans",
+                brand="SEKANS ANALİZİ",
                 brand_href=HttpResponseRedirect(reverse("bioinformatic:dna_seq_read")).url,
                 color="primary",
                 dark=True,
@@ -232,11 +240,10 @@ def sequence_analiz(request):
                     dcc.Dropdown(
                         id='nuc_type',
                         options=[
-                            {'label': 'DNA', 'value': '1'},
-                            {'label': 'RNA', 'value': '2'},
-                            {'label': 'PROTEİN', 'value': '3'},
+                            {'label': 'DNA', 'value': 'dna'},
+                            {'label': 'RNA', 'value': 'rna'},
                         ],
-                        value='1'
+                        value='dna'
                     ),
 
                     html.Label("Sekans", className="fw-bolder mt-2"),
@@ -256,9 +263,11 @@ def sequence_analiz(request):
     def update_output(sequence, nuc_type):
 
         if sequence:
-            if nuc_type == "1":
+            if nuc_type == "dna":
+
                 sequence = sequence.upper()
                 ig = []
+
                 for i in sequence:
                     if not i in ['A', 'C', 'G', 'T']:
                         ig.append(i)
@@ -266,6 +275,7 @@ def sequence_analiz(request):
                 for i in ig:
                     if i in sequence:
                         sequence = sequence.replace(i, "")
+
                 nuc_df = pd.DataFrame({
                     'positions': [pos for pos in range(len(sequence))],
                     'nucleotit': [seq for seq in sequence]
@@ -297,16 +307,18 @@ def sequence_analiz(request):
                                 ['A', 'T', 'G', 'C'],
                                 bin_size=[.1, .25, .5, 1], show_hist=False,
                                 curve_type="normal",
-                            ).update_layout({'title': 'Nükleotit Dağılım Grafiği'}), className="shadow-lg rounded mb-3"),
+                            ).update_layout({'title': 'Nükleotit Dağılım Grafiği'}),
+                            className="shadow-lg rounded mb-3"),
 
                         dcc.Graph(figure=px.histogram(
                             nuc_df.to_dict("records"), x="nucleotit", color="nucleotit",
                             title="Nükleotit Sayıları",
-                        ).update_yaxes(title="Nükletotit Sayısı").update_xaxes(title="Nükleotit"), className="shadow-lg rounded mb-3")
+                        ).update_yaxes(title="Nükletotit Sayısı").update_xaxes(title="Nükleotit"),
+                                  className="shadow-lg rounded mb-3")
                     ])
                 ], style={'marginTop': "2%", 'margin': 20})
 
-            elif nuc_type == "2":
+            elif nuc_type == "rna":
                 sequence = sequence.upper()
                 ig = []
                 for i in sequence:
@@ -365,24 +377,51 @@ def sequence_analiz(request):
 
 
 def translation(request):
-    external_stylesheets = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css']
-    external_scripts = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js']
+    external_stylesheets = [dbc.themes.BOOTSTRAP]
     translate_app = DjangoDash("translate_dna", external_stylesheets=external_stylesheets,
-                               external_scripts=external_scripts, add_bootstrap_links=True, title='PROTEİN SENTEZİ')
+                               add_bootstrap_links=True, title='PROTEİN SENTEZİ')
 
-    translate_app.layout = html.Div(
+    translate_app.layout = dbc.Container(
 
         [
 
-            html.H4('PROTEİN SENTEZİ', className="text-primary"),
+            dbc.NavbarSimple(
+                children=[
+                    dbc.NavItem(dbc.NavLink("Blog", href=HttpResponseRedirect(
+                        reverse("blog:anasayfa")).url, external_link=True)),
 
-            html.A('BİYOİNFORMATİK ANASAYFA', href=HttpResponseRedirect(reverse("bioinformatic:home")).url,
-                   style={'float': 'right'}),
+                    dbc.DropdownMenu(
+                        children=[
+                            dbc.DropdownMenuItem("Biyoinformatik",
+                                                 href=HttpResponseRedirect(reverse("bioinformatic:home")).url,
+                                                 external_link=True),
+                            dbc.DropdownMenuItem("Biyoistatislik",
+                                                 href=HttpResponseRedirect(reverse("biyoistatislik")).url,
+                                                 external_link=True),
+                            dbc.DropdownMenuItem("Coğrafi Bilgi sistemleri",
+                                                 href=HttpResponseRedirect(reverse("cbs")).url,
+                                                 external_link=True),
+                            dbc.DropdownMenuItem("Laboratuvarlar",
+                                                 href=HttpResponseRedirect(reverse("lab_home")).url,
+                                                 external_link=True),
+                        ],
+                        nav=True,
+                        in_navbar=True,
+                        label="Laboratuvarlar"
 
-            html.P("Sekans", style={'font-weight': 'bold'}, className="text-primary"),
+                    ),
+                ],
+                brand="Protein Sentezi",
+                brand_href=HttpResponseRedirect(reverse("bioinformatic:dna_seq_translate")).url,
+                color="primary",
+                dark=True,
+                brand_external_link=True,
+                sticky='top',
+                className="shadow-lg p-3 bg-body rounded"
+            ),
 
             dcc.Textarea(id="sekans", placeholder="Sekans Giriniz",
-                         className="form-control mb-1", style={'height': 200}),
+                         className="form-control mb-1 mt-3", style={'height': 200}),
 
             dcc.Input(id="start", type="number", placeholder="Sekans başlangıcı", min=0, className="mr-1"),
 
@@ -430,7 +469,9 @@ def translation(request):
             dcc.Checklist(id="to_stop", options={'evet': ' Stop Kodonlarını dahil et.'}),
 
             html.Div(id="output"),
-        ], style={'margin': 30})
+
+        ], className="shadow-lg p-3 mb-5 bg-body rounded mt-5", fluid=False
+    )
 
     @translate_app.callback(
         Output("output", "children"),

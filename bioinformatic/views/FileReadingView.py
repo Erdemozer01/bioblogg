@@ -301,6 +301,7 @@ def PhylogeneticTree(request):
 
 
 def file_reading(request):
+
     if request.user.is_anonymous:
         from django.conf import settings
         messages.error(request, "Lütfen Giriş Yapınız")
@@ -390,12 +391,14 @@ def file_reading(request):
                             dark=True,
                             brand_external_link=True
                         ),
-                        html.Hr(className="border border-danger"),
+
+                        html.Hr(className="my-4"),
 
                         dag.AgGrid(
                             id="df-table",
                             style={'width': '100%'},
                             rowData=df_TABLE.to_dict("records"),
+
                             columnDefs=[
                                 {'field': 'id', 'headerName': 'İD', 'filter': True},
                                 {'field': 'description', 'headerName': 'Tanım', 'filter': True},
