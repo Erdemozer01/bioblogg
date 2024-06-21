@@ -182,41 +182,70 @@ def alignment_score(request):
 
 
 def sequence_analiz(request):
-    external_stylesheets = [dbc.themes.MORPH]
-    external_scripts = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js']
-    sequence_analiz = DjangoDash("sequence_analiz", external_stylesheets=external_stylesheets,
-                                 external_scripts=external_scripts, title='Sekans Analiz')
+    external_stylesheets = [dbc.themes.ZEPHYR]
 
-    sequence_analiz.layout = html.Div(
+    sequence_analiz = DjangoDash("sequence_analiz", external_stylesheets=external_stylesheets,
+                                 title='Sekans Analiz', add_bootstrap_links=True)
+
+    sequence_analiz.layout = dbc.Container(
 
         [
 
-            html.H4('Sekans Analiz', className='text-primary'),
+            dbc.NavbarSimple(
+                children=[
+                    dbc.NavItem(dbc.NavLink("Blog", href=HttpResponseRedirect(
+                        reverse("blog:anasayfa")).url, external_link=True)),
+                    dbc.DropdownMenu(
+                        children=[
+                            dbc.DropdownMenuItem("Biyoinformatik",
+                                                 href=HttpResponseRedirect(reverse("bioinformatic:home")).url,
+                                                 external_link=True),
+                            dbc.DropdownMenuItem("Biyoistatislik",
+                                                 href=HttpResponseRedirect(reverse("biyoistatislik")).url,
+                                                 external_link=True),
+                            dbc.DropdownMenuItem("Coğrafi Bilgi sistemleri",
+                                                 href=HttpResponseRedirect(reverse("cbs")).url,
+                                                 external_link=True),
+                            dbc.DropdownMenuItem("Laboratuvarlar",
+                                                 href=HttpResponseRedirect(reverse("lab_home")).url,
+                                                 external_link=True),
+                        ],
+                        nav=True,
+                        in_navbar=True,
+                        label="Laboratuvarlar",
 
-            html.A('BİYOİNFORMATİK ANASAYFA', href=HttpResponseRedirect(reverse("bioinformatic:home")).url,
-                   style={'float': 'right'}),
-
-            html.P("Sekans", className='fw-bolder'),
+                    ),
+                ],
+                brand="Sekans",
+                brand_href=HttpResponseRedirect(reverse("bioinformatic:dna_seq_read")).url,
+                color="primary",
+                dark=True,
+                brand_external_link=True,
+                sticky='top',
+                className="shadow-lg p-3 bg-body rounded"
+            ),
 
             html.Div(
                 [
-                    html.Label("Nükleotit tipi"),
+                    html.Label("Nükleotit tipi", className="fw-bolder mt-2"),
 
-                    dcc.Dropdown(id="nuc_type", options={
-                        "1": "DNA",
-                        "2": "RNA",
-                        "3": "PROTEİN",
-                    }, value="1", searchable=True, className="form-control mb-1", ),
+                    dcc.Dropdown(
+                        id='nuc_type',
+                        options=[
+                            {'label': 'DNA', 'value': '1'},
+                            {'label': 'RNA', 'value': '2'},
+                            {'label': 'PROTEİN', 'value': '3'},
+                        ],
+                        value='1'
+                    ),
 
-                    html.Label("Sekans"),
+                    html.Label("Sekans", className="fw-bolder mt-2"),
                     dcc.Textarea(id="sequence", placeholder="Sekans Giriniz",
                                  className="form-control mb-1", style={'height': 200}),
-
-                ]
+                ],
             ),
-
             html.Div(id="output"),
-        ], style={'marginTop': "2%", 'margin': 20}
+        ], className="shadow-lg p-3 mb-5 bg-body rounded mt-5", fluid=False
     )
 
     @sequence_analiz.callback(
@@ -260,7 +289,7 @@ def sequence_analiz(request):
 
                     html.Div([
 
-                        html.P("Grafikler", className='text-primary'),
+                        html.H2("Grafikler", className='text-primary fw-bolder'),
 
                         dcc.Graph(
                             figure=ff.create_distplot(
@@ -268,12 +297,12 @@ def sequence_analiz(request):
                                 ['A', 'T', 'G', 'C'],
                                 bin_size=[.1, .25, .5, 1], show_hist=False,
                                 curve_type="normal",
-                            ).update_layout({'title': 'Nükleotit Dağılım Grafiği'}), className="mb-3"),
+                            ).update_layout({'title': 'Nükleotit Dağılım Grafiği'}), className="shadow-lg rounded mb-3"),
 
                         dcc.Graph(figure=px.histogram(
                             nuc_df.to_dict("records"), x="nucleotit", color="nucleotit",
                             title="Nükleotit Sayıları",
-                        ).update_yaxes(title="Nükletotit Sayısı").update_xaxes(title="Nükleotit"), className="mb-3")
+                        ).update_yaxes(title="Nükletotit Sayısı").update_xaxes(title="Nükleotit"), className="shadow-lg rounded mb-3")
                     ])
                 ], style={'marginTop': "2%", 'margin': 20})
 
