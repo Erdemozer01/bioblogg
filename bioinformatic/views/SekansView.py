@@ -4,7 +4,7 @@ import pandas as pd
 import plotly.express as px
 from Bio.Seq import Seq
 from Bio.SeqUtils import gc_fraction
-from dash import html, dcc, Input, Output, ctx
+from dash import html, dcc, Input, Output
 from django.shortcuts import *
 from django_plotly_dash import DjangoDash
 import dash_ag_grid as dag
@@ -12,10 +12,6 @@ import plotly.figure_factory as ff
 from Bio import Align
 from Bio.Align import substitution_matrices
 import dash_bootstrap_components as dbc
-from django.views.generic import *
-from dash_bio import SequenceViewer
-
-from Bio import Phylo, SeqIO
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -29,75 +25,125 @@ proteinler = {
 
 
 def alignment_score(request):
-    external_stylesheets = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css']
-    external_scripts = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js']
-
+    external_stylesheets = [dbc.themes.BOOTSTRAP]
     alignment_score = DjangoDash('alignment_score', external_stylesheets=external_stylesheets,
-                                 external_scripts=external_scripts, title="ALİGNMENT SKOR")
+                                 title="ALİGNMENT SKOR", add_bootstrap_links=True)
 
     alignment_score.layout = html.Div(
 
         [
+            dbc.NavbarSimple(
+                children=[
+                    dbc.NavItem(dbc.NavLink("Blog", href=HttpResponseRedirect(
+                        reverse("blog:anasayfa")).url, external_link=True)),
+                    dbc.DropdownMenu(
+                        children=[
+                            dbc.DropdownMenuItem("Biyoinformatik",
+                                                 href=HttpResponseRedirect(reverse("bioinformatic:home")).url,
+                                                 external_link=True),
+                            dbc.DropdownMenuItem("Biyoistatislik",
+                                                 href=HttpResponseRedirect(reverse("biyoistatislik")).url,
+                                                 external_link=True),
+                            dbc.DropdownMenuItem("Coğrafi Bilgi sistemleri",
+                                                 href=HttpResponseRedirect(reverse("cbs")).url,
+                                                 external_link=True),
+                            dbc.DropdownMenuItem("Laboratuvarlar",
+                                                 href=HttpResponseRedirect(reverse("lab_home")).url,
+                                                 external_link=True),
+                        ],
+                        nav=True,
+                        in_navbar=True,
+                        label="Laboratuvarlar",
+
+                    ),
+                ],
+                brand="ALİGNMENT SCORE",
+                brand_href=HttpResponseRedirect(reverse("bioinformatic:alignment_score")).url,
+                color="primary",
+                dark=True,
+                brand_external_link=True,
+                sticky='top',
+                className="shadow-lg p-3 bg-body rounded container"
+            ),
 
             html.Div(
                 [
+                    dbc.Container(
 
-                    html.H4('ALİGNMENT SKOR', className='text-primary fw-bolder'),
+                        [
 
-                    html.A('BİYOİNFORMATİK ANASAYFA', href=HttpResponseRedirect(reverse("bioinformatic:home")).url,
-                           style={'float': 'right'}),
+                            dbc.Row(
+                                [
+                                    dbc.Col(
+                                        [
+                                            html.P("Alignment Mod", className='text-primary fw-bolder'),
 
-                    html.P("Alignment Mod", className='text-success fw-bolder'),
+                                            dcc.Dropdown(
+                                                id="mod",
+                                                options=[
+                                                    {'label': 'LOCAL', 'value': 'local'},
+                                                    {'label': 'GLOBAL', 'value': 'global'},
+                                                ], value='local',
+                                            ),
 
-                    dcc.Dropdown(id="mod", options={
-                        'local': 'LOCAL',
-                        'global': 'GLOBAL'
-                    }, searchable=True),
+                                            html.P("Alignment MATRİX", style={'marginTop': '10px'},
+                                                   className='text-primary fw-bolder'),
 
-                    html.P("Alignment MATRİX", style={'marginTop': '10px'}, className='text-success fw-bolder'),
+                                            dcc.Dropdown(id="matrix", options={
+                                                'BENNER22': 'BENNER22',
+                                                'BENNER6': 'BENNER6',
+                                                'BENNER74': 'BENNER74',
+                                                'BLOSUM45': 'BLOSUM45',
+                                                'BLOSUM50': 'BLOSUM50',
+                                                'BLOSUM62': 'BLOSUM62',
+                                                'BLOSUM80': 'BLOSUM80',
+                                                'BLOSUM90': 'BLOSUM90',
+                                                'DAYHOFF': 'DAYHOFF',
+                                                'FENG': 'FENG',
+                                                'HOXD70': 'HOXD70',
+                                                'JOHNSON': 'JOHNSON',
+                                                'JONES': 'JONES',
+                                                'LEVIN': 'LEVIN',
+                                                'MCLACHLAN': 'MCLACHLAN',
+                                                'MDM78': 'MDM78',
+                                                'PAM250': 'PAM250',
+                                                'PAM30': 'PAM30',
+                                                'PAM70': 'PAM70',
+                                                'RAO': 'RAO',
+                                                'RISLER': 'RISLER',
+                                                'SCHNEIDER': 'SCHNEIDER',
+                                                'STR': 'STR',
+                                                'TRANS': 'TRANS',
+                                            }, searchable=True),
 
-                    dcc.Dropdown(id="matrix", options={
-                        'BENNER22': 'BENNER22',
-                        'BENNER6': 'BENNER6',
-                        'BENNER74': 'BENNER74',
-                        'BLOSUM45': 'BLOSUM45',
-                        'BLOSUM50': 'BLOSUM50',
-                        'BLOSUM62': 'BLOSUM62',
-                        'BLOSUM80': 'BLOSUM80',
-                        'BLOSUM90': 'BLOSUM90',
-                        'DAYHOFF': 'DAYHOFF',
-                        'FENG': 'FENG',
-                        'HOXD70': 'HOXD70',
-                        'JOHNSON': 'JOHNSON',
-                        'JONES': 'JONES',
-                        'LEVIN': 'LEVIN',
-                        'MCLACHLAN': 'MCLACHLAN',
-                        'MDM78': 'MDM78',
-                        'PAM250': 'PAM250',
-                        'PAM30': 'PAM30',
-                        'PAM70': 'PAM70',
-                        'RAO': 'RAO',
-                        'RISLER': 'RISLER',
-                        'SCHNEIDER': 'SCHNEIDER',
-                        'STR': 'STR',
-                        'TRANS': 'TRANS',
-                    }, searchable=True),
+                                            html.P("Hedef sekans", style={'marginTop': '10px'},
+                                                   className='text-primary fw-bolder'),
 
-                    html.P("Hedef sekans", style={'marginTop': '10px'}, className='text-success fw-bolder'),
+                                            dcc.Textarea(id="target_seq", placeholder="Sekans Giriniz",
+                                                         style={'marginRight': '10px', 'width': '100%',
+                                                                'height': '100px'},
+                                                         className="form-control"),
 
-                    dcc.Textarea(id="target_seq", placeholder="Sekans Giriniz",
-                                 style={'marginRight': '10px', 'width': '100%', 'height': '100px'}),
+                                            html.P("Sorgu sekans", style={'marginTop': '10px'},
+                                                   className='text-primary fw-bolder'),
 
-                    html.P("Sorgu sekans", style={'marginTop': '10px'}, className='text-success fw-bolder'),
+                                            dcc.Textarea(id="query_seq", placeholder="Sekans Giriniz",
+                                                         style={'marginRight': '10px', 'width': '100%',
+                                                                'height': '100px'},
+                                                         className='form-control'),
+                                        ], md=4
+                                    ),
+                                    dbc.Col(
+                                        [
+                                            html.Div(id="output"),
+                                        ], md=8
+                                    )
+                                ])
 
-                    dcc.Textarea(id="query_seq", placeholder="Sekans Giriniz",
-                                 style={'marginRight': '10px', 'width': '100%', 'height': '100px'}),
-
-                ], style={'margin': 20},
+                        ], className="shadow-lg p-3 mb-5 bg-body rounded mt-2", fluid=False
+                    ),
+                ],
             ),
-
-            html.Div(id="output", style={'margin': 20}),
-
         ], style={'marginTop': "2%"}
     )
 
@@ -159,19 +205,24 @@ def alignment_score(request):
         return html.Div(
             [
 
-                html.Hr(),
+                html.P("SONUÇLAR", className='fw-bolder mt-1 text-primary'),
 
-                html.P("Alignments sonuçları", style={'marginBottom': '-35px'}, className='fw-bolder'),
+                dcc.Textarea(
+                    id='align-textarea',
+                    value=f"Hedef sekans uzunluğu: {len(target_seq)}, "
+                          f"%GC: {gc_fraction(target_seq)}, "
+                          f"Sorgu sekans uzunluğu: {len(query_seq)}, "
+                          f"%GC: {gc_fraction(query_seq)}\n\n" + values,
+
+                    readOnly=True,
+                    style={'width': '100%', 'height': '400px'},
+                    disabled=True
+                ),
 
                 html.Button("Sonuçları indir", id="btn-download-align",
-                            style={'float': 'right', 'marginBottom': '20px'},
-                            className='btn btn-primary mr-2'),
-                dcc.Download(id="download-align"),
+                            className='btn btn-primary mr-2 mt-2 col-12'),
 
-                dcc.Textarea(id='align-textarea',
-                             value=f"Hedef sekans uzunluğu: {len(target_seq)}, %GC: {gc_fraction(target_seq)}, Sorgu sekans uzunluğu: {len(query_seq)}, %GC: {gc_fraction(query_seq)}\n\n" + values,
-                             readOnly=True,
-                             style={'width': '100%', 'height': '500px'}),
+                dcc.Download(id="download-align"),
 
             ], id='output',
 
