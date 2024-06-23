@@ -23,7 +23,7 @@ def MoleculViewer(request):
 
     external_stylesheets = [dbc.themes.BOOTSTRAP]
 
-    app = DjangoDash('3d_molecule_view', external_stylesheets=external_stylesheets,
+    app = DjangoDash('molecule-3d-viewer', external_stylesheets=external_stylesheets,
                      title='3D MOLEKÜL GÖRÜNTÜLEME', add_bootstrap_links=True)
 
     form = MoleculeViewForm(request.POST or None, request.FILES or None)
@@ -317,6 +317,6 @@ def MoleculViewer(request):
                     html.Br()
                 ]) for atm in atom_ids].pop()
 
-        return HttpResponseRedirect("/laboratuvarlar/bioinformatic-laboratuvari/app/3d_molecule_view/")
+        return HttpResponseRedirect("/laboratuvarlar/bioinformatic-laboratuvari/app/molecule-3d-viewer/")
 
     return render(request, 'bioinformatic/form.html', {'form': form, 'title': '3D MOLEKÜL GÖRÜNTÜLEME'})
