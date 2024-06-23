@@ -9,7 +9,7 @@ import dash_bootstrap_components as dbc
 import dash_bio as dashbio
 from dash_bio.utils import PdbParser, create_mol3d_style
 import pandas as pd
-import tempfile
+from Bio.PDB import parse_pdb_header
 
 
 def molecule_view(request):
@@ -44,6 +44,12 @@ def molecule_view(request):
             )
 
             file_obj = obj.records_files.create(file=file)
+
+            handle = open(file_obj.file.path, 'r', encoding='utf-8')
+
+            structure = parse_pdb_header(handle)
+
+
 
             try:
 
@@ -136,27 +142,23 @@ def molecule_view(request):
 
                                                             className='control-tab mt-2',
                                                             children=[
-                                                                html.H4(children='3D MOLEKÜL GÖRÜNTÜLEME UYGULAMASI?'),
+                                                                html.H4(["YAPIYA İLİŞKİN BİLGİLER"], className="mt-2"),
+                                                                html.P(
+                                                                    f'İD : {structure.get('idcode')}'),
 
                                                                 html.P(
-                                                                    'Bu uygulama python django ve dash ile geliştirilmiştir.'),
+                                                                    f'ADI : {structure.get('name')}'
+                                                                ),
 
                                                                 html.P(
-                                                                    '3D BİYOMOLEKÜLLERİ ŞERİT, ÇUBUK YADA KÜRE ŞEKLÜNDE GÖRÜNTÜLEME UYGULAMASIDIR. '),
-
-                                                                html.P(
-                                                                    'Moleküle ilişkin verileri tablo şeklinde yada moleküle '
-                                                                    'ilişkin çeşitli bölgelerin adlarını görüntüleyebilirsiniz.'),
-
-                                                                html.P(
-                                                                    'Veriniz görüntülenemiyorsa görünümden görünüm değiştirebilirsiniz.'
-                                                                    ),
+                                                                    f'Yayınlanma Tarihi : {structure.get('release_date')}'
+                                                                ),
                                                             ]
                                                         )
                                                     ),
 
                                                     dcc.Tab(
-                                                        label='VERİ',
+                                                        label='TABLO',
                                                         children=[
                                                             html.Div([
                                                                 dash_table.DataTable(
@@ -186,7 +188,7 @@ def molecule_view(request):
                                                     ),
 
                                                     dcc.Tab(
-                                                        label='Görüntüleme',
+                                                        label='GÖRÜNTÜLEME',
                                                         value='view-options',
                                                         children=[
 
