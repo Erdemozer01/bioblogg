@@ -17,7 +17,7 @@ urlpatterns = [
     path('file-reading/', views.FileReadingView.file_reading, name="file_reading"),
     path('phylo-tree-creating/', views.FileReadingView.PhylogeneticTree, name="pyhlo_tree"),
     path('blast/', views.FileReadingView.blast, name="blast"),
-    path('3d-molekul-goruntuleme/', views.molecule_viewer, name="3d_molecule_view"),
+
 
     # Writing
     path('file-format-select/<user>/', views.FileWritingView.file_writing_format_select,
@@ -34,10 +34,10 @@ urlpatterns = [
     # FileConvert
     path('dosya-dönüştürme/', views.FileConvert, name='file_convert'),
 
-
+    # Makale
     path('makale-arama/', views.ArticleView, name='article_search'),
 
-
-
+    # molecule_viewer
+    path('3d-molekul-goruntuleme/', views.molecule_viewer, name="molecule_3d_view"),
 
 ]
