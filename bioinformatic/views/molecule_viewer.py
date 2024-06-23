@@ -28,13 +28,6 @@ def molecule_view(request):
 
     form = MoleculeViewForm(request.POST or None, request.FILES or None)
 
-    def files_data_style(content):
-        fdat = tempfile.NamedTemporaryFile(suffix=".js", delete=False, mode='w+')
-        fdat.write(content)
-        dataFile = fdat.name
-        fdat.close()
-        return dataFile
-
     if request.method == "POST":
 
         if form.is_valid():
@@ -57,6 +50,8 @@ def molecule_view(request):
                 parser = PdbParser(file_obj.file.path)
 
                 data = parser.mol3d_data()
+
+                print(data.items())
 
                 styles = create_mol3d_style(
                     data['atoms'], visualization_type='cartoon', color_element='residue'
@@ -284,24 +279,34 @@ def molecule_view(request):
 
             @app.callback(
                 Output("zooming-table", "data"),
+
                 Output("water-size", "children"),
+                Output("visual_output", "modelData"),
                 Input("remove-water", "n_clicks"),
                 prevent_initial_call=True,
             )
             def remove_water(n_clicks):
 
                 if n_clicks:
-                    atoms = [i for i in data["atoms"] if not "HOH" in i.get("residue_name")]
+                    data_update = parser.mol3d_data()
+
+                    atoms = [i for i in data_update["atoms"] if not "HOH" in i.get("residue_name")]
+
+                    water_molecule = len(data_update["atoms"]) - len(atoms)
+
+                    data_update['atoms'] = atoms
+
+                    data_update['bonds'] = data_update['bonds'][:-water_molecule]
+
+                    modelData = data_update
 
                     df = pd.DataFrame(atoms)
 
                     df['positions'] = df['positions'].apply(lambda x: ', '.join(map(str, x)))
 
-                    water_molecule = len(data["atoms"]) - len(atoms)
-
                     children = f'{water_molecule} su molekülü kaldırıldı.'
 
-                    return df.to_dict("records"), children
+                    return df.to_dict("records"), children, modelData
 
             @app.callback(
                 Output('select-atom-output', 'children'),
