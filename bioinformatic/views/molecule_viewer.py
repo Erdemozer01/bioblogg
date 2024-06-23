@@ -152,14 +152,14 @@ def molecule_view(request):
                                                             children=[
                                                                 html.H4(["YAPIYA İLİŞKİN BİLGİLER"], className="mt-2"),
                                                                 html.P(
-                                                                    f'İD : {structure.get('idcode')}'),
+                                                                    f"İD : {structure.get('idcode')}"),
 
                                                                 html.P(
-                                                                    f'ADI : {structure.get('name')}'
+                                                                    f"ADI : {structure.get('name')}"
                                                                 ),
 
                                                                 html.P(
-                                                                    f'Yayınlanma Tarihi : {structure.get('release_date')}'
+                                                                    f"Yayınlanma Tarihi : {structure.get('release_date')}"
                                                                 ),
                                                             ]
                                                         )
