@@ -301,7 +301,6 @@ def PhylogeneticTree(request):
 
 
 def file_reading(request):
-
     if request.user.is_anonymous:
         from django.conf import settings
         messages.error(request, "Lütfen Giriş Yapınız")
@@ -309,8 +308,8 @@ def file_reading(request):
 
     external_stylesheets = [dbc.themes.BOOTSTRAP]
 
-    if BioinformaticModel.objects.filter(user=request.user, tool="DOSYA OKUMA").exists():
-        BioinformaticModel.objects.filter(user=request.user, tool="DOSYA OKUMA").delete()
+    if BioinformaticModel.objects.filter(user=request.user, tool="DOSYA OKUMASI").exists():
+        BioinformaticModel.objects.filter(user=request.user, tool="DOSYA OKUMASI").delete()
 
     form = FileReadingForm(request.POST or None, request.FILES or None)
 
@@ -885,7 +884,7 @@ def molecule_viewer(request):
     external_stylesheets = [dbc.themes.BOOTSTRAP]
 
     app = DjangoDash('3d_molecule_view', external_stylesheets=external_stylesheets,
-                     title='3D MOLEKÜL GÖRÜNTÜLEME')
+                     title='3D MOLEKÜL GÖRÜNTÜLEME', add_bootstrap_links=True)
 
     form = MoleculeViewForm(request.POST or None, request.FILES or None)
 
@@ -917,7 +916,7 @@ def molecule_viewer(request):
                 )
 
                 df = pd.DataFrame(data["atoms"])
-                df = df.drop_duplicates(subset=['residue_name'])
+
                 df['positions'] = df['positions'].apply(lambda x: ', '.join(map(str, x)))
 
             except ValueError:
@@ -942,11 +941,10 @@ def molecule_viewer(request):
                 {'name': 'Zincir', 'id': 'chain'}
             ]
 
-            app.layout = dbc.Container(
+            app.layout = html.Div(
                 [
 
                     ## NAVBAR ##
-
                     dbc.NavbarSimple(
                         children=[
                             dbc.NavItem(dbc.NavLink("Blog", href=HttpResponseRedirect(
@@ -981,53 +979,116 @@ def molecule_viewer(request):
                         dark=True,
                         brand_external_link=True,
                         sticky='top',
-                        className="shadow-lg p-3 bg-body rounded",
+                        className="shadow-lg bg-body rounded mt-3",
                     ),
 
-                    html.Hr(),
-
-                    dbc.Row(
+                    dbc.Container(
                         [
-                            dbc.Col(
+                            dbc.Row(
                                 [
+                                    dbc.Col(
+                                        [
+                                            dcc.Tabs(
+                                                id='mol3d-tabs', value='what-is', children=[
+                                                    dcc.Tab(
+                                                        label='AÇIKLAMA',
+                                                        value='what-is',
+                                                        children=html.Div(className='control-tab', children=[
+                                                            html.H4(className='what-is',
+                                                                    children='What is Molecule3D?'),
+                                                            html.P('Molecule3D is a visualizer that allows you '
+                                                                   'to view biomolecules in multiple representations: '
+                                                                   'sticks, spheres, and cartoons.'),
+                                                            html.P(
+                                                                'You can select a preloaded structure, or upload your own, '
+                                                                'in the "Data" tab. A sample structure is also '
+                                                                'available to download.'),
+                                                            html.P('In the "View" tab, you can change the style and '
+                                                                   'coloring of the various components of your molecule.')
+                                                        ])
+                                                    ),
 
-                                    dash_table.DataTable(
-                                        id="zooming-specific-residue-table",
-                                        columns=columns,
-                                        data=df.to_dict("records"),
-                                        row_selectable="single",
-                                        page_size=10,
-                                        filter_action='native',
-                                        filter_options={"placeholder_text": "Filtrele"},
-                                        editable=True,
-                                        style_cell={'textAlign': 'center'},
-                                        style_header={
-                                            'backgroundColor': 'white',
-                                            'fontWeight': 'bold'
-                                        })
-                                ], md=4, lg=4, xl=4, className="mb-3"),
-                            dbc.Col(
-                                dashbio.Molecule3dViewer(
-                                    id="zooming-specific-molecule3d-zoomto",
-                                    modelData=data,
-                                    styles=styles,
-                                    style={'marginRight': 'auto', 'marginLeft': 'auto'},
-                                    width=750
-                                ), md=8, lg=8, xl=8, className="mx-auto"
+                                                    dcc.Tab(
+                                                        label='VERİ',
+                                                        children=[
+                                                            html.Div([
+                                                                dash_table.DataTable(
+                                                                    id="zooming-table",
+                                                                    columns=columns,
+                                                                    data=df.to_dict("records"),
+                                                                    row_selectable="single",
+                                                                    page_size=10,
+                                                                    filter_action='native',
+                                                                    filter_options={"placeholder_text": "Filtrele"},
+                                                                    editable=True,
+                                                                    style_cell={'textAlign': 'center'},
+                                                                    style_header={
+                                                                        'backgroundColor': 'white',
+                                                                        'fontWeight': 'bold'
+                                                                    }
+                                                                ),
+                                                            ], className="mx-auto"),
+
+                                                            html.Div([
+                                                                html.Button("Su molekülünü kaldır", id="remove-water",
+                                                                            className='btn btn-primary mt-2 mx-auto'),
+                                                            ]),
+
+                                                            html.P(id="water-size", children=[])
+                                                        ]
+                                                    ),
+
+                                                    dcc.Tab(
+                                                        label='ARAÇLAR',
+                                                        value='view-options',
+                                                        children=[
+
+                                                            html.Label("Görünüm", className="fw-bolder mt-2"),
+
+                                                            dcc.Dropdown(
+                                                                id='visual-type',
+                                                                options=[
+                                                                    {'label': 'Çubuk', 'value': 'stick'},
+                                                                    {'label': 'Şerit', 'value': 'cartoon'},
+                                                                    {'label': 'Küre', 'value': 'sphere'},
+                                                                ],
+                                                                value='cartoon',
+                                                            ),
+
+                                                        ]
+                                                    ),
+
+                                                ], className="mb-2"
+                                            ),
+
+                                        ], md=4
+                                    ),
+
+                                    dbc.Col(
+                                        [
+                                            dashbio.Molecule3dViewer(
+                                                id="visual_output",
+                                                modelData=data,
+                                                styles=styles,
+                                                style={'marginRight': 'auto', 'marginLeft': 'auto'},
+                                                selectionType='atom',
+                                                width=500
+                                            ),
+                                        ], md=8,
+                                    ),
+                                ],
                             ),
-                        ],
-                        align="center",
+                        ], fluid=True, className="shadow-lg p-3 bg-body rounded"
                     ),
-                ], fluid=True, className="shadow-lg mb-5 bg-body rounded",
+                ],
             )
 
             @app.callback(
-                Output("zooming-specific-molecule3d-zoomto", "zoomTo"),
-                Output("zooming-specific-molecule3d-zoomto", "labels"),
-                Input("zooming-specific-residue-table", "selected_rows"),
-                prevent_initial_call=True
+                Output("visual_output", "zoomTo"),
+                Output("visual_output", "labels"),
+                Input("zooming-table", "selected_rows"),
             )
-            def residue(selected_row):
+            def residue_zoom(selected_row):
                 row = df.iloc[selected_row]
                 row['positions'] = row['positions'].apply(lambda x: [float(x) for x in x.split(',')])
 
@@ -1047,9 +1108,43 @@ def molecule_viewer(request):
                                 "z": row["positions"].values[0][2],
                             },
                         }
-                    ]
+                    ],
+
                 ]
+
+            @app.callback(
+                Output("visual_output", "styles"),
+                Input("visual-type", "value"),
+                prevent_initial_call=True,
+            )
+            def visual_update(value):
+
+                styles = create_mol3d_style(
+                    atoms=data["atoms"], visualization_type=value, color_element='residue'
+                )
+
+                return styles
+
+            @app.callback(
+                Output("zooming-table", "data"),
+                Output("water-size", "children"),
+                Input("remove-water", "n_clicks"),
+
+                prevent_initial_call=True,
+            )
+            def remove_water(n_clicks):
+
+                if n_clicks:
+                    atoms = [i for i in data["atoms"] if not "HOH" in i.get("residue_name")]
+
+                    df = pd.DataFrame(atoms)
+
+                    df['positions'] = df['positions'].apply(lambda x: ', '.join(map(str, x)))
+
+                    children = f"{len(data["atoms"]) - len(atoms)} su molekülü kaldırıldı."
+
+                    return df.to_dict("records"), children
 
         return HttpResponseRedirect("/laboratuvarlar/bioinformatic-laboratuvari/app/3d_molecule_view/")
 
-    return render(request, 'bioinformatic/form.html', {'form': form, 'title': '3D MOLECULE GÖRÜNTÜLEME'})
+    return render(request, 'bioinformatic/form.html', {'form': form, 'title': '3D MOLEKÜL GÖRÜNTÜLEME'})
