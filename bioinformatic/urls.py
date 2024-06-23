@@ -38,6 +38,6 @@ urlpatterns = [
     path('makale-arama/', views.ArticleView, name='article_search'),
 
 
-    path('gen-diagram/', views.DiagramView, name='genome_diagram'),
+
 
 ]
