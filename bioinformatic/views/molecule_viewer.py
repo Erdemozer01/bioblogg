@@ -121,7 +121,7 @@ def molecule_view(request):
                             ),
                         ],
                         brand="3D MOLEKÜL GÖRÜNTÜLEME",
-                        brand_href=HttpResponseRedirect(reverse("bioinformatic:3d_molecule_view")).url,
+                        brand_href=HttpResponseRedirect(reverse("bioinformatic:molecule_3d_view")).url,
                         color="primary",
                         dark=True,
                         brand_external_link=True,
