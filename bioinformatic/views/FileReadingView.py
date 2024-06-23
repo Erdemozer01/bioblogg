@@ -1,3 +1,4 @@
+import base64
 import os
 import gzip
 import subprocess, sys
@@ -26,6 +27,7 @@ import dash_cytoscape as cyto
 import dash_bio as dashbio
 from dash_bio.utils import PdbParser, create_mol3d_style
 import pandas as pd
+import tempfile
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -888,6 +890,13 @@ def molecule_viewer(request):
 
     form = MoleculeViewForm(request.POST or None, request.FILES or None)
 
+    def files_data_style(content):
+        fdat = tempfile.NamedTemporaryFile(suffix=".js", delete=False, mode='w+')
+        fdat.write(content)
+        dataFile = fdat.name
+        fdat.close()
+        return dataFile
+
     if request.method == "POST":
 
         if form.is_valid():
@@ -989,23 +998,30 @@ def molecule_viewer(request):
                                     dbc.Col(
                                         [
                                             dcc.Tabs(
-                                                id='mol3d-tabs', value='what-is', children=[
+                                                id='mol3d-tabs', children=[
                                                     dcc.Tab(
                                                         label='AÇIKLAMA',
-                                                        value='what-is',
-                                                        children=html.Div(className='control-tab', children=[
-                                                            html.H4(className='what-is',
-                                                                    children='What is Molecule3D?'),
-                                                            html.P('Molecule3D is a visualizer that allows you '
-                                                                   'to view biomolecules in multiple representations: '
-                                                                   'sticks, spheres, and cartoons.'),
-                                                            html.P(
-                                                                'You can select a preloaded structure, or upload your own, '
-                                                                'in the "Data" tab. A sample structure is also '
-                                                                'available to download.'),
-                                                            html.P('In the "View" tab, you can change the style and '
-                                                                   'coloring of the various components of your molecule.')
-                                                        ])
+                                                        children=html.Div(
+
+                                                            className='control-tab mt-2',
+                                                            children=[
+                                                                html.H4(children='3D MOLEKÜL GÖRÜNTÜLEME UYGULAMASI?'),
+
+                                                                html.P(
+                                                                    'Bu uygulama python django ve dash ile geliştirilmiştir.'),
+
+                                                                html.P(
+                                                                    '3D BİYOMOLEKÜLLERİ ŞERİT, ÇUBUK YADA KÜRE ŞEKLÜNDE GÖRÜNTÜLEME UYGULAMASIDIR. '),
+
+                                                                html.P(
+                                                                    'Moleküle ilişkin verileri tablo şeklinde yada moleküle '
+                                                                    'ilişkin çeşitli bölgelerin adlarını görüntüleyebilirsiniz.'),
+
+                                                                html.P(
+                                                                    'Veriniz görüntülenemiyorsa görünümden görünüm değiştirebilirsiniz.'
+                                                                    ),
+                                                            ]
+                                                        )
                                                     ),
 
                                                     dcc.Tab(
@@ -1039,7 +1055,7 @@ def molecule_viewer(request):
                                                     ),
 
                                                     dcc.Tab(
-                                                        label='ARAÇLAR',
+                                                        label='Görüntüleme',
                                                         value='view-options',
                                                         children=[
 
@@ -1055,6 +1071,9 @@ def molecule_viewer(request):
                                                                 value='cartoon',
                                                             ),
 
+                                                            html.P(["Seçtiğiniz Bölge"], className="fw-bolder mt-2"),
+                                                            html.Div(id='select-atom-output', className="mx-auto",
+                                                                     children=[]),
                                                         ]
                                                     ),
 
@@ -1129,7 +1148,6 @@ def molecule_viewer(request):
                 Output("zooming-table", "data"),
                 Output("water-size", "children"),
                 Input("remove-water", "n_clicks"),
-
                 prevent_initial_call=True,
             )
             def remove_water(n_clicks):
@@ -1144,6 +1162,22 @@ def molecule_viewer(request):
                     children = f"{len(data["atoms"]) - len(atoms)} su molekülü kaldırıldı."
 
                     return df.to_dict("records"), children
+
+            @app.callback(
+                Output('select-atom-output', 'children'),
+                Input('visual_output', 'selectedAtomIds'),
+                prevent_initial_call=True,
+            )
+            def show_selected_atoms(atom_ids):
+                if atom_ids is None or len(atom_ids) == 0:
+                    return 'Henüz bir bölge seçmediniz. Molekülün üzerine tıklayın'
+                return [html.Div([
+                    html.Div('Element: {}'.format(data['atoms'][atm]['elem'])),
+                    html.Div('Zincir: {}'.format(data['atoms'][atm]['chain'])),
+                    html.Div('Bölge: {}'.format(data['atoms'][atm]['residue_name'])),
+                    html.Div('Tablo sırası: {}'.format(data['atoms'][atm]['serial'])),
+                    html.Br()
+                ]) for atm in atom_ids].pop()
 
         return HttpResponseRedirect("/laboratuvarlar/bioinformatic-laboratuvari/app/3d_molecule_view/")
 
