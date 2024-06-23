@@ -254,5 +254,4 @@ CKEDITOR_5_CONFIGS = {
             'reversed': 'true',
         }
     },
-
 }
