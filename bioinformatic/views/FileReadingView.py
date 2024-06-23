@@ -1,4 +1,3 @@
-import base64
 import os
 import gzip
 import subprocess, sys
@@ -13,7 +12,7 @@ from Bio.SeqUtils import gc_fraction
 from bioinformatic.generate_tree import generate_elements
 import plotly.express as px
 from django_plotly_dash import DjangoDash
-from dash import Dash, dcc, html, dash_table, Input, Output
+from dash import dcc, html, dash_table, Input, Output
 import dash_bootstrap_components as dbc
 from pathlib import Path
 from Bio.Blast import NCBIWWW, NCBIXML
