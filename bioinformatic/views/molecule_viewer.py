@@ -297,7 +297,9 @@ def molecule_view(request):
 
                     df['positions'] = df['positions'].apply(lambda x: ', '.join(map(str, x)))
 
-                    children = f'{len(data["atoms"]) - len(atoms)} su molekülü kaldırıldı.'
+                    water_molecule = len(data["atoms"]) - len(atoms)
+
+                    children = f'{water_molecule} su molekülü kaldırıldı.'
 
                     return df.to_dict("records"), children
 
