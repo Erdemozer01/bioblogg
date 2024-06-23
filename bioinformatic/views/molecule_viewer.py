@@ -49,8 +49,6 @@ def molecule_view(request):
 
             structure = parse_pdb_header(handle)
 
-
-
             try:
 
                 parser = PdbParser(file_obj.file.path)
@@ -68,13 +66,23 @@ def molecule_view(request):
             except ValueError:
                 messages.error(request, "Sayfayı yenilediğiniz İçin veriler kaybolmuştur")
 
-                return redirect('bioinformatic:3d_molecule_view')
+                return redirect('bioinformatic:molecule_3d_view')
+
+            except AttributeError:
+                messages.error(request, "Beklenmedik hata oluştu")
+
+                return redirect('bioinformatic:molecule_3d_view')
+
+            except parmed.exceptions.MoleculeError:
+                messages.error(request, "Beklenmedik hata oluştu")
+
+                return redirect('bioinformatic:molecule_3d_view')
 
             except parmed.exceptions.FormatNotFound:
 
                 messages.error(request, "Hatalı Dosya Formatı")
 
-                return redirect('bioinformatic:3d_molecule_view')
+                return redirect('bioinformatic:molecule_3d_view')
 
             columns = [
                 {'name': 'Seri', 'id': 'serial'},
