@@ -38,6 +38,6 @@ urlpatterns = [
     path('makale-arama/', views.ArticleView, name='article_search'),
 
     # molecule_viewer
-    path('3d-molekul-goruntuleme/', views.molecule_3d_viewer, name='molecule_3d_view'),
+    path('3d-molekul-goruntuleme/', views.MoleculViewer, name='molecule_3d_view'),
 
 ]

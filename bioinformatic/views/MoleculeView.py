@@ -12,7 +12,7 @@ import pandas as pd
 import tempfile
 
 
-def molecule_3d_viewer(request):
+def MoleculViewer(request):
     if request.user.is_anonymous:
         from django.conf import settings
         messages.error(request, "Lütfen Giriş Yapınız")
