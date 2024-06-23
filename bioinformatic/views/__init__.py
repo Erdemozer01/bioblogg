@@ -6,4 +6,4 @@ from .FileWritingView import file_writing_format_select, CreateFileView, RecordD
 from .FileDownloadView import download_file
 from .FileConvertView import FileConvert
 from .article import ArticleView
-from .MoleculeView import MoleculViewer
+from .MoleculeView import molecule_view
