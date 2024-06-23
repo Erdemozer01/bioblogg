@@ -51,8 +51,6 @@ def molecule_view(request):
 
                 data = parser.mol3d_data()
 
-                print(data.items())
-
                 styles = create_mol3d_style(
                     data['atoms'], visualization_type='cartoon', color_element='residue'
                 )
