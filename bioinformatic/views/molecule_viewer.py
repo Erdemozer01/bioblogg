@@ -174,7 +174,7 @@ def single_molecule_view(request):
 
 
 
-                                                                html.A(['Protein Databakta Görüntüle'],
+                                                                html.A(['Protein Databankta Görüntüle'],
                                                                        href=f'https://www.rcsb.org/structure/{str(file.name[:4]).lower()}',
                                                                        target="_blank"),
 
