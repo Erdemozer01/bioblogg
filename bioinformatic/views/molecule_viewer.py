@@ -160,6 +160,17 @@ def single_molecule_view(request):
                                                                 html.P(
                                                                     f"Yayınlanma Tarihi : {structure.get('release_date')}"
                                                                 ),
+
+                                                                html.P(
+                                                                    f"Metod : {structure.get('structure_method')}"
+                                                                ),
+
+                                                                html.P(
+                                                                    f"Referans : {structure.get('journal')}",
+                                                                    className="text-align-justify",
+                                                                ),
+
+
                                                             ]
                                                         )
                                                     ),
@@ -214,7 +225,6 @@ def single_molecule_view(request):
                                                             html.Label("Renklendirme Türü", className="fw-bolder mt-2"),
 
                                                             dcc.Dropdown(
-
                                                                 id='color-type',
                                                                 options=[
                                                                     {'label': 'Atom', 'value': 'atom'},
@@ -223,6 +233,18 @@ def single_molecule_view(request):
                                                                     {'label': 'Zincir', 'value': 'chain'},
                                                                 ],
                                                                 value='residue', className="mt-2"
+                                                            ),
+
+                                                            html.Label("Seçme Türü", className="fw-bolder mt-2"),
+
+                                                            dcc.Dropdown(
+                                                                id='select-type',
+                                                                options=[
+                                                                    {'label': 'Atom', 'value': 'atom'},
+                                                                    {'label': 'Bölge', 'value': 'residue'},
+                                                                    {'label': 'Zincir', 'value': 'chain'},
+                                                                ],
+                                                                value='atom', className="mt-2"
                                                             ),
 
                                                             html.P(["Seçtiğiniz Bölge"], className="fw-bolder mt-2"),
@@ -245,6 +267,7 @@ def single_molecule_view(request):
                                                 styles=styles,
                                                 style={'marginRight': 'auto', 'marginLeft': 'auto'},
                                                 selectionType='atom',
+
                                                 width=500
                                             ),
                                         ], md=8,
@@ -287,17 +310,19 @@ def single_molecule_view(request):
 
             @app.callback(
                 Output("visual_output", "styles"),
+                Output("visual_output", "selectionType"),
                 Input("visual-type", "value"),
                 Input("color-type", "value"),
+                Input("select-type", "value"),
                 prevent_initial_call=True,
             )
-            def visual_update(visualization_type, color_element):
+            def visual_update(visualization_type, color_element, select_type):
 
                 styles = create_mol3d_style(
                     atoms=data["atoms"], visualization_type=visualization_type, color_element=color_element
                 )
 
-                return styles
+                return styles, select_type
 
             @app.callback(
                 Output("zooming-table", "data"),
