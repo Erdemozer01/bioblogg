@@ -1,7 +1,7 @@
 import parmed
 from django.shortcuts import *
 from django.contrib import messages
-from bioinformatic.forms import MoleculeViewForm
+from bioinformatic.forms import SingleMoleculeViewForm
 from bioinformatic.models import BioinformaticModel
 from django_plotly_dash import DjangoDash
 from dash import dcc, html, dash_table, Input, Output
@@ -12,7 +12,7 @@ import pandas as pd
 from Bio.PDB import parse_pdb_header
 
 
-def molecule_view(request):
+def single_molecule_view(request):
     if request.user.is_anonymous:
         from django.conf import settings
         messages.error(request, "Lütfen Giriş Yapınız")
@@ -26,7 +26,7 @@ def molecule_view(request):
     app = DjangoDash('molecule-3d-viewer', external_stylesheets=external_stylesheets,
                      title='3D MOLEKÜL GÖRÜNTÜLEME', add_bootstrap_links=True)
 
-    form = MoleculeViewForm(request.POST or None, request.FILES or None)
+    form = SingleMoleculeViewForm(request.POST or None, request.FILES or None)
 
     if request.method == "POST":
 
@@ -66,23 +66,23 @@ def molecule_view(request):
             except ValueError:
                 messages.error(request, "Sayfayı yenilediğiniz İçin veriler kaybolmuştur")
 
-                return redirect('bioinformatic:molecule_3d_view')
+                return redirect('bioinformatic:single_molecule_3d_view')
 
             except AttributeError:
                 messages.error(request, "Beklenmedik hata oluştu")
 
-                return redirect('bioinformatic:molecule_3d_view')
+                return redirect('bioinformatic:single_molecule_3d_view')
 
             except parmed.exceptions.MoleculeError:
                 messages.error(request, "Beklenmedik hata oluştu")
 
-                return redirect('bioinformatic:molecule_3d_view')
+                return redirect('bioinformatic:single_molecule_3d_view')
 
             except parmed.exceptions.FormatNotFound:
 
                 messages.error(request, "Hatalı Dosya Formatı")
 
-                return redirect('bioinformatic:molecule_3d_view')
+                return redirect('bioinformatic:single_molecule_3d_view')
 
             columns = [
                 {'name': 'Seri', 'id': 'serial'},
@@ -128,7 +128,7 @@ def molecule_view(request):
                             ),
                         ],
                         brand="3D MOLEKÜL GÖRÜNTÜLEME",
-                        brand_href=HttpResponseRedirect(reverse("bioinformatic:molecule_3d_view")).url,
+                        brand_href=HttpResponseRedirect(reverse("bioinformatic:single_molecule_3d_view")).url,
                         color="primary",
                         dark=True,
                         brand_external_link=True,
@@ -147,7 +147,6 @@ def molecule_view(request):
                                                     dcc.Tab(
                                                         label='AÇIKLAMA',
                                                         children=html.Div(
-
                                                             className='control-tab mt-2',
                                                             children=[
                                                                 html.H4(["YAPIYA İLİŞKİN BİLGİLER"], className="mt-2"),
@@ -210,6 +209,20 @@ def molecule_view(request):
                                                                     {'label': 'Küre', 'value': 'sphere'},
                                                                 ],
                                                                 value='cartoon',
+                                                            ),
+
+                                                            html.Label("Renklendirme Türü", className="fw-bolder mt-2"),
+
+                                                            dcc.Dropdown(
+
+                                                                id='color-type',
+                                                                options=[
+                                                                    {'label': 'Atom', 'value': 'atom'},
+                                                                    {'label': 'Bölge', 'value': 'residue'},
+                                                                    {'label': 'Bölge türü', 'value': 'residue_type'},
+                                                                    {'label': 'Zincir', 'value': 'chain'},
+                                                                ],
+                                                                value='residue', className="mt-2"
                                                             ),
 
                                                             html.P(["Seçtiğiniz Bölge"], className="fw-bolder mt-2"),
@@ -275,12 +288,13 @@ def molecule_view(request):
             @app.callback(
                 Output("visual_output", "styles"),
                 Input("visual-type", "value"),
+                Input("color-type", "value"),
                 prevent_initial_call=True,
             )
-            def visual_update(value):
+            def visual_update(visualization_type, color_element):
 
                 styles = create_mol3d_style(
-                    atoms=data["atoms"], visualization_type=value, color_element='residue'
+                    atoms=data["atoms"], visualization_type=visualization_type, color_element=color_element
                 )
 
                 return styles
@@ -319,11 +333,13 @@ def molecule_view(request):
             @app.callback(
                 Output('select-atom-output', 'children'),
                 Input('visual_output', 'selectedAtomIds'),
-                prevent_initial_call=True,
+
             )
             def show_selected_atoms(atom_ids):
+
                 if atom_ids is None or len(atom_ids) == 0:
                     return 'Henüz bir bölge seçmediniz. Molekülün üzerine tıklayın'
+
                 return [html.Div([
                     html.Div('Element: {}'.format(data['atoms'][atm]['elem'])),
                     html.Div('Zincir: {}'.format(data['atoms'][atm]['chain'])),

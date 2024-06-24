@@ -1,3 +1,3 @@
 from .reading import FileReadingForm, TranslateForm, AlignmentForm, MultipleSeqAlignmentFileForm, BlastForm, \
-    MoleculeViewForm, CircosForm
+    MultiMoleculeViewForm, CircosForm, SingleMoleculeViewForm
 from bioinformatic.forms.file_convert import FileConvertForm
