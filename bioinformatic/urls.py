@@ -39,5 +39,6 @@ urlpatterns = [
 
     # molecule_viewer
     path('single-3d-molekul-goruntuleme/', views.single_molecule_view, name='single_molecule_3d_view'),
+    path('multiple-3d-molekul-goruntuleme/', views.multi_molecule_view, name='multiple_molecule_3d_view'),
 
 ]

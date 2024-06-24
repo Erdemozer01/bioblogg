@@ -1,15 +1,20 @@
-import parmed
+import parmed, os
 from django.shortcuts import *
 from django.contrib import messages
-from bioinformatic.forms import SingleMoleculeViewForm
+from bioinformatic.forms import SingleMoleculeViewForm, MultiMoleculeViewForm
 from bioinformatic.models import BioinformaticModel
 from django_plotly_dash import DjangoDash
 from dash import dcc, html, dash_table, Input, Output
 import dash_bootstrap_components as dbc
 import dash_bio as dashbio
-from dash_bio.utils import PdbParser, create_mol3d_style
+from dash_bio.utils import PdbParser, create_mol3d_style, ngl_parser
 import pandas as pd
 from Bio.PDB import parse_pdb_header
+from pathlib import Path
+from dash.exceptions import PreventUpdate
+
+
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 
 def single_molecule_view(request):
@@ -38,8 +43,6 @@ def single_molecule_view(request):
 
             file = form.cleaned_data["file"]
 
-
-
             obj = BioinformaticModel.objects.create(
                 user=request.user,
                 tool="molecule_view",
@@ -50,6 +53,8 @@ def single_molecule_view(request):
             handle = open(file_obj.file.path, 'r', encoding='utf-8')
 
             structure = parse_pdb_header(handle)
+
+            print(structure)
 
             try:
 
@@ -171,8 +176,6 @@ def single_molecule_view(request):
                                                                     f"Referans : {structure.get('journal')}",
                                                                     className="text-align-justify",
                                                                 ),
-
-
 
                                                                 html.A(['Protein Databankta Görüntüle'],
                                                                        href=f'https://www.rcsb.org/structure/{str(file.name[:4]).lower()}',
@@ -384,3 +387,190 @@ def single_molecule_view(request):
         return HttpResponseRedirect("/laboratuvarlar/bioinformatic-laboratuvari/app/molecule-3d-viewer/")
 
     return render(request, 'bioinformatic/form.html', {'form': form, 'title': 'Tekli 3D MOLEKÜL GÖRÜNTÜLEME'})
+
+
+def multi_molecule_view(request):
+    if request.user.is_anonymous:
+        from django.conf import settings
+        messages.error(request, "Lütfen Giriş Yapınız")
+        return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
+
+    if BioinformaticModel.objects.filter(user=request.user, tool="multi_molecule_view").exists():
+        BioinformaticModel.objects.filter(user=request.user, tool="multi_molecule_view").delete()
+
+    external_stylesheets = [dbc.themes.BOOTSTRAP]
+
+    app = DjangoDash('multi-molecule-3d-viewer', external_stylesheets=external_stylesheets,
+                     title='3D MOLEKÜL GÖRÜNTÜLEME', add_bootstrap_links=True)
+
+    form = MultiMoleculeViewForm(request.POST or None, request.FILES or None)
+
+    data_path = os.path.join(BASE_DIR, "media", "laboratory", f"{request.user}").replace('\\', '/')
+
+    if request.method == "POST":
+
+        if form.is_valid():
+
+            if request.FILES['files'].size > 9 * 1024 * 1024:
+                messages.error(request, "Dosya boyutu en fazla 9mb olmalıdır.")
+                return HttpResponseRedirect(request.path)
+
+            files = form.cleaned_data["files"]
+
+            obj = BioinformaticModel.objects.create(
+                user=request.user,
+                tool="multi_molecule_view",
+            )
+
+            file_path = []
+            file_name = []
+            file_name_full = []
+
+            for file in files:
+                obj.records_files.create(file=file)
+                file_name.append(str(file.name[:4]))
+                file_name_full.append(file.name)
+
+            files_obj = obj.records_files.filter(records__user=request.user, records__tool="multi_molecule_view")
+
+            for f in files_obj:
+                file_path.append(f.file.path.replace('\\', '/'))
+
+            print(file_name)
+            print(file_name_full)
+
+            dropdown_options = [{"label": i, "value": i} for i in file_name]
+
+            representation_options = [
+                {"label": "backbone", "value": "backbone"},
+                {"label": "ball+stick", "value": "ball+stick"},
+                {"label": "cartoon", "value": "cartoon"},
+                {"label": "hyperball", "value": "hyperball"},
+                {"label": "licorice", "value": "licorice"},
+                {"label": "axes+box", "value": "axes+box"},
+                {"label": "helixorient", "value": "helixorient"}
+            ]
+
+
+            app.layout = html.Div(
+                [
+
+                    ## NAVBAR ##
+                    dbc.NavbarSimple(
+                        children=[
+                            dbc.NavItem(dbc.NavLink("Blog", href=HttpResponseRedirect(
+                                reverse("blog:anasayfa")).url, external_link=True)),
+                            dbc.DropdownMenu(
+                                children=[
+                                    dbc.DropdownMenuItem("Biyoinformatik",
+                                                         href=HttpResponseRedirect(
+                                                             reverse("bioinformatic:home")).url,
+                                                         external_link=True),
+                                    dbc.DropdownMenuItem("Biyoistatislik",
+                                                         href=HttpResponseRedirect(
+                                                             reverse("biyoistatislik")).url,
+                                                         external_link=True),
+                                    dbc.DropdownMenuItem("Coğrafi Bilgi sistemleri",
+                                                         href=HttpResponseRedirect(reverse("cbs")).url,
+                                                         external_link=True),
+                                    dbc.DropdownMenuItem("Laboratuvarlar",
+                                                         href=HttpResponseRedirect(
+                                                             reverse("lab_home")).url,
+                                                         external_link=True),
+                                ],
+                                nav=True,
+                                in_navbar=True,
+                                label="Laboratuvarlar",
+
+                            ),
+                        ],
+                        brand="3D MOLEKÜL GÖRÜNTÜLEME",
+                        brand_href=HttpResponseRedirect(reverse("bioinformatic:multiple_molecule_3d_view")).url,
+                        color="primary",
+                        dark=True,
+                        brand_external_link=True,
+                        sticky='top',
+                        className="shadow-lg bg-body rounded mt-3",
+                    ),
+
+                    dbc.Card(
+                        [
+                            dbc.Row(
+                                [
+                                    dbc.Col(
+                                        [
+                                            dcc.Tabs(
+                                                id='mol3d-tabs', children=[
+                                                    dcc.Tab(
+                                                        label='AÇIKLAMA',
+                                                        children=html.Div(
+                                                            className='control-tab mt-2',
+                                                            children=[
+                                                                html.H4(["YAPIYA İLİŞKİN BİLGİLER"], className="mt-2"),
+                                                                html.P(
+                                                                    [f"{file_id}, " for file_id in file_name],
+                                                                ),
+                                                            ]
+                                                        )
+                                                    ),
+
+                                                    dcc.Tab(
+                                                        label='GÖRÜNTÜLEME',
+                                                        value='view-options',
+                                                        children=[
+
+                                                            html.Label("Molekül Seçimi", className="fw-bolder mt-2"),
+
+                                                            dcc.Dropdown(
+                                                                id="ngl-multi-dropdown",
+                                                                options=dropdown_options,
+                                                                value=file_name,
+                                                                multi=True
+                                                            ),
+
+                                                        ]
+                                                    ),
+
+                                                ], className="mb-2"
+                                            ),
+
+                                        ], md=4
+                                    ),
+
+                                    dashbio.NglMoleculeViewer(id="multiple-molecule-view"),
+                                ],
+                            ),
+                        ], className="shadow-lg p-3 bg-body rounded"
+                    ),
+                ],
+            )
+
+            @app.callback(
+                Output("multiple-molecule-view", 'data'),
+                Output("multiple-molecule-view", "molStyles"),
+                Input("ngl-multi-dropdown", "value"),
+            )
+            def return_molecule(value):
+                molstyles_dict = {
+                    "representations": representation_options,
+                    "chosenAtomsColor": "white",
+                    "chosenAtomsRadius": 1,
+                    "molSpacingXaxis": 100,
+                }
+
+                data = [
+                    ngl_parser.get_data(
+                        data_path=data_path,
+                        pdb_id=pdb_id,
+                        color='red',
+                        reset_view=True,
+                        local=True
+                    )
+                    for pdb_id in value
+                ]
+
+                return data, molstyles_dict
+
+        return HttpResponseRedirect("/laboratuvarlar/bioinformatic-laboratuvari/app/multi-molecule-3d-viewer/")
+
+    return render(request, 'bioinformatic/form.html', {'form': form, 'title': 'Çoklu 3D MOLEKÜL GÖRÜNTÜLEME'})

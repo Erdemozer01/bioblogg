@@ -100,11 +100,3 @@ class SingleMoleculeViewForm(forms.Form):
         help_text="Not : Dosyanız pdb yada cif uzanlı olmalıdır. \n Dosya boyutu en fazla 9mb olmalıdır.",
     )
 
-
-class CircosForm(forms.ModelForm):
-    file = forms.FileField(label='Genbank Dosyası', help_text='Çoklu kayıt girmeyiniz.')
-
-    class Meta:
-        model = BioinformaticModel
-        fields = ["file"]
-        widgets = {'file': forms.ClearableFileInput(attrs={'class': 'form-control'})}
