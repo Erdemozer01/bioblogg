@@ -32,11 +32,13 @@ def single_molecule_view(request):
 
         if form.is_valid():
 
-            if request.FILES['file'].size > 25 * 1024 * 1024:
-                messages.error(request, "Dosya boyutu en fazla 25mb olmalıdır.")
+            if request.FILES['file'].size > 9 * 1024 * 1024:
+                messages.error(request, "Dosya boyutu en fazla 9mb olmalıdır.")
                 return HttpResponseRedirect(request.path)
 
             file = form.cleaned_data["file"]
+
+
 
             obj = BioinformaticModel.objects.create(
                 user=request.user,
@@ -151,7 +153,7 @@ def single_molecule_view(request):
                                                             children=[
                                                                 html.H4(["YAPIYA İLİŞKİN BİLGİLER"], className="mt-2"),
                                                                 html.P(
-                                                                    f"İD : {structure.get('idcode')}"),
+                                                                    f"İD : {str(file.name[:4]).upper()}"),
 
                                                                 html.P(
                                                                     f"ADI : {structure.get('name')}"
@@ -170,6 +172,11 @@ def single_molecule_view(request):
                                                                     className="text-align-justify",
                                                                 ),
 
+
+
+                                                                html.A(['Protein Databakta Görüntüle'],
+                                                                       href=f'https://www.rcsb.org/structure/{str(file.name[:4]).lower()}',
+                                                                       target="_blank"),
 
                                                             ]
                                                         )
@@ -280,9 +287,26 @@ def single_molecule_view(request):
             )
 
             @app.callback(
+                Output("visual_output", "styles"),
+                Output("visual_output", "selectionType"),
+                Input("visual-type", "value"),
+                Input("color-type", "value"),
+                Input("select-type", "value"),
+
+            )
+            def visual_update(visualization_type, color_element, select_type):
+
+                styles = create_mol3d_style(
+                    atoms=data["atoms"], visualization_type=visualization_type, color_element=color_element
+                )
+
+                return styles, select_type
+
+            @app.callback(
                 Output("visual_output", "zoomTo"),
                 Output("visual_output", "labels"),
                 Input("zooming-table", "selected_rows"),
+                prevent_initial_call=True,
             )
             def residue_zoom(selected_row):
                 row = df.iloc[selected_row]
@@ -307,22 +331,6 @@ def single_molecule_view(request):
                     ],
 
                 ]
-
-            @app.callback(
-                Output("visual_output", "styles"),
-                Output("visual_output", "selectionType"),
-                Input("visual-type", "value"),
-                Input("color-type", "value"),
-                Input("select-type", "value"),
-                prevent_initial_call=True,
-            )
-            def visual_update(visualization_type, color_element, select_type):
-
-                styles = create_mol3d_style(
-                    atoms=data["atoms"], visualization_type=visualization_type, color_element=color_element
-                )
-
-                return styles, select_type
 
             @app.callback(
                 Output("zooming-table", "data"),
@@ -375,4 +383,4 @@ def single_molecule_view(request):
 
         return HttpResponseRedirect("/laboratuvarlar/bioinformatic-laboratuvari/app/molecule-3d-viewer/")
 
-    return render(request, 'bioinformatic/form.html', {'form': form, 'title': '3D MOLEKÜL GÖRÜNTÜLEME'})
+    return render(request, 'bioinformatic/form.html', {'form': form, 'title': 'Tekli 3D MOLEKÜL GÖRÜNTÜLEME'})

@@ -93,10 +93,11 @@ class MultiMoleculeViewForm(forms.Form):
         help_text="Not : .pdb veya .cif uzanlı olmalıdır. Max. dosya boyutu 25 mb olmalıdır.",
     )
 
+
 class SingleMoleculeViewForm(forms.Form):
     file = forms.FileField(
         label='DOSYA SEÇİNİZ',
-        help_text="Not : Dosyanız pdb yada cif uzanlı olmalıdır. \n Max. dosya boyutu 25 mb olmalıdır.",
+        help_text="Not : Dosyanız pdb yada cif uzanlı olmalıdır. \n Dosya boyutu en fazla 9mb olmalıdır.",
     )
 
 
