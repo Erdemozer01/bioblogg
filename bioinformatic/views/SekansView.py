@@ -1,3 +1,4 @@
+##### MEHMET ERDEM ÖZER, mozer232@posta.pau.edu.tr ######
 from pathlib import Path
 from Bio.SeqUtils import MeltingTemp as mt
 import pandas as pd
@@ -615,71 +616,132 @@ def translation(request):
 
 
 def Kmer_SeqSlicing(request):
-    external_stylesheets = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css']
-    external_scripts = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js']
+    external_stylesheets = [dbc.themes.BOOTSTRAP]
+    external_scripts = ["https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"]
+
     seq_input = DjangoDash('kmer_seq_slicing', external_stylesheets=external_stylesheets,
-                           external_scripts=external_scripts, title='Kmer oluşturma')
+                           title='Kmer oluşturma', add_bootstrap_links=True, external_scripts=external_scripts)
 
     seq_input.layout = html.Div(
 
         [
 
-            html.H4('Kmer oluşturma'),
+            dbc.NavbarSimple(
+                children=[
+                    dbc.NavItem(dbc.NavLink("Blog", href=HttpResponseRedirect(
+                        reverse("blog:anasayfa")).url, external_link=True)),
+                    dbc.DropdownMenu(
+                        children=[
+                            dbc.DropdownMenuItem("Biyoinformatik",
+                                                 href=HttpResponseRedirect(
+                                                     reverse("bioinformatic:home")).url,
+                                                 external_link=True),
+                            dbc.DropdownMenuItem("Biyoistatislik",
+                                                 href=HttpResponseRedirect(
+                                                     reverse("biyoistatislik")).url,
+                                                 external_link=True),
+                            dbc.DropdownMenuItem("Coğrafi Bilgi sistemleri",
+                                                 href=HttpResponseRedirect(reverse("cbs")).url,
+                                                 external_link=True),
+                            dbc.DropdownMenuItem("Laboratuvarlar",
+                                                 href=HttpResponseRedirect(
+                                                     reverse("lab_home")).url,
+                                                 external_link=True),
+                        ],
+                        nav=True,
+                        in_navbar=True,
+                        label="Laboratuvarlar",
+                        className="float-right",
 
-            html.A('BİYOİNFORMATİK ANASAYFA', href=HttpResponseRedirect(reverse("bioinformatic:home")).url,
-                   style={'float': 'right'}),
+                    ),
+                ],
+                brand="KMER OLUŞTURMA",
+                brand_href=HttpResponseRedirect(reverse("bioinformatic:dna_seq_slice")).url,
+                color="primary",
+                dark=True,
+                brand_external_link=True,
+                sticky='top',
+                className="shadow-lg bg-body rounded mt-1 mb-1 ",
+            ),
 
-            html.P("Sekans giriniz", className='fw-bolder'),
+            dbc.Card(
+                [
+                    dbc.CardBody(
+                        dbc.Row(
+                            [
+                                dbc.Col(
+                                    [
 
-            dcc.Textarea(id="sekans", placeholder="Sekans Giriniz",
-                         style={'marginRight': '10px', 'width': '100%', 'height': '200px'}),
+                                        html.P("DNA Sekans giriniz", className='fw-bolder'),
 
-            dcc.Input(id="start", type="number", placeholder="Sekans başlangıcı", min=1,
-                      style={'marginLeft': '2px'}),
-            dcc.Input(id="stop", type="number", placeholder="Sekans bitişi", min=1,
-                      style={'marginLeft': '2px'}),
-            dcc.Input(id="kmer", type="number", placeholder="Kmer Uzunluğu", min=0,
-                      style={'marginLeft': '2px'}),
-            dcc.Input(id="discard", type="text", placeholder="İstenmeyen sekans dizisi",
-                      style={'marginLeft': '2px'}),
+                                        html.Div(
+                                            dcc.Textarea(
+                                                id="seq",
+                                                placeholder="Sekans Giriniz",
+                                                style={'width': '100%', 'height': '200px'},
+                                                className="form-control"
+                                            ), style={'whiteSpace': 'pre-line'}
+                                        ),
 
-            html.Hr(),
+                                        dbc.Label(["Sekans başlangıcı"], className="fw-bolder mt-1"),
+                                        dcc.Input(id="start", type="number", placeholder="Sekans başlangıcı", min=0,
+                                                  value=0,
+                                                  className="form-control mb-1"),
 
-            html.Div(id="output"),
+                                        dbc.Label(["Sekans bitişi"], className="fw-bolder"),
+                                        dcc.Input(id="stop", type="number", placeholder="Sekans bitişi", min=1,
+                                                  value=1, className="form-control mb-1"),
 
-        ], style={'marginTop': "2%", 'margin': 20}
+                                        dbc.Label(["Kmer Uzunluğu"], className="fw-bolder"),
+                                        dcc.Input(id="kmer", type="number", placeholder="Kmer Uzunluğu", min=1,
+                                                  className="form-control mb-1"),
+
+                                        dbc.Label(["İstenmeyen sekans dizisi"], className="fw-bolder"),
+                                        dcc.Input(id="discard", type="text", placeholder="İstenmeyen sekans dizisi",
+                                                  className="form-control mb-1"),
+                                    ], md=4
+                                ),
+                                dbc.Col(
+                                    [
+                                        html.Div(id="output"),
+                                    ], md=8
+                                ),
+                            ],
+
+                        )
+                    )
+                ]
+
+            ),
+
+        ], className="shadow-lg p-3 bg-body rounded mr-1 ml-1 mt-1"
     )
 
     @seq_input.callback(
         Output("output", "children"),
-        Input("sekans", "value"),
+        Input("seq", "value"),
         Input("start", "value"),
         Input("stop", "value"),
         Input("kmer", "value"),
         Input("discard", "value"),
     )
-    def update_output(sekans, start, stop, kmer, discard):
-        sekans = str(sekans).replace(" ", "")
-        sekans = str(sekans).replace("\n", "")
-        sekans = str(sekans).replace("\t", "")
-        sekans = str(sekans).replace("\r", "")
-        sekans = str(sekans).replace("0", "")
-        sekans = str(sekans).replace("1", "")
-        sekans = str(sekans).replace("2", "")
-        sekans = str(sekans).replace("3", "")
-        sekans = str(sekans).replace("4", "")
-        sekans = str(sekans).replace("5", "")
-        sekans = str(sekans).replace("6", "")
-        sekans = str(sekans).replace("7", "")
-        sekans = str(sekans).replace("8", "")
-        sekans = str(sekans).replace("9", "")
-        sekans = str(sekans).upper().replace("NONE", "")
+    def update_output(seq, start, stop, kmer, discard):
+        sequence = seq.upper()
+        ig = []
+
+        for i in sequence:
+            if not i in ['A', 'C', 'G', 'T']:
+                ig.append(i)
+
+        for i in ig:
+            if i in sequence:
+                sequence = sequence.replace(i, "")
 
         if discard:
-            sekans = sekans.replace(str(discard).upper(), "")
+            sequence = sequence.replace(str(discard).upper(), "")
 
         if start or stop:
-            sekans = sekans[start:stop]
+            sequence = sequence[start:stop]
 
         kmer_list = []
 
@@ -687,7 +749,7 @@ def Kmer_SeqSlicing(request):
             for x in range(0, len(sequence) - size):
                 yield sequence[x:x + size]
 
-        for km in getKmers(sekans, kmer):
+        for km in getKmers(sequence, kmer):
             kmer_list.append(km)
 
         df_kmer = pd.DataFrame(
@@ -701,14 +763,16 @@ def Kmer_SeqSlicing(request):
         return html.Div(
             [
 
-                html.P(f"SEKANS UZUNLUĞU: {len(sekans)}, %GC: {gc_fraction(sekans)}",
-                       style={'marginTop': '10px'}),
+                html.H4("SONUÇLAR", className='fw-bolder mt-2'),
 
-                html.P("Sekanslar", className='fw-bolder'),
+                html.P(f"SEKANS UZUNLUĞU: {len(sequence)}, %GC: {gc_fraction(sequence)}",
+                       style={'marginTop': '10px'}, className="mt-2"),
 
-                dcc.Textarea(value=sekans, style={'width': '100%', 'height': '200px'}),
+                html.P("İstenilen Sekans", className='fw-bolder'),
 
-                html.P("Kmerler", className="fw-bolder"),
+                dcc.Textarea(value=sequence, style={'width': '100%', 'height': '100px'}, className="form-control"),
+
+                html.P("Kmerler", className="fw-bolder mt-1"),
 
                 dag.AgGrid(
                     style={'width': '100%'},
@@ -745,99 +809,150 @@ def create_frame_seq(request):
     external_scripts = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js']
 
     frame_seq_app = DjangoDash('create_frame_seq', external_stylesheets=external_stylesheets,
-                               external_scripts=external_scripts,
+                               external_scripts=external_scripts, add_bootstrap_links=True,
                                title='Çerçeve sekans oluşturma'.upper())
 
     frame_seq_app.layout = html.Div(
 
         [
 
+            ## NAVBAR ##
             dbc.NavbarSimple(
                 children=[
-                    html.A(
-                        [dbc.NavItem(dbc.NavLink("Biyoinformatik", className="text-white"))],
-                        href=redirect("bioinformatic:home").url
+                    dbc.NavItem(dbc.NavLink("Blog", href=HttpResponseRedirect(
+                        reverse("blog:anasayfa")).url, external_link=True)),
+                    dbc.DropdownMenu(
+                        children=[
+                            dbc.DropdownMenuItem("Biyoinformatik",
+                                                 href=HttpResponseRedirect(
+                                                     reverse("bioinformatic:home")).url,
+                                                 external_link=True),
+                            dbc.DropdownMenuItem("Biyoistatislik",
+                                                 href=HttpResponseRedirect(
+                                                     reverse("biyoistatislik")).url,
+                                                 external_link=True),
+                            dbc.DropdownMenuItem("Coğrafi Bilgi sistemleri",
+                                                 href=HttpResponseRedirect(reverse("cbs")).url,
+                                                 external_link=True),
+                            dbc.DropdownMenuItem("Laboratuvarlar",
+                                                 href=HttpResponseRedirect(
+                                                     reverse("lab_home")).url,
+                                                 external_link=True),
+                        ],
+                        nav=True,
+                        in_navbar=True,
+                        label="Laboratuvarlar",
+                        className="float-right",
+
                     ),
-
                 ],
-                brand="Çerçeve sekans oluşturma".title(),
-                brand_href=str(request.path),
+                brand="Çerçeve Sekans Oluşturma",
+                brand_href=HttpResponseRedirect(reverse("bioinformatic:create_frame_seq")).url,
                 color="primary",
-                sticky="top",
+                dark=True,
+                brand_external_link=True,
+                sticky='top',
+                className="shadow-lg bg-body rounded mt-2 mb-1 ",
             ),
 
-            html.P("Sekans"),
+            dbc.Card(
+                dbc.CardBody(
+                    dbc.Row(
+                        [
+                            dbc.Col(
+                                [
 
-            dcc.Textarea(id="sekans", placeholder="Sekans Giriniz",
-                         className="form-control mb-1", style={'height': 200}),
+                                    dbc.Label("Sekans Giriniz", className="fw-bolder mt-1"),
 
-            html.Div(
-                [
-                    dcc.Input(id="nuc_pos", type="number", placeholder="Nükleotit pozisyonu", min=0,
-                              style={'marginLeft': '2px'}),
-                    dcc.Input(id="frame_seq_len", type="number", placeholder="Çerçeve sekans uzunluğu", min=50,
-                              style={'marginLeft': '2px'}),
-                    dcc.Input(id="start", type="number", placeholder="Sekans başlangıcı", min=0,
-                              style={'marginLeft': '2px'}),
-                    dcc.Input(id="stop", type="number", placeholder="Sekans bitişi", min=0,
-                              style={'marginLeft': '2px'}),
+                                    dcc.Textarea(
+                                        id="sequence", placeholder="Sekans Giriniz",
+                                        className="form-control mb-2", style={'height': 100}
+                                    ),
+                                    dbc.Label("Nükleotit pozisyonu", className="fw-bolder mt-1"),
+                                    dcc.Input(id="nuc_pos", type="number", placeholder="Nükleotit pozisyonu", min=0,
+                                              className="form-control mb-2", value=0, ),
 
-                    dcc.Input(id="discard", type="text", placeholder="İstenmeyen sekans dizisi",
-                              style={'marginLeft': '2px'}),
-                ]
+                                    dbc.Label("Çerçeve sekans uzunluğu", className="fw-bolder mt-1"),
+                                    dcc.Input(id="frame_seq_len", type="number", placeholder="Çerçeve sekans uzunluğu",
+                                              min=50, className="form-control mb-2", value=50, ),
+
+                                    dbc.Label("Sekans başlangıcı", className="fw-bolder mt-1"),
+                                    dcc.Input(id="start", type="number", placeholder="Sekans başlangıcı", min=0,
+                                              className="form-control mb-2", value=0, ),
+
+                                    dbc.Label("Sekans bitişi", className="fw-bolder mt-1"),
+                                    dcc.Input(id="stop", type="number", placeholder="Sekans bitişi", min=1,
+                                              className="form-control mb-1"),
+
+                                    dbc.Label("İstenmeyen sekans dizisi", className="fw-bolder mt-2"),
+                                    dcc.Input(id="discard", type="text", placeholder="İstenmeyen sekans dizisi",
+                                              className="form-control mb-2"),
+                                ], md=4
+                            ),
+
+                            dbc.Col(
+                                [
+
+                                    html.Div(id="output", children=[]),
+
+                                ], md=8
+                            ),
+                        ]
+
+                    )
+                )
             ),
 
-            html.Div(id="output"),
-        ], style={'margin': 30}
+        ], className="shadow-lg p-3 bg-body rounded mr-1 ml-1 mt-1"
     )
 
     @frame_seq_app.callback(
         Output("output", "children"),
-        Input("sekans", "value"),
-        Input("nuc_pos", "value"),
-        Input("frame_seq_len", "value"),
-        Input("start", "value"),
-        Input("stop", "value"),
-        Input("discard", "value"),
+        [
+            Input("seq", "value"),
+            Input("nuc_pos", "value"),
+            Input("frame_seq_len", "value"),
+            Input("start", "value"),
+            Input("stop", "value"),
+            Input("discard", "value"),
+        ]
     )
-    def update_output(sekans, nuc_pos, frame_seq_len, start, stop, discard):
-        sekans = str(sekans).replace(" ", "")
-        sekans = str(sekans).replace("\n", "")
-        sekans = str(sekans).replace("\t", "")
-        sekans = str(sekans).replace("\r", "")
-        sekans = str(sekans).replace("0", "")
-        sekans = str(sekans).replace("1", "")
-        sekans = str(sekans).replace("2", "")
-        sekans = str(sekans).replace("3", "")
-        sekans = str(sekans).replace("4", "")
-        sekans = str(sekans).replace("5", "")
-        sekans = str(sekans).replace("6", "")
-        sekans = str(sekans).replace("7", "")
-        sekans = str(sekans).replace("8", "")
-        sekans = str(sekans).replace("9", "")
-        sekans = str(sekans).upper().replace("NONE", "")
+    def update_output(seq, nuc_pos, frame_seq_len, start, stop, discard):
+
+        sequence = seq.upper()
+        ig = []
+
+        for i in sequence:
+            if not i in ['A', 'C', 'G', 'T']:
+                ig.append(i)
+
+        for i in ig:
+            if i in sequence:
+                sequence = sequence.replace(i, "")
 
         if discard:
-            sekans = sekans.replace(str(discard).upper(), "")
+            sequence = sequence.replace(str(discard).upper(), "")
+
+        print(sequence)
 
         if start or stop:
-            sekans = sekans[start:stop]
+            sequence = sequence[start:stop]
 
         df = pd.DataFrame({
-            'seq': [k for k in sekans]
-        }, index=[i + 1 for i in range(len(sekans))])
+            'seq': [k for k in sequence]
+        }, index=[i + 1 for i in range(len(sequence))])
 
         nuc_position = df.to_dict()['seq'].get(nuc_pos)
 
         df = pd.DataFrame({
-            'seq_len': [len(sekans[:50] + str(nuc_position) + sekans[50:frame_len]) for frame_len in
+            'seq_len': [len(sequence[:50] + str(nuc_position) + sequence[50:frame_len]) for frame_len in
                         range(50, frame_seq_len)],
-            'seq': [sekans[:50] + ' ' + str(nuc_position) + ' ' + sekans[50:frame_len] for frame_len in
+            'seq': [sequence[:50] + ' ' + str(nuc_position) + ' ' + sequence[50:frame_len] for frame_len in
                     range(50, frame_seq_len)]
         })
         return html.Div([
             html.P(
-                f"SEKANS UZUNLUĞU: {len(sekans)}, %GC: {gc_fraction(sekans)}, Nükleotid Pozisyonu : {nuc_position}",
+                f"SEKANS UZUNLUĞU: {len(sequence)}, %GC: {gc_fraction(sequence)}, Nükleotid Pozisyonu : {nuc_position}",
                 style={'marginTop': '20px'}
 
             ),
@@ -866,7 +981,8 @@ def create_frame_seq(request):
 
     @frame_seq_app.callback(
         Output("output", "children"),
-        Input("frame_seq_table", "cellClicked")
+        Input("frame_seq_table", "cellClicked"),
+        prevent_initial_call=True,
     )
     def display_cell_clicked_on(cell):
         if cell is None:

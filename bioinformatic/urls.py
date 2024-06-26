@@ -7,9 +7,9 @@ urlpatterns = [
     # Sekans
     path('anasayfa/', views.bioinformatic_home, name="home"),
     path('dna-sekans-okuması/', views.SekansView.sequence_analiz, name="dna_seq_read"),
-    path('dna-sekans-kesme/', views.SekansView.Kmer_SeqSlicing, name="dna_seq_slice"),
+    path('kmer-oluşturma/', views.SekansView.Kmer_SeqSlicing, name="dna_seq_slice"),
     path('dna-sekans-translate/', views.SekansView.translation, name="dna_seq_translate"),
-    path('create_frame_seq/', views.SekansView.create_frame_seq, name="create_frame_seq"),
+    path('frame-seq/', views.create_frame_seq, name="create_frame_seq"),
     path('alignment-score/', views.SekansView.alignment_score, name="alignment_score"),
     path('temperature-melting/', views.SekansView.TemperatureMeltingView, name="temp_melt"),
 
@@ -39,6 +39,7 @@ urlpatterns = [
 
     # molecule_viewer
     path('single-3d-molekul-goruntuleme/', views.single_molecule_view, name='single_molecule_3d_view'),
+
     path('multiple-3d-molekul-goruntuleme/', views.multi_molecule_view, name='multiple_molecule_3d_view'),
 
 ]

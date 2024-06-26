@@ -9,7 +9,6 @@ from Bio import Medline
 
 
 def ArticleView(request):
-
     external_stylesheets = [dbc.themes.BOOTSTRAP]
 
     app = DjangoDash('makale-arama', external_stylesheets=external_stylesheets,
@@ -17,8 +16,7 @@ def ArticleView(request):
 
     app.layout = html.Div([
 
-        ## NAVBAR ##
-
+        ##NAVBAR##
         dbc.NavbarSimple(
             children=[
                 dbc.NavItem(dbc.NavLink("Blog", href=HttpResponseRedirect(
@@ -113,9 +111,9 @@ def ArticleView(request):
                 {
                     "İndex": [i + 1 for i in range(len(pub_date))],
                     "Makale Başlıkları": [html.A(record.get("TI"),
-                                      href=f'https://pubmed.ncbi.nlm.nih.gov/{record.get("PMID")}',
-                                      target="_blank", style={'text-decoration': 'none'})
-                               for record in records],
+                                                 href=f'https://pubmed.ncbi.nlm.nih.gov/{record.get("PMID")}',
+                                                 target="_blank", style={'text-decoration': 'none'})
+                                          for record in records],
                     "Yayın Tarihi": pub_date
                 }
             )

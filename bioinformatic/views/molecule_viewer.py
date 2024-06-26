@@ -6,13 +6,11 @@ from bioinformatic.models import BioinformaticModel
 from django_plotly_dash import DjangoDash
 from dash import dcc, html, dash_table, Input, Output
 import dash_bootstrap_components as dbc
-import dash_bio as dashbio
+import dash_bio
 from dash_bio.utils import PdbParser, create_mol3d_style, ngl_parser
 import pandas as pd
 from Bio.PDB import parse_pdb_header
 from pathlib import Path
-from dash.exceptions import PreventUpdate
-
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -53,8 +51,6 @@ def single_molecule_view(request):
             handle = open(file_obj.file.path, 'r', encoding='utf-8')
 
             structure = parse_pdb_header(handle)
-
-            print(structure)
 
             try:
 
@@ -102,7 +98,7 @@ def single_molecule_view(request):
                 {'name': 'Zincir', 'id': 'chain'}
             ]
 
-            app.layout = html.Div(
+            app.layout = dbc.Card(
                 [
 
                     ## NAVBAR ##
@@ -140,10 +136,10 @@ def single_molecule_view(request):
                         dark=True,
                         brand_external_link=True,
                         sticky='top',
-                        className="shadow-lg bg-body rounded mt-3",
+                        className="shadow-lg bg-body rounded mt-1 mb-1 mr-1 ml-1",
                     ),
 
-                    dbc.Container(
+                    dbc.Card(
                         [
                             dbc.Row(
                                 [
@@ -188,23 +184,25 @@ def single_molecule_view(request):
                                                     dcc.Tab(
                                                         label='TABLO',
                                                         children=[
-                                                            html.Div([
-                                                                dash_table.DataTable(
-                                                                    id="zooming-table",
-                                                                    columns=columns,
-                                                                    data=df.to_dict("records"),
-                                                                    row_selectable="single",
-                                                                    page_size=10,
-                                                                    filter_action='native',
-                                                                    filter_options={"placeholder_text": "Filtrele"},
-                                                                    editable=True,
-                                                                    style_cell={'textAlign': 'center'},
-                                                                    style_header={
-                                                                        'backgroundColor': 'white',
-                                                                        'fontWeight': 'bold'
-                                                                    }
-                                                                ),
-                                                            ], className="mx-auto"),
+                                                            html.Div(
+                                                                [
+                                                                    dash_table.DataTable(
+                                                                        id="zooming-table",
+                                                                        columns=columns,
+                                                                        data=df.to_dict("records"),
+                                                                        row_selectable="single",
+                                                                        page_size=10,
+                                                                        filter_action='native',
+                                                                        filter_options={"placeholder_text": "Filtrele"},
+                                                                        editable=True,
+                                                                        style_cell={'textAlign': 'center'},
+                                                                        style_header={
+                                                                            'backgroundColor': 'white',
+                                                                            'fontWeight': 'bold'
+                                                                        }
+                                                                    ),
+
+                                                                ], className="mx-auto"),
 
                                                             html.Div([
                                                                 html.Button("Su molekülünü kaldır", id="remove-water",
@@ -216,7 +214,7 @@ def single_molecule_view(request):
                                                     ),
 
                                                     dcc.Tab(
-                                                        label='GÖRÜNTÜLEME',
+                                                        label='ARAÇLAR',
                                                         value='view-options',
                                                         children=[
 
@@ -258,8 +256,11 @@ def single_molecule_view(request):
                                                             ),
 
                                                             html.P(["Seçtiğiniz Bölge"], className="fw-bolder mt-2"),
-                                                            html.Div(id='select-atom-output', className="mx-auto",
-                                                                     children=[]),
+                                                            html.Div(
+                                                                id='select-atom-output',
+                                                                className="mx-auto",
+                                                                children=[]
+                                                            ),
                                                         ]
                                                     ),
 
@@ -271,20 +272,20 @@ def single_molecule_view(request):
 
                                     dbc.Col(
                                         [
-                                            dashbio.Molecule3dViewer(
+                                            dash_bio.Molecule3dViewer(
                                                 id="visual_output",
                                                 modelData=data,
                                                 styles=styles,
                                                 style={'marginRight': 'auto', 'marginLeft': 'auto'},
                                                 selectionType='atom',
-
-                                                width=500
+                                                width=500,
+                                                height=600
                                             ),
                                         ], md=8,
                                     ),
                                 ],
                             ),
-                        ], fluid=True, className="shadow-lg p-3 bg-body rounded"
+                        ], className="shadow-lg p-3 bg-body rounded mr-1 ml-1 mb-2"
                     ),
                 ],
             )
@@ -295,14 +296,11 @@ def single_molecule_view(request):
                 Input("visual-type", "value"),
                 Input("color-type", "value"),
                 Input("select-type", "value"),
-
             )
             def visual_update(visualization_type, color_element, select_type):
-
                 styles = create_mol3d_style(
                     atoms=data["atoms"], visualization_type=visualization_type, color_element=color_element
                 )
-
                 return styles, select_type
 
             @app.callback(
@@ -337,7 +335,6 @@ def single_molecule_view(request):
 
             @app.callback(
                 Output("zooming-table", "data"),
-
                 Output("water-size", "children"),
                 Output("visual_output", "modelData"),
                 Input("remove-water", "n_clicks"),
@@ -400,19 +397,19 @@ def multi_molecule_view(request):
 
     external_stylesheets = [dbc.themes.BOOTSTRAP]
 
-    app = DjangoDash('multi-molecule-3d-viewer', external_stylesheets=external_stylesheets,
-                     title='3D MOLEKÜL GÖRÜNTÜLEME', add_bootstrap_links=True)
+    app = DjangoDash('multi-molecule-viewer', external_stylesheets=external_stylesheets,
+                     title='Çoklu 3D MOLEKÜL GÖRÜNTÜLEME', add_bootstrap_links=True)
 
     form = MultiMoleculeViewForm(request.POST or None, request.FILES or None)
 
-    data_path = os.path.join(BASE_DIR, "media", "laboratory", f"{request.user}").replace('\\', '/')
+    data_path = os.path.join(BASE_DIR, "media", "laboratory", f"{request.user}\\")
 
     if request.method == "POST":
 
         if form.is_valid():
 
-            if request.FILES['files'].size > 9 * 1024 * 1024:
-                messages.error(request, "Dosya boyutu en fazla 9mb olmalıdır.")
+            if request.FILES['files'].size > 15 * 1024 * 1024:
+                messages.error(request, "Dosya boyutu en fazla 15mb olmalıdır.")
                 return HttpResponseRedirect(request.path)
 
             files = form.cleaned_data["files"]
@@ -422,22 +419,11 @@ def multi_molecule_view(request):
                 tool="multi_molecule_view",
             )
 
-            file_path = []
             file_name = []
-            file_name_full = []
 
             for file in files:
                 obj.records_files.create(file=file)
-                file_name.append(str(file.name[:4]))
-                file_name_full.append(file.name)
-
-            files_obj = obj.records_files.filter(records__user=request.user, records__tool="multi_molecule_view")
-
-            for f in files_obj:
-                file_path.append(f.file.path.replace('\\', '/'))
-
-            print(file_name)
-            print(file_name_full)
+                file_name.append(str(file).upper().rsplit(".PDB")[0])
 
             dropdown_options = [{"label": i, "value": i} for i in file_name]
 
@@ -448,11 +434,31 @@ def multi_molecule_view(request):
                 {"label": "hyperball", "value": "hyperball"},
                 {"label": "licorice", "value": "licorice"},
                 {"label": "axes+box", "value": "axes+box"},
-                {"label": "helixorient", "value": "helixorient"}
+                {"label": "helixorient", "value": "helixorient"},
+                {"label": "ribbon", "value": "ribbon"},
+                {"label": "rope", "value": "rope"},
+                {"label": "spacefill", "value": "spacefill"},
+                {"label": "surface", "value": "surface"},
+                {"label": "trace", "value": "trace"},
+                {"label": "tube", "value": "tube"},
+                {"label": "unitcell", "value": "unitcell"},
             ]
 
+            camera = [
+                {"label": "OTOMATİK", "value": "auto"},
+                {"label": "DÜŞÜK", "value": "low"},
+                {"label": "ORTA", "value": "medium"},
+                {"label": "YÜKSEK", "value": "high"},
 
-            app.layout = html.Div(
+            ]
+
+            back_color = [
+                {"label": "SİYAH", "value": "black"},
+                {"label": "BEYAZ", "value": "white"},
+
+            ]
+
+            app.layout = dbc.Card(
                 [
 
                     ## NAVBAR ##
@@ -481,6 +487,7 @@ def multi_molecule_view(request):
                                 nav=True,
                                 in_navbar=True,
                                 label="Laboratuvarlar",
+                                className="float-right",
 
                             ),
                         ],
@@ -490,7 +497,7 @@ def multi_molecule_view(request):
                         dark=True,
                         brand_external_link=True,
                         sticky='top',
-                        className="shadow-lg bg-body rounded mt-3",
+                        className="shadow-lg bg-body rounded mt-2 mb-1 mr-1 ml-1",
                     ),
 
                     dbc.Card(
@@ -507,9 +514,11 @@ def multi_molecule_view(request):
                                                             className='control-tab mt-2',
                                                             children=[
                                                                 html.H4(["YAPIYA İLİŞKİN BİLGİLER"], className="mt-2"),
-                                                                html.P(
-                                                                    [f"{file_id}, " for file_id in file_name],
+                                                                html.Label(["İD : "]),
+                                                                html.Span(
+                                                                    [f"{str(file).upper()}," for file in file_name],
                                                                 ),
+
                                                             ]
                                                         )
                                                     ),
@@ -519,58 +528,138 @@ def multi_molecule_view(request):
                                                         value='view-options',
                                                         children=[
 
-                                                            html.Label("Molekül Seçimi", className="fw-bolder mt-2"),
+                                                            html.Label("Molekül Seçin", className="fw-bolder mt-2"),
 
                                                             dcc.Dropdown(
-                                                                id="ngl-multi-dropdown",
+                                                                id="molecule-select",
                                                                 options=dropdown_options,
+                                                                placeholder="Molekül Seçin",
                                                                 value=file_name,
-                                                                multi=True
+                                                                multi=True,
                                                             ),
 
+                                                            html.Label("Görünüm", className="fw-bolder mt-2"),
+
+                                                            dcc.Dropdown(
+                                                                id="molecule-representation",
+                                                                options=representation_options,
+                                                                multi=True, value=["cartoon", "axes+box"]
+                                                            ),
+
+                                                            dcc.RadioItems(
+                                                                id="nglstyle-radio",
+                                                                options=[
+                                                                    {'label': 'Ayrı', 'value': "True"},
+                                                                    {'label': 'Bağımlı', 'value': "False"},
+                                                                ],
+                                                                value="False",
+                                                                className="mt-2",
+                                                                inline=True,
+                                                                labelClassName="mr-2",
+                                                                inputClassName="mr-2 ml-1"
+                                                            ),
+
+                                                            html.Label("Arka Plan Rengi", className="fw-bolder mt-1"),
+
+                                                            dcc.Dropdown(
+                                                                id="ngl-stage-color-dropdown",
+                                                                value='white',
+                                                                options=back_color
+                                                            ),
+
+                                                            html.Label("Görüntü Kalitesi", className="fw-bolder mt-2"),
+
+                                                            dcc.Dropdown(
+                                                                id="ngl-stage-quality-dropdown",
+                                                                value='auto',
+                                                                options=camera
+                                                            ),
+
+                                                            html.Label("Kamera", className="fw-bolder mt-2"),
+
+                                                            dcc.Dropdown(
+                                                                id="ngl-stage-camera-dropdown",
+                                                                value='perspective',
+                                                                options=[
+                                                                    {"label": s.capitalize(), "value": s}
+                                                                    for s in ["perspective", "orthographic"]
+                                                                ]
+                                                            ),
+
+                                                            html.Button(id='save-img', n_clicks=0,
+                                                                        children="Görüntüyü İndir",
+                                                                        className="btn btn-primary col-12 mt-2"),
                                                         ]
                                                     ),
 
                                                 ], className="mb-2"
                                             ),
 
-                                        ], md=4
+                                        ], md=3
                                     ),
 
-                                    dashbio.NglMoleculeViewer(id="multiple-molecule-view"),
+                                    dbc.Col(
+                                        [
+                                            dash_bio.NglMoleculeViewer(id="molecule-output", height=600, width=1050),
+                                        ], md=9, className="mx-auto"
+                                    ),
                                 ],
                             ),
-                        ], className="shadow-lg p-3 bg-body rounded"
+                        ], className="shadow-lg p-3 bg-body rounded mr-1 ml-1"
                     ),
                 ],
             )
 
             @app.callback(
-                Output("multiple-molecule-view", 'data'),
-                Output("multiple-molecule-view", "molStyles"),
-                Input("ngl-multi-dropdown", "value"),
+                Output("molecule-output", 'data'),
+                Output("molecule-output", "molStyles"),
+                Output("molecule-output", "stageParameters"),
+                Output("molecule-output", "downloadImage"),
+                Output("molecule-output", "imageParameters"),
+                Input("molecule-representation", "value"),
+                Input("nglstyle-radio", "value"),
+                Input("molecule-select", "value"),
+                Input("ngl-stage-color-dropdown", "value"),
+                Input("ngl-stage-quality-dropdown", "value"),
+                Input("ngl-stage-camera-dropdown", "value"),
+                Input("save-img", "n_clicks"),
             )
-            def return_molecule(value):
+            def return_molecule(style, sidebyside, value, color, quality, cameraType, n_clicks):
+
+                sidebyside_bool = sidebyside == "True"
+
                 molstyles_dict = {
-                    "representations": representation_options,
-                    "chosenAtomsColor": "white",
+                    "representations": style,
+                    "chosenAtomsColor": value,
                     "chosenAtomsRadius": 1,
                     "molSpacingXaxis": 100,
+                    "sideByside": sidebyside_bool
                 }
 
-                data = [
-                    ngl_parser.get_data(
-                        data_path=data_path,
-                        pdb_id=pdb_id,
-                        color='red',
-                        reset_view=True,
-                        local=True
-                    )
-                    for pdb_id in value
-                ]
+                stage_params = {
+                    "quality": quality,
+                    "backgroundColor": color,
+                    "cameraType": cameraType
+                }
 
-                return data, molstyles_dict
+                imageParameters = {
+                    "antialias": True,
+                    "transparent": True,
+                    "trim": True,
+                    "defaultFilename": f"{quality}"
+                }
 
-        return HttpResponseRedirect("/laboratuvarlar/bioinformatic-laboratuvari/app/multi-molecule-3d-viewer/")
+                downloadImage = False
+
+                if n_clicks > 0:
+                    downloadImage = True
+
+                data_list = [ngl_parser.get_data(data_path=data_path, pdb_id=pdb_id, color='red',
+                                                 reset_view=True, local=True)
+                             for pdb_id in value]
+
+                return data_list, molstyles_dict, stage_params, downloadImage, imageParameters
+
+        return HttpResponseRedirect("/laboratuvarlar/bioinformatic-laboratuvari/app/multi-molecule-viewer/")
 
     return render(request, 'bioinformatic/form.html', {'form': form, 'title': 'Çoklu 3D MOLEKÜL GÖRÜNTÜLEME'})

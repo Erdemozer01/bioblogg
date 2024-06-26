@@ -1,7 +1,8 @@
+##### MEHMET ERDEM ÖZER, mozer232@posta.pau.edu.tr ######
 import os
 import gzip
 import subprocess, sys
-import Bio.Application
+from Bio.Application import ApplicationError
 from django.shortcuts import *
 from django.contrib import messages
 from bioinformatic.forms import FileReadingForm, MultipleSeqAlignmentFileForm, BlastForm
@@ -25,7 +26,6 @@ import dash_cytoscape as cyto
 import dash_bio as dashbio
 from dash_bio.utils import PdbParser
 import pandas as pd
-
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -146,7 +146,7 @@ def PhylogeneticTree(request):
                                          stderr=subprocess.PIPE, universal_newlines=True,
                                          shell=(sys.platform != "win32"))
 
-            except Bio.Application.ApplicationError:
+            except ApplicationError:
                 messages.error(request, "Uygulama Hatası! Hatalı dosya türü girdiniz.")
                 tree_obj.delete()
                 return HttpResponseRedirect(request.path)
@@ -358,6 +358,7 @@ def file_reading(request):
                 file_reading_dash_app.layout = html.Div(
                     children=[
 
+                        ## NAVBAR ##
                         dbc.NavbarSimple(
                             children=[
                                 dbc.NavItem(dbc.NavLink("Blog", href=HttpResponseRedirect(
@@ -369,31 +370,99 @@ def file_reading(request):
                                                                  reverse("bioinformatic:home")).url,
                                                              external_link=True),
                                         dbc.DropdownMenuItem("Biyoistatislik",
-                                                             href=HttpResponseRedirect(reverse("biyoistatislik")).url,
+                                                             href=HttpResponseRedirect(
+                                                                 reverse("biyoistatislik")).url,
                                                              external_link=True),
                                         dbc.DropdownMenuItem("Coğrafi Bilgi sistemleri",
                                                              href=HttpResponseRedirect(reverse("cbs")).url,
                                                              external_link=True),
                                         dbc.DropdownMenuItem("Laboratuvarlar",
-                                                             href=HttpResponseRedirect(reverse("lab_home")).url,
+                                                             href=HttpResponseRedirect(
+                                                                 reverse("lab_home")).url,
                                                              external_link=True),
                                     ],
                                     nav=True,
                                     in_navbar=True,
                                     label="Laboratuvarlar",
+                                    className="float-right",
 
                                 ),
                             ],
-                            brand=f'{file_format} DOSYASI OKUMASI'.upper(),
+                            brand=f"{file_format} dosya okuması".upper(),
                             brand_href=HttpResponseRedirect(reverse("bioinformatic:file_reading")).url,
                             color="primary",
                             dark=True,
-                            brand_external_link=True
+                            brand_external_link=True,
+                            sticky='top',
+                            className="shadow-lg bg-body rounded mt-2 mb-1",
                         ),
 
-                        html.Hr(className="my-4"),
+                        dbc.Card([
+                            dbc.CardBody([
+                                dbc.Row([
+                                    dbc.Col(
+                                        [
+                                            dcc.Tabs([
+                                                dcc.Tab(
+                                                    label='AÇIKLAMA',
+                                                    children=html.Div(
+                                                        className='control-tab mt-2',
+                                                        children=[
+                                                            html.H6(["Dosya içeriği:"], className="mt-2"),
 
-                        dag.AgGrid(
+                                                            html.Span(
+                                                                [f"{len(df_TABLE['seq'])} adet sekans kaydı bulunmuştur."],
+                                                            ),
+
+                                                        ]
+                                                    )
+                                                ),
+                                                dcc.Tab(
+                                                    label="İŞLEM",
+                                                    children=[
+
+                                                        dcc.Dropdown(
+                                                            id="fasta-select",
+                                                            value='table',
+                                                            className="mt-2",
+                                                            placeholder="Seçim Yapınız",
+                                                            options=[
+                                                                {"label": "TABLO", "value": 'table'},
+                                                                {"label": "SEKANS HİSTOGRAM GRAFİĞİ",
+                                                                 "value": 'seq_histogram'},
+                                                                {"label": "%GC PLOT", "value": 'gc_plot'},
+                                                                {"label": "DOSYA SEKANS İÇERİKLERİ",
+                                                                 "value": 'seq_pie'},
+                                                            ]
+                                                        ),
+                                                    ]
+                                                ),
+                                            ]),
+
+
+                                        ], md=4
+                                    ),
+                                    dbc.Col(
+                                        [
+                                            html.Div(id="fasta-output"),
+                                        ], md=8, className="mt-2"
+                                    ),
+                                ])
+                            ])
+                        ], className="mt-1"),
+
+                    ],
+
+                    style={"margin": 30},
+                )
+
+                @file_reading_dash_app.callback(
+                    Output("fasta-output", "children"),
+                    Input("fasta-select", "value"),
+                )
+                def fasta_results(select):
+                    if select == "table":
+                        tab = dag.AgGrid(
                             id="df-table",
                             style={'width': '100%'},
                             rowData=df_TABLE.to_dict("records"),
@@ -421,10 +490,38 @@ def file_reading(request):
                                 "editType": "fullRow",
                             },
                         ),
+                        return tab
 
-                        html.Hr(),
+                    elif select == "seq_histogram":
 
-                        dcc.Graph(
+                        fig = px.histogram(
+                            data_frame=df_TABLE.to_dict("records"),
+                            x=[seq for seq in df_TABLE['seq_len']],
+                            labels={'x': "Nükleotit Uzunlukları"},
+                            title=f"Sekans Uzunluk HİSTOGRAM GRAFİĞİ".upper()
+                        )
+
+                        hist_graph = dcc.Graph(
+                            figure=fig
+                        ),
+
+                        return hist_graph
+
+                    elif select == "gc_plot":
+
+                        fig = px.line(
+                            data_frame=df_TABLE.to_dict("records"),
+                            x=sorted(df_TABLE['gc']),
+                            labels={'x': "%GC"},
+                        )
+
+                        gc_plot = dcc.Graph(
+                            figure=fig
+                        ),
+                        return gc_plot
+
+                    elif select == "seq_pie":
+                        return dcc.Graph(
                             figure=px.pie(
                                 data_frame=df_TABLE.to_dict("records"),
                                 names=[j for seq in df_TABLE['seq'] for j in seq],
@@ -436,10 +533,8 @@ def file_reading(request):
                             )
                         ),
 
-                        html.Hr(className="border border-danger"),
-                    ],
-                    style={"margin": 30},
-                )
+                    else:
+                        return html.P(["HERHANGİ BİR SEÇİM YAPMADINIZ"], className="text-danger text-center mt-2")
 
             elif file_format == "genbank":
 
@@ -870,4 +965,3 @@ def blast(request):
             return HttpResponseRedirect("/laboratuvarlar/bioinformatic-laboratuvari/app/blast/")
 
     return render(request, 'bioinformatic/form.html', {'form': form, 'title': 'BLAST'})
-
