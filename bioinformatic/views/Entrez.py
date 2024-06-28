@@ -7,8 +7,6 @@ import dash_bootstrap_components as dbc
 import pandas as pd
 from Bio import Medline, SeqIO
 
-PLOTLY_LOGO = "https://images.plot.ly/logo/new-branding/plotly-logomark.png"
-
 
 def EntrezToolsView(request):
     external_stylesheets = [dbc.themes.BOOTSTRAP]
@@ -57,7 +55,6 @@ def EntrezToolsView(request):
                 className="shadow-lg bg-body rounded mt-1 mb-1 mr-1 ml-1",
             ),
 
-
             dbc.Card(
                 [
 
@@ -65,7 +62,7 @@ def EntrezToolsView(request):
                     dcc.Input(id="email", type="email", placeholder="Email adresi",
                               className="form-control"),
 
-                    html.Label("Arama türü seçiniz", className="fw-bolder mt-2"),
+                    html.Label("Arama türü seçiniz", className="fw-bolder mt-1"),
                     dcc.Dropdown(
                         id='search-type',
                         options=[
@@ -147,10 +144,10 @@ def EntrezToolsView(request):
                     }
                 )
 
-                return dbc.Table.from_dataframe(df, striped=True, bordered=True, hover=True, index=True, responsive=True)
+                return dbc.Table.from_dataframe(df, striped=True, bordered=True, hover=True, index=True,
+                                                responsive=True)
 
             elif type == 'gb_nuc':
-
                 stream = Entrez.esearch(db="nuccore", term=term, retmax=retmax)
                 record = Entrez.read(stream)
                 gi_list = record["IdList"]
@@ -173,7 +170,8 @@ def EntrezToolsView(request):
                     ]
                 )
 
-                return dbc.Table.from_dataframe(df, striped=True, bordered=True, hover=True, index=True, responsive=True)
+                return dbc.Table.from_dataframe(df, striped=True, bordered=True, hover=True, index=True,
+                                                responsive=True)
 
         else:
 
