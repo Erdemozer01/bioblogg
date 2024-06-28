@@ -6,7 +6,7 @@ from dash import dcc, html, Input, Output
 import dash_bootstrap_components as dbc
 import pandas as pd
 from Bio import Medline, SeqIO
-
+import dash_ag_grid as dag
 
 def EntrezToolsView(request):
     external_stylesheets = [dbc.themes.BOOTSTRAP]
@@ -58,10 +58,6 @@ def EntrezToolsView(request):
             dbc.Card(
                 [
 
-                    html.Label("Email adresi giriniz", className='fw-bolder mb-1 mt-1'),
-                    dcc.Input(id="email", type="email", placeholder="Email adresi",
-                              className="form-control"),
-
                     html.Label("Arama türü seçiniz", className="fw-bolder mt-1"),
                     dcc.Dropdown(
                         id='search-type',
@@ -72,10 +68,7 @@ def EntrezToolsView(request):
                         value='article',
                     ),
 
-                    html.P("*** PubMed veritabanı için gerekli ***",
-                           className="text-danger text-small"),
-
-                    html.Label("Aramak istediğiniz kelime yada terim giriniz", className='fw-bolder mb-2 mt-1'),
+                    html.Label("Aramak istediğiniz kelime yada terim giriniz", className='fw-bolder mb-2'),
 
                     dcc.Input(id="term", type="text", placeholder="ARADIĞINIZ TERİM",
                               className="form-control"),
@@ -98,17 +91,16 @@ def EntrezToolsView(request):
         Output('output', 'children'),
         Input('search-type', 'value'),
         Input('term', 'value'),
-        Input('email', 'value'),
         Input('retmax', 'value'),
     )
-    def display_output(type, term, email, retmax):
+    def display_output(type, term, retmax):
 
-        if term is None and email is not None:
+        if term is None:
             return html.P("Lütfen aramak istediğiniz terimi giriniz.", className="text-center text-danger")
 
-        elif term and email is not None:
+        elif term:
 
-            Entrez.email = email
+            Entrez.email = "A.N.Other@example.com"
 
             if type == 'article':
 
@@ -133,9 +125,9 @@ def EntrezToolsView(request):
                     else:
                         pub_date.append("-")
 
+
                 df = pd.DataFrame(
                     {
-
                         "Makale Başlıkları": [html.A(record.get("TI"),
                                                      href=f'https://pubmed.ncbi.nlm.nih.gov/{record.get("PMID")}',
                                                      target="_blank", style={'text-decoration': 'none'})
@@ -148,6 +140,7 @@ def EntrezToolsView(request):
                                                 responsive=True)
 
             elif type == 'gb_nuc':
+
                 stream = Entrez.esearch(db="nuccore", term=term, retmax=retmax)
                 record = Entrez.read(stream)
                 gi_list = record["IdList"]
@@ -155,26 +148,25 @@ def EntrezToolsView(request):
                 stream = Entrez.efetch(db="nuccore", id=gi_str, rettype="gb", retmode="text")
                 records = SeqIO.parse(stream, "gb")
 
-                df = pd.DataFrame(
+                df_nuc = pd.DataFrame(
                     [
                         {
-                            'Genbank İD': d.name,
-                            'BAŞLIK': html.A(
-                                children=[d.description],
-                                href=f'https://www.ncbi.nlm.nih.gov/nuccore/{d.name}',
+                            'Genbank İD': rec.name,
+
+                            'Başlık': html.A(
+                                children=[rec.description],
+                                href=f'https://www.ncbi.nlm.nih.gov/nuccore/{rec.name}',
                                 target="_blank", style={'text-decoration': 'none'}),
-                            'TARİH': d.annotations["date"]
+
+                            'Tarih': rec.annotations["date"]
                         }
 
-                        for d in records
+                        for rec in records
                     ]
                 )
 
-                return dbc.Table.from_dataframe(df, striped=True, bordered=True, hover=True, index=True,
+                return dbc.Table.from_dataframe(df_nuc, bordered=True, hover=True, index=True,
                                                 responsive=True)
 
-        else:
-
-            return html.P("Email adresi ve terim girmediniz", className="text-center text-danger")
 
     return HttpResponseRedirect("/laboratuvarlar/bioinformatic-laboratuvari/app/entrez-tools/")
