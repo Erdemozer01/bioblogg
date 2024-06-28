@@ -158,7 +158,7 @@ def EntrezToolsView(request):
                 df = pd.DataFrame(
                     [
                         {
-                            'İndex': [i + 1 for i in range(len(i.name))],
+                            'İndex': [i + 1 for i in range(len([i.name]))],
                             'Genbank İD': i.name,
                             'BAŞLIK': html.A(
                                 children=[i.description],
