@@ -135,7 +135,7 @@ def EntrezToolsView(request):
 
                 df = pd.DataFrame(
                     {
-                        "İndex": [i + 1 for i in range(len(pub_date))],
+
                         "Makale Başlıkları": [html.A(record.get("TI"),
                                                      href=f'https://pubmed.ncbi.nlm.nih.gov/{record.get("PMID")}',
                                                      target="_blank", style={'text-decoration': 'none'})
@@ -144,7 +144,7 @@ def EntrezToolsView(request):
                     }
                 )
 
-                return dbc.Table.from_dataframe(df, striped=True, bordered=True, hover=True)
+                return dbc.Table.from_dataframe(df, striped=True, bordered=True, hover=True, index=True, responsive=True)
 
             elif type == 'gb_nuc':
 
@@ -158,20 +158,19 @@ def EntrezToolsView(request):
                 df = pd.DataFrame(
                     [
                         {
-                            'İndex': [i + 1 for i in range(len([i.name]))],
-                            'Genbank İD': i.name,
+                            'Genbank İD': d.name,
                             'BAŞLIK': html.A(
-                                children=[i.description],
-                                href=f'https://www.ncbi.nlm.nih.gov/nuccore/{i.name}',
+                                children=[d.description],
+                                href=f'https://www.ncbi.nlm.nih.gov/nuccore/{d.name}',
                                 target="_blank", style={'text-decoration': 'none'}),
-                            'TARİH': i.annotations["date"]
+                            'TARİH': d.annotations["date"]
                         }
 
-                        for i in records
+                        for d in records
                     ]
                 )
 
-                return dbc.Table.from_dataframe(df, striped=True, bordered=True, hover=True)
+                return dbc.Table.from_dataframe(df, striped=True, bordered=True, hover=True, index=True, responsive=True)
 
         else:
 
