@@ -1,6 +1,5 @@
 ##### MEHMET ERDEM ÖZER, mozer232@posta.pau.edu.tr ######
-import os
-import gzip
+import os, io, gzip, tempfile, base64
 import subprocess, sys
 from Bio.Application import ApplicationError
 from django.shortcuts import *
@@ -38,7 +37,7 @@ def PhylogeneticTree(request):
         messages.error(request, "Lütfen Giriş Yapınız")
         return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
 
-    external_stylesheets = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css']
+    external_stylesheets = [dbc.themes.BOOTSTRAP]
     external_scripts = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js']
 
     if BioinformaticModel.objects.filter(user=request.user, tool="Filogenetik Ağaç").exists():
@@ -62,9 +61,9 @@ def PhylogeneticTree(request):
 
             tree_alg = form.cleaned_data['tree_alg']
 
-            tree_app = DjangoDash(f'{tree_alg}',
+            tree_app = DjangoDash(f'filogeni-{tree_alg}',
                                   external_stylesheets=external_stylesheets,
-                                  external_scripts=external_scripts,
+
                                   add_bootstrap_links=True,
                                   title=f'{tree_alg} AĞACI OLUŞTRMA'.upper()
                                   )
@@ -215,20 +214,23 @@ def PhylogeneticTree(request):
                     dbc.NavbarSimple(
                         children=[
                             dbc.NavItem(dbc.NavLink("Blog", href=HttpResponseRedirect(
-                                reverse("bioinformatic:entrez_tools")).url, external_link=True)),
+                                reverse("blog:anasayfa")).url, external_link=True)),
                             dbc.DropdownMenu(
                                 children=[
                                     dbc.DropdownMenuItem("Biyoinformatik",
-                                                         href=HttpResponseRedirect(reverse("bioinformatic:home")).url,
+                                                         href=HttpResponseRedirect(
+                                                             reverse("bioinformatic:home")).url,
                                                          external_link=True),
-                                    dbc.DropdownMenuItem("Biyoinformatik",
-                                                         href=HttpResponseRedirect(reverse("biyoistatislik")).url,
+                                    dbc.DropdownMenuItem("Biyoistatislik",
+                                                         href=HttpResponseRedirect(
+                                                             reverse("biyoistatislik")).url,
                                                          external_link=True),
                                     dbc.DropdownMenuItem("Coğrafi Bilgi sistemleri",
                                                          href=HttpResponseRedirect(reverse("cbs")).url,
                                                          external_link=True),
                                     dbc.DropdownMenuItem("Laboratuvarlar",
-                                                         href=HttpResponseRedirect(reverse("lab_home")).url,
+                                                         href=HttpResponseRedirect(
+                                                             reverse("lab_home")).url,
                                                          external_link=True),
                                 ],
                                 nav=True,
@@ -237,40 +239,51 @@ def PhylogeneticTree(request):
 
                             ),
                         ],
-                        brand="FİLOGENİ",
+                        brand="Filogeni - Alignment",
                         brand_href=HttpResponseRedirect(reverse("bioinformatic:pyhlo_tree")).url,
                         color="primary",
                         dark=True,
-                        brand_external_link=True
+                        brand_external_link=True,
+                        sticky='top',
+                        className="shadow-lg bg-body rounded mt-1 mb-1",
                     ),
 
-                    html.P(f"{tools} aracıyla {tree_alg} ağacı oluşturuldu".upper(),
-                           className="text-primary fw-bolder mb-4 mt-3"),
+                    dbc.Card(
+                        [
+                            dbc.CardBody(
+                                [
+                                    html.P(f"{tools} aracıyla {tree_alg} ağacı oluşturuldu".upper(),
+                                           className="text-primary fw-bolder mb-4 mt-3"),
 
-                    cyto.Cytoscape(
-                        id='cytoscape-usage-phylogeny',
-                        elements=elements,
-                        stylesheet=stylesheet,
-                        layout=layout,
-                        style={
-                            'height': '80vh',
-                            'width': '90%'
-                        }, className="mx-auto"
+                                    cyto.Cytoscape(
+                                        id='cytoscape-usage-phylogeny',
+                                        elements=elements,
+                                        stylesheet=stylesheet,
+                                        layout=layout,
+                                        style={
+                                            'height': '80vh',
+                                            'width': '100%'
+                                        },
+                                        className="shadow-lg bg-body rounded mx-auto mb-2"
+                                    ),
+
+                                    html.Hr(),
+
+                                    html.P("Alignment Haritası", className="fw-bolder"),
+
+                                    dashbio.AlignmentChart(
+                                        id='my-default-alignment-viewer',
+                                        data=data,
+                                        height=1000,
+                                        tilewidth=30,
+
+                                    ),
+                                ], className="shadow-lg p-3 bg-body rounded mb-2"
+                            )
+                        ],
                     ),
 
-                    html.Hr(),
-
-                    html.P("Alignment Haritası", className="fw-bolder"),
-
-                    dashbio.AlignmentChart(
-                        id='my-default-alignment-viewer',
-                        data=data,
-                        height=1000,
-                        tilewidth=30,
-
-                    ),
-
-                ], className="m-5"
+                ], className="shadow-lg p-3 bg-body rounded mr-2 ml-2 mb-2"
             )
 
             @tree_app.callback(
@@ -295,9 +308,9 @@ def PhylogeneticTree(request):
 
                 return stylesheet + children_style
 
-        return HttpResponseRedirect(f"/laboratuvarlar/bioinformatic-laboratuvari/app/{tree_alg}")
+        return HttpResponseRedirect(f"/laboratuvarlar/bioinformatic-laboratuvari/app/filogeni-{tree_alg}")
 
-    return render(request, 'bioinformatic/form.html', {'form': form, 'title': 'Filogeneni ve Alignment Haritası'})
+    return render(request, 'bioinformatic/form.html', {'form': form, 'title': 'Filogeni ve Alignment Haritası'})
 
 
 def file_reading(request):
@@ -341,7 +354,8 @@ def file_reading(request):
                 name=f"{file_format}-dosya-sonuc",
                 external_stylesheets=external_stylesheets,
                 title=f"{file_format} dosyası okuması sonuçları".upper(),
-                add_bootstrap_links=True
+                add_bootstrap_links=True,
+                update_title="VERİLERİNİZ GÜNCELLENİYOR..."
             )
 
             if file_format == "fasta":
@@ -411,7 +425,8 @@ def file_reading(request):
                                                             html.H6(["Dosya içeriği:"], className="mt-2"),
 
                                                             html.Span(
-                                                                [f"{len(df_TABLE['seq'])} adet sekans kaydı bulunmuştur."],
+                                                                [
+                                                                    f"{len(df_TABLE['seq'])} adet sekans kaydı bulunmuştur."],
                                                             ),
 
                                                         ]
@@ -438,7 +453,6 @@ def file_reading(request):
                                                     ]
                                                 ),
                                             ]),
-
 
                                         ], md=4
                                     ),

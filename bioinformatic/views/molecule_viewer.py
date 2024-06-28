@@ -449,13 +449,11 @@ def multi_molecule_view(request):
                 {"label": "DÜŞÜK", "value": "low"},
                 {"label": "ORTA", "value": "medium"},
                 {"label": "YÜKSEK", "value": "high"},
-
             ]
 
             back_color = [
                 {"label": "SİYAH", "value": "black"},
                 {"label": "BEYAZ", "value": "white"},
-
             ]
 
             app.layout = dbc.Card(
@@ -663,3 +661,4 @@ def multi_molecule_view(request):
         return HttpResponseRedirect("/laboratuvarlar/bioinformatic-laboratuvari/app/multi-molecule-viewer/")
 
     return render(request, 'bioinformatic/form.html', {'form': form, 'title': 'Çoklu 3D MOLEKÜL GÖRÜNTÜLEME'})
+

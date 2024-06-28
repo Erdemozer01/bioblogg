@@ -5,5 +5,5 @@ from .FileWritingView import file_writing_format_select, CreateFileView, RecordD
     FileWritingListView
 from .FileDownloadView import download_file
 from .FileConvertView import FileConvert
-from .article import ArticleView
+from .Entrez import EntrezToolsView
 from .molecule_viewer import single_molecule_view, multi_molecule_view

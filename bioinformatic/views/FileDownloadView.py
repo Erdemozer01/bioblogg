@@ -1,13 +1,12 @@
-import mimetypes
-import os
-from django.http.response import HttpResponse, HttpResponseRedirect
+import os, mimetypes
+from django.http.response import HttpResponseRedirect, HttpResponse
 from pathlib import Path
 from bioinformatic.models.bioinformatic import BioinformaticModel
 from dash import html, Output, Input, dcc
 from django_plotly_dash import DjangoDash
 import dash_bootstrap_components as dbc
 from Bio.SeqUtils import MeltingTemp as mt
-
+from django.http import FileResponse
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -43,7 +42,7 @@ def EntrezDownload(request):
             html.Div(
                 [
                     dbc.Label("İD NUMARASI"),
-                    dbc.Input(placeholder="EU490707, 6273291", type="text", id="id"),
+                    dbc.Input(placeholder="EU490707, 6273291", type="text", id="pub_id"),
                 ]
             ),
             html.Div(

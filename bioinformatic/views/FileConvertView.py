@@ -7,6 +7,7 @@ from django.contrib import messages
 from bioinformatic.forms.file_convert import FileConvertForm
 from bioinformatic.models.bioinformatic import BioinformaticModel
 from django.utils.translation import gettext as _
+from django.http import FileResponse
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -25,6 +26,7 @@ def FileConvert(request):
 
     if request.method == "POST":
         if form.is_valid():
+
             obj = BioinformaticModel.objects.create(
                 user=request.user,
                 tool="DOSYA DÖNÜŞTÜRME",
@@ -88,6 +90,6 @@ def FileConvert(request):
                     messages.error(request, str(err))
                     return HttpResponseRedirect(request.get_full_path())
 
-        return HttpResponseRedirect(reverse("bioinformatic:download"))
+            return HttpResponseRedirect(reverse("bioinformatic:download"))
 
     return render(request, "bioinformatic/form.html", {'form': form, 'title': _("DOSYA DÖNÜŞTÜRME")})
