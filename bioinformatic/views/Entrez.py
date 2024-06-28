@@ -7,6 +7,8 @@ import dash_bootstrap_components as dbc
 import pandas as pd
 from Bio import Medline, SeqIO
 
+PLOTLY_LOGO = "https://images.plot.ly/logo/new-branding/plotly-logomark.png"
+
 
 def EntrezToolsView(request):
     external_stylesheets = [dbc.themes.BOOTSTRAP]
@@ -54,6 +56,7 @@ def EntrezToolsView(request):
                 sticky='top',
                 className="shadow-lg bg-body rounded mt-1 mb-1 mr-1 ml-1",
             ),
+
 
             dbc.Card(
                 [
