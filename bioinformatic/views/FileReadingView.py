@@ -478,7 +478,6 @@ def file_reading(request):
                         ], className="mt-1"),
 
                     ],
-
                     style={"margin": 30},
                 )
 
