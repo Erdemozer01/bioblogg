@@ -1,6 +1,7 @@
 ##### MEHMET ERDEM ÖZER, mozer232@posta.pau.edu.tr ######
 from pathlib import Path
 from Bio.SeqUtils import MeltingTemp as mt
+from Bio.SeqUtils import xGC_skew
 import pandas as pd
 import plotly.express as px
 from Bio.Seq import Seq
@@ -15,14 +16,6 @@ from Bio.Align import substitution_matrices
 import dash_bootstrap_components as dbc
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
-
-proteinler = {
-    'CYS': 'C', 'ASP': 'D', 'SER': 'S', 'GLN': 'Q', 'LYS': 'K',
-    'ILE': 'I', 'PRO': 'P', 'THR': 'T', 'PHE': 'F', 'ASN': 'N',
-    'GLY': 'G', 'HIS': 'H', 'LEU': 'L', 'ARG': 'R', 'TRP': 'W',
-    'ALA': 'A', 'VAL': 'V', 'GLU': 'E', 'TYR': 'Y', 'MET': 'M',
-    'stop': '*'
-}
 
 
 def alignment_score(request):
@@ -247,7 +240,7 @@ def sequence_analiz(request):
     sequence_analiz = DjangoDash("sequence_analiz", external_stylesheets=external_stylesheets,
                                  title='Sekans Analiz', add_bootstrap_links=True)
 
-    sequence_analiz.layout = dbc.Container(
+    sequence_analiz.layout = html.Div(
 
         [
 
@@ -282,38 +275,67 @@ def sequence_analiz(request):
                 dark=True,
                 brand_external_link=True,
                 sticky='top',
-                className="shadow-lg p-3 bg-body rounded"
+                className="shadow-lg p-3 bg-body rounded container"
             ),
 
             html.Div(
-                [
-                    html.Label("Nükleotit tipi", className="fw-bolder mt-2"),
+                dbc.Container(
+                    [
+                        dbc.Row([
+                            dbc.Col(
+                                [
 
-                    dcc.Dropdown(
-                        id='nuc_type',
-                        options=[
-                            {'label': 'DNA', 'value': 'dna'},
-                            {'label': 'RNA', 'value': 'rna'},
-                        ],
-                        value='dna'
-                    ),
+                                    html.Label("Nükleotit tipi", className="fw-bolder mt-2"),
+                                    dcc.Dropdown(
+                                        id='nuc_type',
+                                        options=[
+                                            {'label': 'DNA', 'value': 'dna'},
+                                            {'label': 'RNA', 'value': 'rna'},
+                                        ],
+                                        value='dna'
+                                    ),
 
-                    html.Label("Sekans", className="fw-bolder mt-2"),
-                    dcc.Textarea(id="sequence", placeholder="Sekans Giriniz",
-                                 className="form-control mb-1", style={'height': 200}),
-                ],
+                                    html.Label("Grafik tipi", className="fw-bolder mt-2"),
+                                    dcc.Dropdown(
+                                        id='grap_type',
+                                        options=[
+                                            {'label': 'Dağılım', 'value': 'dist'},
+                                            {'label': 'Histogram', 'value': 'hist'},
+                                        ],
+                                        value='dist'
+                                    ),
+
+                                    html.Label("Sekans", className="fw-bolder mt-2"),
+                                    dcc.Textarea(id="sequence", placeholder="Sekans Giriniz",
+                                                 className="form-control mb-1", style={'height': 200}),
+                                ], md=4
+                            ),
+
+                            dbc.Col(
+                                [
+
+                                    html.Div(id="seq_output"),
+                                    html.Hr(),
+                                    html.Div(id="fig_output", className="shadow-lg rounded mb-1"),
+                                ], md=8
+                            ),
+
+                        ]),
+
+                    ], className="shadow-lg p-4 mb-4 bg-body rounded mt-2", fluid=False
+                ),
             ),
-            html.Div(id="output"),
-        ], className="shadow-lg p-3 mb-5 bg-body rounded mt-5", fluid=False
+        ], className="mt-4",
     )
 
     @sequence_analiz.callback(
-        Output("output", "children"),
+        Output("seq_output", "children"),
+        Output("fig_output", "children"),
         Input("sequence", "value"),
         Input("nuc_type", "value"),
+        Input("grap_type", "value"),
     )
-    def update_output(sequence, nuc_type):
-
+    def update_output(sequence, nuc_type, grap_type):
         if sequence:
             if nuc_type == "dna":
 
@@ -328,48 +350,6 @@ def sequence_analiz(request):
                     if i in sequence:
                         sequence = sequence.replace(i, "")
 
-                nuc_df = pd.DataFrame({
-                    'positions': [pos for pos in range(len(sequence))],
-                    'nucleotit': [seq for seq in sequence]
-                })
-
-                a = nuc_df[(nuc_df['nucleotit']) == "A"]
-                t = nuc_df[(nuc_df['nucleotit']) == "T"]
-                g = nuc_df[(nuc_df['nucleotit']) == "G"]
-                c = nuc_df[(nuc_df['nucleotit']) == "C"]
-
-                return html.Div([
-                    html.Hr(),
-
-                    html.P(
-                        f"SEKANS UZUNLUĞU: {len(sequence)}, %GC: {gc_fraction(sequence)}," +
-                        f"  A: {sequence.count('A')}, T: {sequence.count('T')}, G: {sequence.count('G')}, C: {sequence.count('C')}",
-                        style={'marginTop': '10px'}
-                    ),
-
-                    html.Hr(),
-
-                    html.Div([
-
-                        html.H2("Grafikler", className='text-primary fw-bolder'),
-
-                        dcc.Graph(
-                            figure=ff.create_distplot(
-                                [a['positions'], t['positions'], g['positions'], c['positions']],
-                                ['A', 'T', 'G', 'C'],
-                                bin_size=[.1, .25, .5, 1], show_hist=False,
-                                curve_type="normal",
-                            ).update_layout({'title': 'Nükleotit Dağılım Grafiği'}),
-                            className="shadow-lg rounded mb-3"),
-
-                        dcc.Graph(figure=px.histogram(
-                            nuc_df.to_dict("records"), x="nucleotit", color="nucleotit",
-                            title="Nükleotit Sayıları",
-                        ).update_yaxes(title="Nükletotit Sayısı").update_xaxes(title="Nükleotit"),
-                                  className="shadow-lg rounded mb-3")
-                    ])
-                ], style={'marginTop': "2%", 'margin': 20})
-
             elif nuc_type == "rna":
                 sequence = sequence.upper()
                 ig = []
@@ -381,45 +361,41 @@ def sequence_analiz(request):
                     if i in sequence:
                         sequence = sequence.replace(i, "")
 
-                nuc_df = pd.DataFrame({
-                    'positions': [pos for pos in range(len(sequence))],
-                    'nucleotit': [seq for seq in sequence]
-                })
+                if not "U" in sequence:
+                    return html.P(["DNA SEKANSI OLABİLİR..."]), ""
 
-                a = nuc_df[(nuc_df['nucleotit']) == "A"]
-                t = nuc_df[(nuc_df['nucleotit']) == "U"]
-                g = nuc_df[(nuc_df['nucleotit']) == "G"]
-                c = nuc_df[(nuc_df['nucleotit']) == "C"]
+            nuc_df = pd.DataFrame({
+                'positions': [pos for pos in range(len(sequence))],
+                'nucleotit': [seq for seq in sequence]
+            })
 
-                return html.Div([
-                    html.Hr(),
+            a = nuc_df[(nuc_df['nucleotit']) == "A"]
+            t = nuc_df[(nuc_df['nucleotit']) == "T"]
+            g = nuc_df[(nuc_df['nucleotit']) == "G"]
+            c = nuc_df[(nuc_df['nucleotit']) == "C"]
 
-                    html.P(
-                        f"SEKANS UZUNLUĞU: {len(sequence)}, %GC: {gc_fraction(sequence)}," +
-                        f"  A: {sequence.count('A')}, U: {sequence.count('U')}, G: {sequence.count('G')}, C: {sequence.count('C')}",
-                        style={'marginTop': '10px'}
-                    ),
+            seq_results = (
+                f"SEKANS UZUNLUĞU: {len(sequence)}, %GC: {gc_fraction(sequence)}, A: {sequence.count('A')}, "
+                f"T: {sequence.count('T')}, G: {sequence.count('G')}, C: {sequence.count('C')}")
 
-                    html.Hr(),
+            dist_figure = dcc.Graph(figure=ff.create_distplot(
+                [a['positions'], t['positions'], g['positions'], c['positions']],
+                ['A', 'T', 'G', 'C'],
+                bin_size=[.1, .25, .5, 1], show_hist=False,
+                curve_type="normal",
+            ).update_layout({'title': 'Nükleotit Dağılım Grafiği'}))
 
-                    html.Div([
+            hist_grap = dcc.Graph(figure=px.histogram(
+                nuc_df.to_dict("records"), x="nucleotit", color="nucleotit",
+                title="Nükleotit Sayıları",
+            ).update_yaxes(title="Nükletotit Sayısı").update_xaxes(title="Nükleotit"))
 
-                        html.P("Grafikler", className='text-primary'),
+            if grap_type == "dist":
+                return seq_results, dist_figure
 
-                        dcc.Graph(
-                            figure=ff.create_distplot(
-                                [a['positions'], t['positions'], g['positions'], c['positions']],
-                                ['A', 'U', 'G', 'C'],
-                                bin_size=[.1, .25, .5, 1], show_hist=False,
-                                curve_type="normal",
-                            ).update_layout({'title': 'Nükleotit Dağılım Grafiği'}), className="mb-3"),
+            elif grap_type == "hist":
 
-                        dcc.Graph(figure=px.histogram(
-                            nuc_df.to_dict("records"), x="nucleotit", color="nucleotit",
-                            title="Nükleotit Sayıları",
-                        ).update_yaxes(title="Nükletotit Sayısı").update_xaxes(title="Nükleotit"), className="mb-3")
-                    ])
-                ], style={'marginTop': "2%", 'margin': 20})
+                return seq_results, hist_grap
 
         else:
             return html.P("Henüz bir sekans dizisi girmediniz ! ".upper(),
@@ -1000,114 +976,202 @@ def create_frame_seq(request):
 
 
 def TemperatureMeltingView(request):
-    external_stylesheets = [dbc.themes.MORPH]
-    external_scripts = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js']
+    external_stylesheets = [dbc.themes.BOOTSTRAP]
 
-    mt_app = DjangoDash('temp-melt', external_stylesheets=external_stylesheets, external_scripts=external_scripts,
-                        title='Primer Erime Sıcaklığı')
+    mt_app = DjangoDash('temp-melt', external_stylesheets=external_stylesheets,
+                        title='Primer Erime Sıcaklığı', add_bootstrap_links=True)
 
-    controls = dbc.Card(
+    mt_app.layout = html.Div(
+
         [
+            dbc.NavbarSimple(
+                children=[
+                    dbc.NavItem(dbc.NavLink("Blog", href=HttpResponseRedirect(
+                        reverse("blog:anasayfa")).url, external_link=True)),
+                    dbc.DropdownMenu(
+                        children=[
+                            dbc.DropdownMenuItem("Biyoinformatik",
+                                                 href=HttpResponseRedirect(reverse("bioinformatic:home")).url,
+                                                 external_link=True),
+                            dbc.DropdownMenuItem("Biyoistatislik",
+                                                 href=HttpResponseRedirect(reverse("biyoistatislik")).url,
+                                                 external_link=True),
+                            dbc.DropdownMenuItem("Coğrafi Bilgi sistemleri",
+                                                 href=HttpResponseRedirect(reverse("cbs")).url,
+                                                 external_link=True),
+                            dbc.DropdownMenuItem("Laboratuvarlar",
+                                                 href=HttpResponseRedirect(reverse("lab_home")).url,
+                                                 external_link=True),
+                        ],
+                        nav=True,
+                        in_navbar=True,
+                        label="Laboratuvarlar",
 
-            html.Div(
-                [
-                    dbc.Label("Sekans"),
-                    dcc.Textarea(placeholder="Sekans", id="sekans", style={'height': 100}, className="form-control"),
-                ]
-            ),
-            html.Div(
-                [
-                    dbc.Label("Sodyum"),
-                    dbc.Input(placeholder="Sodyum", type="number", id="Na", value=50, min=0),
-                ]
-            ),
-            html.Div(
-                [
-                    dbc.Label("Potayum"),
-                    dbc.Input(placeholder="Potayum", type="number", id="K", value=0, min=0),
-                ]
-            ),
-            html.Div(
-                [
-                    dbc.Label("Tris"),
-                    dbc.Input(placeholder="Tris", type="number", id="Tris", value=0, min=0),
-                ]
-            ),
-            html.Div(
-                [
-                    dbc.Label("Magnezyum"),
-                    dbc.Input(placeholder="Magnezyum", type="number", id="Mg", value=0, min=0),
-                ]
-            ),
-            html.Div(
-                [
-                    dbc.Label("dNTPs"),
-                    dbc.Input(placeholder="dNTPs", type="number", id="dNTPs", value=0, min=0),
-                ]
-            ),
-            html.Div(
-                [
-                    dbc.Label("Tuz"),
-                    dbc.Input(placeholder="Tuz", type="number", id="saltcorr", value=5, min=0, max=6),
-                ]
-            ),
-        ],
-        body=True,
-    )
-
-    mt_app.layout = dbc.Container(
-        [
-            html.H3("Primer Erime sıcaklığı"),
-            html.Hr(),
-            dbc.Row(
-                [
-                    dbc.Col(controls, md=6),
-                    dbc.Col(html.Div(id="output"), md=4),
+                    ),
                 ],
-                align="center",
+                brand="Primer Sıcaklık Hesaplama",
+                brand_href=HttpResponseRedirect(reverse("bioinformatic:temp_melt")).url,
+                color="primary",
+                dark=True,
+                brand_external_link=True,
+                sticky='top',
+                className="shadow-lg p-3 bg-body rounded-2 container"
             ),
-        ],
-        className="m-4"
+
+            html.Div(
+                [
+                    dbc.Container(
+
+                        [
+
+                            dbc.Row(
+                                [
+                                    dbc.Col(
+                                        [
+                                            dcc.Tabs(
+                                                id='mol3d-tabs', children=[
+
+                                                    dcc.Tab(
+                                                        label='Sekans',
+                                                        children=html.Div(
+                                                            className='control-tab mt-2',
+                                                            children=[
+
+                                                                html.Label("Metodlar", className="fw-bolder mt-1"),
+                                                                dcc.Dropdown(
+                                                                    id='method-type',
+                                                                    placeholder="Seçiniz",
+                                                                    options=[
+                                                                        {'label': 'Klasik', 'value': 'Tm_Wallace'},
+                                                                        {'label': 'GC içerik tabanlı',
+                                                                         'value': 'Tm_GC'},
+                                                                        {'label': 'Termodinamik Tabanlı (Önerilen)',
+                                                                         'value': 'Tm_NN'},
+                                                                    ], value="Tm_NN"
+                                                                ),
+
+                                                                dbc.Label("Sekans", className="fw-bolder mt-1"),
+                                                                dcc.Textarea(placeholder="Sekans", id="seq",
+                                                                             style={'height': 100},
+                                                                             className="form-control"),
+
+                                                                dbc.Label("Komplement Sekans",
+                                                                          className="fw-bolder mt-1"),
+                                                                dcc.Textarea(placeholder="Komplement Sekans",
+                                                                             id="c_seq",
+                                                                             style={'height': 100},
+                                                                             className="form-control"),
+                                                            ]
+                                                        )
+                                                    ),
+
+                                                    dcc.Tab(
+                                                        label='Konsantrasyon',
+                                                        children=[
+                                                            html.Div(
+                                                                [
+
+                                                                    html.P(
+                                                                        ["Aşagıdaki değerler von Ahsen et al., 2001 referans alınarak ayarlanmıştır."],
+                                                                    ),
+
+                                                                    dbc.Label("Sodyum", className="fw-bolder mt-1"),
+                                                                    dbc.Input(placeholder="Sodyum", type="number",
+                                                                              id="Na", value=50, min=0,
+                                                                              className="form-control"),
+
+                                                                    dbc.Label("Potayum", className="fw-bolder mt-1"),
+                                                                    dbc.Input(placeholder="Potasyum", type="number",
+                                                                              id="K", value=0, min=0,
+                                                                              className="form-control"),
+
+                                                                    dbc.Label("Tris", className="fw-bolder mt-1"),
+                                                                    dbc.Input(placeholder="Tris", type="number",
+                                                                              id="Tris", value=0, min=0,
+                                                                              className="form-control"),
+
+                                                                    dbc.Label("Magnezyum", className="fw-bolder mt-1"),
+                                                                    dbc.Input(placeholder="Magnezyum", type="number",
+                                                                              id="Mg", value=0, min=0,
+                                                                              className="form-control"),
+
+                                                                    dbc.Label("dNTPs", className="fw-bolder mt-1"),
+                                                                    dbc.Input(placeholder="dNTPs", type="number",
+                                                                              id="dNTPs", value=0, min=0,
+                                                                              className="form-control"),
+
+                                                                    dbc.Label("Tuz", className="fw-bolder mt-1"),
+                                                                    dbc.Input(placeholder="Tuz", type="number",
+                                                                              id="saltcorr", value=5, min=0,
+                                                                              max=7, className="form-control"),
+
+                                                                ],
+                                                                className="mx-auto"
+                                                            ),
+                                                        ]
+                                                    ),
+
+                                                ],
+                                            ),
+
+                                        ], md=8,
+                                    ),
+
+                                    dbc.Col(
+                                        [
+                                            html.Div(id="output"),
+                                        ], md=4
+                                    )
+                                ])
+
+                        ], className="shadow-lg p-4 bg-body rounded-2 mt-1", fluid=False
+                    ),
+                ],
+            ),
+
+        ], style={'marginTop': "1%"}
     )
 
     @mt_app.callback(
         Output("output", 'children'),
-        Input("sekans", "value"),
+        # seq
+        Input("method-type", "value"),
+        Input("seq", "value"),
+        Input("c_seq", "value"),
+        # kons
         Input("Na", "value"),
         Input("K", "value"),
         Input("Tris", "value"),
         Input("Mg", "value"),
         Input("dNTPs", "value"),
-        Input("saltcorr", "value")
+        Input("saltcorr", "value"),
     )
-    def temp_melting(sekans, Na, K, Tris, Mg, dNTPs, saltcorr):
-        if sekans is not None:
-            sekans = str(sekans).replace(" ", "")
-            sekans = str(sekans).replace("\n", "")
-            sekans = str(sekans).replace("\t", "")
-            sekans = str(sekans).replace("\r", "")
-            sekans = str(sekans).replace("0", "")
-            sekans = str(sekans).replace("1", "")
-            sekans = str(sekans).replace("2", "")
-            sekans = str(sekans).replace("3", "")
-            sekans = str(sekans).replace("4", "")
-            sekans = str(sekans).replace("5", "")
-            sekans = str(sekans).replace("6", "")
-            sekans = str(sekans).replace("7", "")
-            sekans = str(sekans).replace("8", "")
-            sekans = str(sekans).replace("9", "")
-            sekans = str(sekans).upper().replace("NONE", "")
+    def temp_melting(method, seq, c_seq, Na, K, Tris, Mg, dNTPs, saltcorr):
+        global temp_melting
 
-            primer_len = len(sekans)
+        if seq is not None:
 
-            temperature_melting = mt.Tm_NN(seq=sekans, Na=Na, K=K, Tris=Tris, Mg=Mg, dNTPs=dNTPs, saltcorr=saltcorr)
+            primer_len = len(seq)
 
-            return html.Div([
-                html.P(f"Sekans Uzunluğu : {primer_len}"),
-                html.P(f"Erime Sıcaklığı : {temperature_melting}"),
-            ])
+            if method == "Tm_Wallace":
+                temp_melting = mt.Tm_Wallace(seq=seq)
+
+            elif method == "Tm_GC":
+                temp_melting = mt.Tm_GC(seq=seq, Na=Na, K=K, Tris=Tris, Mg=Mg, dNTPs=dNTPs)
+
+            elif method == "Tm_NN":
+
+                temp_melting = mt.Tm_NN(seq=seq, c_seq=c_seq, Na=Na, K=K, Tris=Tris, Mg=Mg, dNTPs=dNTPs,
+                                           saltcorr=saltcorr)
+
+            return html.Div(
+                [
+                    html.P(f"Sekans Uzunluğu : {primer_len}"),
+                    html.P(f"Erime Sıcaklığı : {temp_melting}"),
+                ], className="text-primary"
+            )
 
         else:
-            return "Sekans girilmedi"
+            return html.P(["Sekans girilmedi"], className="text-danger")
 
     return HttpResponseRedirect("/laboratuvarlar/bioinformatic-laboratuvari/app/temp-melt/")

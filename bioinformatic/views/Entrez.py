@@ -168,5 +168,4 @@ def EntrezToolsView(request):
                 return dbc.Table.from_dataframe(df_nuc, bordered=True, hover=True, index=True,
                                                 responsive=True)
 
-
     return HttpResponseRedirect("/laboratuvarlar/bioinformatic-laboratuvari/app/entrez-tools/")

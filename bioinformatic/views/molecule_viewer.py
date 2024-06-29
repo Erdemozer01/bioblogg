@@ -266,7 +266,6 @@ def single_molecule_view(request):
 
                                                 ], className="mb-2"
                                             ),
-
                                         ], md=4
                                     ),
 
