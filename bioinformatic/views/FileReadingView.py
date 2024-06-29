@@ -360,14 +360,26 @@ def file_reading(request):
 
             if file_format == "fasta":
 
-                df_TABLE = pd.DataFrame(
-                    {
-                        'id': str(rec.id),
-                        'description': str(rec.description),
-                        'seq': str(rec.seq),
-                        'seq_len': len(str(rec.seq)),
-                        'gc': gc_fraction(rec.seq) * 100
-                    } for rec in records)
+                if molecule == "protein":
+
+                    df_TABLE = pd.DataFrame(
+                        {
+                            'id': str(rec.id),
+                            'description': str(rec.description),
+                            'seq': str(rec.seq),
+                            'seq_len': len(str(rec.seq)),
+                        } for rec in records)
+
+                else:
+
+                    df_TABLE = pd.DataFrame(
+                        {
+                            'id': str(rec.id),
+                            'description': str(rec.description),
+                            'seq': str(rec.seq),
+                            'seq_len': len(str(rec.seq)),
+                            'gc': gc_fraction(rec.seq) * 100
+                        } for rec in records)
 
                 file_reading_dash_app.layout = html.Div(
                     children=[
@@ -475,80 +487,148 @@ def file_reading(request):
                     Input("fasta-select", "value"),
                 )
                 def fasta_results(select):
-                    if select == "table":
-                        tab = dag.AgGrid(
-                            id="df-table",
-                            style={'width': '100%'},
-                            rowData=df_TABLE.to_dict("records"),
+                    if molecule != "protein":
+                        if select == "table":
+                            tab = dag.AgGrid(
+                                id="df-table",
+                                style={'width': '100%'},
+                                rowData=df_TABLE.to_dict("records"),
 
-                            columnDefs=[
-                                {'field': 'id', 'headerName': 'İD', 'filter': True},
-                                {'field': 'description', 'headerName': 'Tanım', 'filter': True},
-                                {'field': 'seq', 'headerName': 'SEKANSLAR', 'filter': True},
-                                {'field': 'seq_len', 'headerName': 'Sekans uzunlukları', 'filter': True},
-                                {'field': 'gc', 'headerName': '%GC', 'filter': True},
-                            ],
-                            columnSize="sizeToFit",
-                            defaultColDef={
-                                "resizable": True,
-                                "sortable": True,
-                                "filter": True,
-                                'editable': True,
-                                "minWidth": 125
-                            },
-                            dashGridOptions={
-                                'pagination': True,
-                                "rowSelection": "multiple",
-                                "undoRedoCellEditing": True,
-                                "undoRedoCellEditingLimit": 20,
-                                "editType": "fullRow",
-                            },
-                        ),
-                        return tab
+                                columnDefs=[
+                                    {'field': 'id', 'headerName': 'İD', 'filter': True},
+                                    {'field': 'description', 'headerName': 'Tanım', 'filter': True},
+                                    {'field': 'seq', 'headerName': 'SEKANSLAR', 'filter': True},
+                                    {'field': 'seq_len', 'headerName': 'Sekans uzunlukları', 'filter': True},
+                                    {'field': 'gc', 'headerName': '%GC', 'filter': True},
+                                ],
+                                columnSize="sizeToFit",
+                                defaultColDef={
+                                    "resizable": True,
+                                    "sortable": True,
+                                    "filter": True,
+                                    'editable': True,
+                                    "minWidth": 125
+                                },
+                                dashGridOptions={
+                                    'pagination': True,
+                                    "rowSelection": "multiple",
+                                    "undoRedoCellEditing": True,
+                                    "undoRedoCellEditingLimit": 20,
+                                    "editType": "fullRow",
+                                },
+                            ),
+                            return tab
 
-                    elif select == "seq_histogram":
+                        elif select == "seq_histogram":
 
-                        fig = px.histogram(
-                            data_frame=df_TABLE.to_dict("records"),
-                            x=[seq for seq in df_TABLE['seq_len']],
-                            labels={'x': "Nükleotit Uzunlukları"},
-                            title=f"Sekans Uzunluk HİSTOGRAM GRAFİĞİ".upper()
-                        )
-
-                        hist_graph = dcc.Graph(
-                            figure=fig
-                        ),
-
-                        return hist_graph
-
-                    elif select == "gc_plot":
-
-                        fig = px.line(
-                            data_frame=df_TABLE.to_dict("records"),
-                            x=sorted(df_TABLE['gc']),
-                            labels={'x': "%GC"},
-                        )
-
-                        gc_plot = dcc.Graph(
-                            figure=fig
-                        ),
-                        return gc_plot
-
-                    elif select == "seq_pie":
-                        return dcc.Graph(
-                            figure=px.pie(
+                            fig = px.histogram(
                                 data_frame=df_TABLE.to_dict("records"),
-                                names=[j for seq in df_TABLE['seq'] for j in seq],
-                                labels={'seq': "Nükleotit"},
-                            ).update_traces(
-                                textposition='auto',
-                                textinfo='value+percent+label',
-                                legendgrouptitle={'text': 'Nükleotitler'}
+                                x=[seq for seq in df_TABLE['seq_len']],
+                                labels={'x': "Nükleotit Uzunlukları"},
+                                title=f"Sekans Uzunluk HİSTOGRAM GRAFİĞİ".upper()
                             )
-                        ),
+
+                            hist_graph = dcc.Graph(
+                                figure=fig
+                            ),
+
+                            return hist_graph
+
+                        elif select == "gc_plot":
+
+                            fig = px.line(
+                                data_frame=df_TABLE.to_dict("records"),
+                                x=sorted(df_TABLE['gc']),
+                                labels={'x': "%GC"},
+                            )
+
+                            gc_plot = dcc.Graph(
+                                figure=fig
+                            ),
+                            return gc_plot
+
+                        elif select == "seq_pie":
+                            return dcc.Graph(
+                                figure=px.pie(
+                                    data_frame=df_TABLE.to_dict("records"),
+                                    names=[j for seq in df_TABLE['seq'] for j in seq],
+                                    labels={'seq': "Nükleotit"},
+                                ).update_traces(
+                                    textposition='auto',
+                                    textinfo='value+percent+label',
+                                    legendgrouptitle={'text': 'Nükleotitler'}
+                                )
+                            ),
+
+                        else:
+                            return html.P(["HERHANGİ BİR SEÇİM YAPMADINIZ"], className="text-danger text-center mt-2")
 
                     else:
-                        return html.P(["HERHANGİ BİR SEÇİM YAPMADINIZ"], className="text-danger text-center mt-2")
+                        if select == "table":
+                            tab = dag.AgGrid(
+                                id="df-table",
+                                style={'width': '100%'},
+                                rowData=df_TABLE.to_dict("records"),
+
+                                columnDefs=[
+                                    {'field': 'id', 'headerName': 'İD', 'filter': True},
+                                    {'field': 'description', 'headerName': 'Tanım', 'filter': True},
+                                    {'field': 'seq', 'headerName': 'SEKANSLAR', 'filter': True},
+                                    {'field': 'seq_len', 'headerName': 'Sekans uzunlukları', 'filter': True},
+                                    {'field': 'gc', 'headerName': '%GC', 'filter': True},
+                                ],
+                                columnSize="sizeToFit",
+                                defaultColDef={
+                                    "resizable": True,
+                                    "sortable": True,
+                                    "filter": True,
+                                    'editable': True,
+                                    "minWidth": 125
+                                },
+                                dashGridOptions={
+                                    'pagination': True,
+                                    "rowSelection": "multiple",
+                                    "undoRedoCellEditing": True,
+                                    "undoRedoCellEditingLimit": 20,
+                                    "editType": "fullRow",
+                                },
+                            ),
+                            return tab
+
+                        elif select == "seq_histogram":
+
+                            fig = px.histogram(
+                                data_frame=df_TABLE.to_dict("records"),
+                                x=[seq for seq in df_TABLE['seq_len']],
+                                labels={'x': "Nükleotit Uzunlukları"},
+                                title=f"Sekans Uzunluk HİSTOGRAM GRAFİĞİ".upper()
+                            )
+
+                            hist_graph = dcc.Graph(
+                                figure=fig
+                            ),
+
+                            return hist_graph
+
+                        elif select == "gc_plot":
+
+                            return "Protein dosyası seçtiğinizden görüntülenemiyor."
+
+                        elif select == "seq_pie":
+                            return dcc.Graph(
+                                figure=px.pie(
+                                    data_frame=df_TABLE.to_dict("records"),
+                                    names=[j for seq in df_TABLE['seq'] for j in seq],
+                                    labels={'seq': "Nükleotit"},
+                                ).update_traces(
+                                    textposition='auto',
+                                    textinfo='value+percent+label',
+                                    legendgrouptitle={'text': 'Nükleotitler'}
+                                )
+                            ),
+
+                        else:
+                            return html.P(["HERHANGİ BİR SEÇİM YAPMADINIZ"], className="text-danger text-center mt-2")
 
             elif file_format == "genbank":
 
