@@ -1,6 +1,6 @@
 from .home import bioinformatic_home
 from .SekansView import sequence_analiz, translation, alignment_score, create_frame_seq
-from .FileReadingView import file_reading, PhylogeneticTree, alignment_mapping
+from .FileReadingView import file_reading, PhylogeneticTree, alignment_mapping, molecule_2d_view
 from .FileWritingView import file_writing_format_select, CreateFileView, RecordDetailView, RecordDeleteView, \
     FileWritingListView
 from .FileDownloadView import download_file

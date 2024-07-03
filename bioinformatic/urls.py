@@ -43,6 +43,7 @@ urlpatterns = [
 
     path('multiple-3d-molekul-goruntuleme/', views.multi_molecule_view, name='multiple_molecule_3d_view'),
 
-
+    # molecule_viewer
+    path('molecule-2d-görüntüleme/', views.molecule_2d_view, name='molecule_2d_view'),
 
 ]

@@ -8,6 +8,7 @@ import pandas as pd
 from Bio import Medline, SeqIO
 import dash_ag_grid as dag
 
+
 def EntrezToolsView(request):
     external_stylesheets = [dbc.themes.BOOTSTRAP]
 
@@ -78,7 +79,7 @@ def EntrezToolsView(request):
                     dcc.Input(id="retmax", type="number", placeholder="İstenilen Sonuç Sayısı",
                               className="form-control", value=20, min=20),
 
-                    html.P(id="count", className="fw-bolder mt-1"),
+                    html.Div(id="count", children=[], className="fw-bolder mt-1"),
 
                     html.Hr(),
 
@@ -92,14 +93,15 @@ def EntrezToolsView(request):
     @app.callback(
         Output('output', 'children'),
         Output('count', 'children'),
+
         Input('search-type', 'value'),
         Input('term', 'value'),
-        Input('retmax', 'value'),
+        Input('retmax', 'value')
     )
     def display_output(type, term, retmax):
 
         if term is None:
-            return html.P("Lütfen aramak istediğiniz terimi giriniz.", className="text-center text-danger")
+            return html.P("Lütfen aramak istediğiniz terimi giriniz.", className="fw-bolder text-center text-danger"), ""
 
         elif term:
 
@@ -113,7 +115,7 @@ def EntrezToolsView(request):
 
                 id_lists = Entrez.read(search)
 
-                count = f'Toplam {id_lists["Count"]} sonuç bulunmuştur.'
+                count = f'Toplam {id_lists["Count"]} sonuçtan {retmax} tanesi bulunmuştur.'
 
                 idlist = id_lists["IdList"]
 
@@ -129,7 +131,6 @@ def EntrezToolsView(request):
                         pub_date.append(i.get("DP"))
                     else:
                         pub_date.append("-")
-
 
                 df = pd.DataFrame(
                     {
@@ -152,7 +153,7 @@ def EntrezToolsView(request):
                 gi_str = ",".join(gi_list)
                 stream = Entrez.efetch(db="nuccore", id=gi_str, rettype="gb", retmode="text")
                 records = SeqIO.parse(stream, "gb")
-                count = f'Toplam {record["Count"]} sonuç bulunmuştur.'
+                count = f'Toplam {record["Count"]} sonuçtan {retmax} tanesi bulunmuştur.'
 
                 df_nuc = pd.DataFrame(
                     [
