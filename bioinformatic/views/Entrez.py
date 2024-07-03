@@ -8,7 +8,6 @@ import pandas as pd
 from Bio import Medline, SeqIO
 
 
-
 def EntrezToolsView(request):
     external_stylesheets = [dbc.themes.BOOTSTRAP]
 
