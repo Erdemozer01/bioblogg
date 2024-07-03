@@ -6,7 +6,7 @@ from dash import dcc, html, Input, Output
 import dash_bootstrap_components as dbc
 import pandas as pd
 from Bio import Medline, SeqIO
-import dash_ag_grid as dag
+
 
 
 def EntrezToolsView(request):
