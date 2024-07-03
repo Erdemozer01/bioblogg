@@ -73,10 +73,12 @@ def EntrezToolsView(request):
                     dcc.Input(id="term", type="text", placeholder="ARADIĞINIZ TERİM",
                               className="form-control"),
 
-                    html.Label("Bulunacak sonuç sayısı", className='fw-bolder mb-2 mt-1'),
+                    html.Label("İstenilen Sonuç Sayısı", className='fw-bolder mb-2 mt-1'),
 
-                    dcc.Input(id="retmax", type="number", placeholder="Bulunacak sonuç sayısı",
+                    dcc.Input(id="retmax", type="number", placeholder="İstenilen Sonuç Sayısı",
                               className="form-control", value=20, min=20),
+
+                    html.P(id="count", className="fw-bolder mt-1"),
 
                     html.Hr(),
 
@@ -89,6 +91,7 @@ def EntrezToolsView(request):
 
     @app.callback(
         Output('output', 'children'),
+        Output('count', 'children'),
         Input('search-type', 'value'),
         Input('term', 'value'),
         Input('retmax', 'value'),
@@ -109,6 +112,8 @@ def EntrezToolsView(request):
                 search = Entrez.esearch(db="pubmed", term=term, retmax=retmax)
 
                 id_lists = Entrez.read(search)
+
+                count = f'Toplam {id_lists["Count"]} sonuç bulunmuştur.'
 
                 idlist = id_lists["IdList"]
 
@@ -136,8 +141,8 @@ def EntrezToolsView(request):
                     }
                 )
 
-                return dbc.Table.from_dataframe(df, striped=True, bordered=True, hover=True, index=True,
-                                                responsive=True)
+                return dbc.Table.from_dataframe(df, bordered=True, hover=True, index=True,
+                                                responsive=True), count
 
             elif type == 'gb_nuc':
 
@@ -147,6 +152,7 @@ def EntrezToolsView(request):
                 gi_str = ",".join(gi_list)
                 stream = Entrez.efetch(db="nuccore", id=gi_str, rettype="gb", retmode="text")
                 records = SeqIO.parse(stream, "gb")
+                count = f'Toplam {record["Count"]} sonuç bulunmuştur.'
 
                 df_nuc = pd.DataFrame(
                     [
@@ -166,6 +172,6 @@ def EntrezToolsView(request):
                 )
 
                 return dbc.Table.from_dataframe(df_nuc, bordered=True, hover=True, index=True,
-                                                responsive=True)
+                                                responsive=True), count
 
     return HttpResponseRedirect("/laboratuvarlar/bioinformatic-laboratuvari/app/entrez-tools/")

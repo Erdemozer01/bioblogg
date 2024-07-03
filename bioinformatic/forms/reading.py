@@ -4,7 +4,11 @@ from bioinformatic.choices import *
 
 
 class FileReadingForm(forms.ModelForm):
-    file = forms.FileField(label='Dosya', help_text="Not : Max. dosya boyutu 25 mb olmalıdır.")
+    file = forms.FileField(
+        label='Dosya',
+        help_text="Not : Max. dosya boyutu 30 mb olmalıdır.",
+    )
+
 
     class Meta:
         model = BioinformaticModel
@@ -16,9 +20,10 @@ class FileReadingForm(forms.ModelForm):
                 }),
             'molecule': forms.Select(
                 attrs={
-                    'class': 'custom-select'
+                    'class': 'form-control'
                 }
-            )
+            ),
+            'file': forms.FileInput(attrs={'class': 'custom-file-input'})
         }
 
 
@@ -99,4 +104,3 @@ class SingleMoleculeViewForm(forms.Form):
         label='DOSYA SEÇİNİZ',
         help_text="Not : Dosyanız pdb yada cif uzanlı olmalıdır. Dosya boyutu en fazla 9mb olmalıdır.",
     )
-

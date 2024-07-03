@@ -207,7 +207,7 @@
                     <div class="col-12 col-md-6 col-lg-4 mb-5">
                         <a href="{% url 'bioinformatic:multiple_molecule_3d_view' %}">
                             <div class="card bg-primary border-light shadow-soft">
-                                <img src="{% static 'bioinformatic/5138210.jpg' %}"
+                                <img src="{% static 'bioinformatic/3d-representation-dna.jpg' %}"
                                      class="card-img-top rounded-top"
                                      alt="Kmer ve Sekans Kesme">
                                 <div class="card-body">
@@ -218,9 +218,22 @@
                     </div>
                     
                     <div class="col-12 col-md-6 col-lg-4 mb-5">
+                        <a href="{% url 'bioinformatic:alignment_mapping' %}">
+                            <div class="card bg-primary border-light shadow-soft">
+                                <img src="{% static 'bioinformatic/msa.png' %}"
+                                     class="card-img-top rounded-top"
+                                     alt="Kmer ve Sekans Kesme">
+                                <div class="card-body">
+                                    <h3 class="h5 card-title mt-3">DİZİ HİZALAMA VE HARİTALAMA</h3>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    
+                    <div class="col-12 col-md-6 col-lg-4 mb-5">
                         <a href="{% url 'bioinformatic:entrez_tools' %}" target="_blank">
                             <div class="card bg-primary border-light shadow-soft">
-                                <img src="{% static 'dashboard/assets/img/examples/product6.jpg' %}"
+                                <img src="{% static 'bioinformatic/5101920.jpg' %}"
                                      class="card-img-top rounded-top"
                                      alt="Pubmed MAKALE">
                                 <div class="card-body">

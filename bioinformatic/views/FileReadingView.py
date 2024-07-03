@@ -25,6 +25,7 @@ import dash_cytoscape as cyto
 import dash_bio as dashbio
 from dash_bio.utils import PdbParser
 import pandas as pd
+import dash_daq as daq
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -63,7 +64,6 @@ def PhylogeneticTree(request):
 
             tree_app = DjangoDash(f'filogeni-{tree_alg}',
                                   external_stylesheets=external_stylesheets,
-
                                   add_bootstrap_links=True,
                                   title=f'{tree_alg} AĞACI OLUŞTRMA'.upper()
                                   )
@@ -328,8 +328,8 @@ def file_reading(request):
 
     if request.method == "POST":
 
-        if request.FILES['file'].size > 25 * 1024 * 1024:
-            messages.error(request, "Dosya boyutu en fazla 25mb olmalıdır.")
+        if request.FILES['file'].size > 30 * 1024 * 1024:
+            messages.error(request, "Dosya boyutu en fazla 30 mb olmalıdır.")
             return HttpResponseRedirect(request.path)
 
         if form.is_valid():
@@ -636,8 +636,10 @@ def file_reading(request):
                 table = []
 
                 for record in records:
+
                     table.append({'İD': record.id, 'Tanım': record.description, 'Sekans': str(record.seq),
                                   'Sekans Uzunluğu': len(str(record.seq)), '%GC': gc_fraction(str(record.seq))})
+
                     if record.features:
                         for feature in record.features:
                             qualifiers.append(feature.qualifiers)
@@ -767,55 +769,101 @@ def file_reading(request):
                 file_reading_dash_app.layout = html.Div(
                     [
 
-                        html.H4(f'{file_format} DOSYASI SONUÇLARI'.upper(), className="text-primary"),
+                        ## NAVBAR ##
+                        dbc.NavbarSimple(
+                            children=[
+                                dbc.NavItem(dbc.NavLink("Blog", href=HttpResponseRedirect(
+                                    reverse("blog:anasayfa")).url, external_link=True)),
+                                dbc.DropdownMenu(
+                                    children=[
+                                        dbc.DropdownMenuItem("Biyoinformatik",
+                                                             href=HttpResponseRedirect(
+                                                                 reverse("bioinformatic:home")).url,
+                                                             external_link=True),
+                                        dbc.DropdownMenuItem("Biyoistatislik",
+                                                             href=HttpResponseRedirect(
+                                                                 reverse("biyoistatislik")).url,
+                                                             external_link=True),
+                                        dbc.DropdownMenuItem("Coğrafi Bilgi sistemleri",
+                                                             href=HttpResponseRedirect(reverse("cbs")).url,
+                                                             external_link=True),
+                                        dbc.DropdownMenuItem("Laboratuvarlar",
+                                                             href=HttpResponseRedirect(
+                                                                 reverse("lab_home")).url,
+                                                             external_link=True),
+                                    ],
+                                    nav=True,
+                                    in_navbar=True,
+                                    label="Laboratuvarlar",
 
-                        html.Hr(),
-
-                        html.Button("Tabloyu indir", id="csv-button", n_clicks=0,
-                                    className="btn btn-outline-primary btn-sm float-sm-end mb-1"),
-
-                        html.P("TABLO"),
-
-                        dag.AgGrid(
-                            style={'width': '100%'},
-                            id="export-data-grid",
-                            rowData=df_table.to_dict("records"),
-                            columnSize="sizeToFit",
-                            defaultColDef={
-                                "resizable": True,
-                                "sortable": True,
-                                "filter": True,
-                                'editable': True,
-                                "minWidth": 125
-                            },
-                            dashGridOptions={
-                                'pagination': True,
-                                "rowSelection": "multiple",
-                                "undoRedoCellEditing": True,
-                                "undoRedoCellEditingLimit": 20,
-                                "editType": "fullRow",
-                            },
-                            columnDefs=[{'field': f'{col}', 'headerName': f'{col}', 'filter': True} for col in
-                                        df_table.columns],
-                            csvExportParams={
-                                "fileName": "table_data.csv",
-                            },
+                                ),
+                            ],
+                            brand=f"{file_format} Dosyası Okuması".upper(),
+                            brand_href=HttpResponseRedirect(reverse("bioinformatic:file_reading")).url,
+                            color="primary",
+                            dark=True,
+                            brand_external_link=True,
+                            sticky='top',
+                            className="shadow-lg bg-body rounded mt-1 mb-1",
                         ),
 
-                        html.Hr(),
+                        dbc.Card(
+                            dbc.Row(
+                                [
+                                    dbc.Col(
+                                        [
+                                            html.Button("Tabloyu indir", id="csv-button", n_clicks=0,
+                                                        className="btn btn-outline-primary btn-sm float-sm-end mb-1"),
+                                            html.P("TABLO"),
 
-                        html.P("Grafik Seçiniz", className="fw-bolder ml-1"),
+                                            dag.AgGrid(
+                                                style={'width': '100%'},
+                                                id="export-data-grid",
+                                                rowData=df_table.to_dict("records"),
+                                                columnSize="sizeToFit",
+                                                defaultColDef={
+                                                    "resizable": True,
+                                                    "sortable": True,
+                                                    "filter": True,
+                                                    'editable': True,
+                                                    "minWidth": 125
+                                                },
+                                                dashGridOptions={
+                                                    'pagination': True,
+                                                    "rowSelection": "multiple",
+                                                    "undoRedoCellEditing": True,
+                                                    "undoRedoCellEditingLimit": 20,
+                                                    "editType": "fullRow",
+                                                },
+                                                columnDefs=[{'field': f'{col}', 'headerName': f'{col}', 'filter': True}
+                                                            for col in
+                                                            df_table.columns],
+                                                csvExportParams={
+                                                    "fileName": "table_data.csv",
+                                                },
+                                            ),
+                                        ], md=6, lg=6
+                                    ),
 
-                        dcc.Dropdown(
-                            id="select",
-                            options={
-                                "distribution_n": "N dağılım grafiği",
-                                "phred_score": "Phred skor dağılım grafiği",
-                            },
+                                    dbc.Col(
+                                        [
+                                            html.P("Grafik Seçiniz", className="fw-bolder ml-1"),
+
+                                            dcc.Dropdown(
+                                                id="select",
+                                                options={
+                                                    "distribution_n": "N dağılım grafiği",
+                                                    "phred_score": "Phred skor dağılım grafiği",
+                                                },
+                                            ),
+
+                                            html.Div(id="figure-output", className="mt-3"),
+
+                                        ], md=6, lg=6
+                                    )
+                                ]
+                            )
                         ),
-
-                        html.Div(id="figure-output", className="mt-3"),
-
                     ], className="m-5"
                 )
 
@@ -825,7 +873,9 @@ def file_reading(request):
                 )
                 def figure(select):
                     if select == "distribution_n":
-                        return dcc.Graph(figure=px.line(x=positions, y=[n_cnt[x] for x in positions]))
+                        return dcc.Graph(
+                            figure=px.line(x=positions, y=[n_cnt[x] for x in positions], title="N Calls Dağılımı",
+                                           labels={'x': 'Nükleotit Pozisyonu', 'y': 'N Calls'}))
                     elif select == "phred_score":
                         vps = []
                         poses = list(qual_pos.keys())
@@ -835,7 +885,7 @@ def file_reading(request):
                         return dcc.Graph(
                             figure=px.box(data_frame=vps, y=poses,
                                           labels={'variable': 'Nükleotit Pozisyonu', 'value': 'PHERED skorları'},
-                                          title='PHERED skorları dağılımı')
+                                          title='Phred skorları dağılımı')
                         )
 
                 @file_reading_dash_app.callback(
@@ -1058,3 +1108,206 @@ def blast(request):
             return HttpResponseRedirect("/laboratuvarlar/bioinformatic-laboratuvari/app/blast/")
 
     return render(request, 'bioinformatic/form.html', {'form': form, 'title': 'BLAST'})
+
+
+def alignment_mapping(request):
+    if request.user.is_anonymous:
+        from django.conf import settings
+        messages.error(request, "Lütfen Giriş Yapınız")
+        return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
+
+    external_stylesheets = [dbc.themes.BOOTSTRAP]
+
+    if BioinformaticModel.objects.filter(user=request.user, tool="Dizi Hizalama").exists():
+        BioinformaticModel.objects.filter(user=request.user, tool="Dizi Hizalama").delete()
+
+    form = FileReadingForm(request.POST or None, request.FILES or None)
+
+    app = DjangoDash('alignment-mapping',
+                     external_stylesheets=external_stylesheets,
+                     add_bootstrap_links=True,
+                     title='Dizi Hizalama'
+                     )
+
+    if request.method == "POST":
+
+        if request.FILES['file'].size > 30 * 1024 * 1024:
+            messages.error(request, "Dosya boyutu en fazla 30 mb olmalıdır.")
+            return HttpResponseRedirect(request.path)
+
+        if form.is_valid():
+            file_format = form.cleaned_data["reading_file_format"]
+            file = form.cleaned_data["file"]
+            molecule = form.cleaned_data["molecule"]
+
+            obj = BioinformaticModel.objects.create(
+                user=request.user,
+                molecule=molecule,
+                reading_file_format=file_format,
+                tool="Dizi Hizalama"
+            )
+
+            file_obj = obj.records_files.create(file=file)
+
+            handle = open(file_obj.file.path, 'r', encoding='utf-8')
+
+            records = SeqIO.parse(handle, file_format)
+
+            data = handle.read()
+
+            app.layout = dbc.Card(
+                [
+
+                    ## NAVBAR ##
+                    dbc.NavbarSimple(
+                        children=[
+                            dbc.NavItem(dbc.NavLink("Blog", href=HttpResponseRedirect(
+                                reverse("blog:anasayfa")).url, external_link=True)),
+                            dbc.DropdownMenu(
+                                children=[
+                                    dbc.DropdownMenuItem("Biyoinformatik",
+                                                         href=HttpResponseRedirect(
+                                                             reverse("bioinformatic:home")).url,
+                                                         external_link=True),
+                                    dbc.DropdownMenuItem("Biyoistatislik",
+                                                         href=HttpResponseRedirect(
+                                                             reverse("biyoistatislik")).url,
+                                                         external_link=True),
+                                    dbc.DropdownMenuItem("Coğrafi Bilgi sistemleri",
+                                                         href=HttpResponseRedirect(reverse("cbs")).url,
+                                                         external_link=True),
+                                    dbc.DropdownMenuItem("Laboratuvarlar",
+                                                         href=HttpResponseRedirect(
+                                                             reverse("lab_home")).url,
+                                                         external_link=True),
+                                ],
+                                nav=True,
+                                in_navbar=True,
+                                label="Laboratuvarlar",
+
+                            ),
+                        ],
+                        brand="Dizi Haritalama",
+                        brand_href=HttpResponseRedirect(reverse("bioinformatic:alignment_mapping")).url,
+                        color="primary",
+                        dark=True,
+                        brand_external_link=True,
+                        sticky='top',
+                        className="shadow-lg bg-body rounded mt-1 mb-1 mr-1 ml-1",
+                    ),
+
+                    dbc.Card(
+                        [
+                            dbc.Row(
+                                [
+                                    dbc.Col(
+                                        [
+                                            dcc.Tabs(
+                                                id='mol3d-tabs', children=[
+                                                    dcc.Tab(
+                                                        label='AYARLAR',
+                                                        children=html.Div(
+                                                            className='control-tab mt-2',
+
+                                                            children=[
+
+                                                                html.Label("Görüntüleme", className="fw-bolder mt-2"),
+
+                                                                dcc.Dropdown(
+                                                                    id='colour-type',
+                                                                    options=[
+                                                                        {'label': 'Clustal2', 'value': 'clustal2'},
+                                                                        {'label': 'Clustal', 'value': 'clustal'},
+                                                                        {'label': 'Sinema', 'value': 'cinema'},
+                                                                        {'label': 'Buried', 'value': 'buried'},
+                                                                        {'label': 'helix', 'value': 'helix'},
+                                                                        {'label': 'hydrophobicity',
+                                                                         'value': 'hydrophobicity'},
+                                                                        {'label': 'lesk', 'value': 'lesk'},
+                                                                        {'label': 'mae', 'value': 'mae'},
+                                                                        {'label': 'nucleotide', 'value': 'nucleotide'},
+                                                                        {'label': 'purine', 'value': 'purine'},
+                                                                        {'label': 'strand', 'value': 'strand'},
+                                                                        {'label': 'taylor', 'value': 'taylor'},
+                                                                        {'label': 'turn', 'value': 'turn'},
+                                                                        {'label': 'zappo', 'value': 'zappo'},
+                                                                    ],
+                                                                    value='clustal2',
+                                                                ),
+
+                                                                html.Label("Kuyruk", className="fw-bolder mt-2"),
+
+                                                                dcc.Dropdown(
+                                                                    id='visual-type',
+                                                                    options=[
+                                                                        {'label': 'Harita', 'value': 'heatmap'},
+                                                                        {'label': 'Slayt', 'value': 'slider'},
+                                                                        {'label': 'Yok', 'value': 'none'},
+                                                                    ],
+                                                                    value='heatmap',
+                                                                ),
+
+
+                                                                daq.BooleanSwitch(
+                                                                    id='showgap',
+                                                                    label="Boşluk Haritası",
+                                                                    labelPosition="top",
+                                                                    className="float-left fw-bolder mt-2",
+                                                                    on=True
+                                                                ),
+
+                                                                daq.BooleanSwitch(
+                                                                    id='showconservation',
+                                                                    label="Koruma Bölgesi Haritası",
+                                                                    labelPosition="top",
+                                                                    className="fw-bolder mt-2",
+                                                                    on=True
+                                                                ),
+                                                            ]
+                                                        )
+                                                    ),
+
+                                                ], className="mb-2"
+                                            ),
+                                        ], md=3
+                                    ),
+
+                                    dbc.Col(
+                                        id="align-out",
+                                        children=[
+                                            html.Div(id="output")
+                                        ], md=9,
+                                    ),
+                                ],
+                            ),
+                        ], className="shadow-lg p-3 bg-body rounded mr-1 ml-1 mb-2"
+                    ),
+                ],
+            )
+
+            @app.callback(
+                Output("output", "children"),
+
+                Input("visual-type", "value"),
+                Input("colour-type", "value"),
+                Input('showgap', 'on'),
+                Input('showconservation', 'on'),
+            )
+            def alignment_update(value, color, showgap, showconservation):
+                bool()
+                chart = dashbio.AlignmentChart(
+                    data=data,
+                    showconsensus=True,
+                    tilewidth=50,
+                    overview=value,
+                    height=900,
+                    colorscale=color,
+                    showgap=showgap,
+                    showconservation=showconservation
+                )
+
+                return chart
+
+            return HttpResponseRedirect(f"/laboratuvarlar/bioinformatic-laboratuvari/app/alignment-mapping")
+
+    return render(request, "bioinformatic/form.html", {'form': form, 'title': 'DİZİ HARİTALAMA'})

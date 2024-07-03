@@ -17,6 +17,7 @@ urlpatterns = [
     path('file-reading/', views.FileReadingView.file_reading, name="file_reading"),
     path('phylo-tree-creating/', views.FileReadingView.PhylogeneticTree, name="pyhlo_tree"),
     path('blast/', views.FileReadingView.blast, name="blast"),
+    path('alignment-mapping/', views.alignment_mapping, name="alignment_mapping"),
 
 
     # Writing

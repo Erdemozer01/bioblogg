@@ -839,25 +839,25 @@ def create_frame_seq(request):
                                 [
 
                                     dbc.Label("Sekans Giriniz", className="fw-bolder mt-1"),
-
                                     dcc.Textarea(
-                                        id="sequence", placeholder="Sekans Giriniz",
+                                        id="seq", placeholder="Sekans Giriniz",
                                         className="form-control mb-2", style={'height': 100}
                                     ),
+
                                     dbc.Label("Nükleotit pozisyonu", className="fw-bolder mt-1"),
                                     dcc.Input(id="nuc_pos", type="number", placeholder="Nükleotit pozisyonu", min=0,
-                                              className="form-control mb-2", value=0, ),
+                                              className="form-control mb-2", value=1, ),
 
                                     dbc.Label("Çerçeve sekans uzunluğu", className="fw-bolder mt-1"),
                                     dcc.Input(id="frame_seq_len", type="number", placeholder="Çerçeve sekans uzunluğu",
-                                              min=50, className="form-control mb-2", value=50, ),
+                                              min=10, className="form-control mb-2", value=50, ),
 
                                     dbc.Label("Sekans başlangıcı", className="fw-bolder mt-1"),
                                     dcc.Input(id="start", type="number", placeholder="Sekans başlangıcı", min=0,
                                               className="form-control mb-2", value=0, ),
 
                                     dbc.Label("Sekans bitişi", className="fw-bolder mt-1"),
-                                    dcc.Input(id="stop", type="number", placeholder="Sekans bitişi", min=1,
+                                    dcc.Input(id="stop", type="number", placeholder="Sekans bitişi", min=2,
                                               className="form-control mb-1"),
 
                                     dbc.Label("İstenmeyen sekans dizisi", className="fw-bolder mt-2"),
@@ -868,13 +868,10 @@ def create_frame_seq(request):
 
                             dbc.Col(
                                 [
-
-                                    html.Div(id="output", children=[]),
-
+                                    html.Div(id="output_seq"),
                                 ], md=8
                             ),
                         ]
-
                     )
                 )
             ),
@@ -883,19 +880,19 @@ def create_frame_seq(request):
     )
 
     @frame_seq_app.callback(
-        Output("output", "children"),
-        [
-            Input("seq", "value"),
-            Input("nuc_pos", "value"),
-            Input("frame_seq_len", "value"),
-            Input("start", "value"),
-            Input("stop", "value"),
-            Input("discard", "value"),
-        ]
+        Output("output_seq", "children"),
+
+        Input("seq", "value"),
+        Input("nuc_pos", "value"),
+        Input("frame_seq_len", "value"),
+        Input("start", "value"),
+        Input("stop", "value"),
+        Input("discard", "value"),
     )
     def update_output(seq, nuc_pos, frame_seq_len, start, stop, discard):
 
-        sequence = seq.upper()
+        sequence = str(seq).upper()
+
         ig = []
 
         for i in sequence:
@@ -920,12 +917,15 @@ def create_frame_seq(request):
 
         nuc_position = df.to_dict()['seq'].get(nuc_pos)
 
-        df = pd.DataFrame({
-            'seq_len': [len(sequence[:50] + str(nuc_position) + sequence[50:frame_len]) for frame_len in
-                        range(50, frame_seq_len)],
-            'seq': [sequence[:50] + ' ' + str(nuc_position) + ' ' + sequence[50:frame_len] for frame_len in
-                    range(50, frame_seq_len)]
-        })
+        df_frame = pd.DataFrame(
+            {
+                'seq_len': [len(sequence[:50] + str(nuc_position) + sequence[50:frame_len]) for frame_len in
+                            range(50, frame_seq_len)],
+                'seq_frame': [sequence[:50] + ' ' + str(nuc_position) + ' ' + sequence[50:frame_len] for frame_len in
+                        range(50, frame_seq_len)]
+            }
+        )
+
         return html.Div([
             html.P(
                 f"SEKANS UZUNLUĞU: {len(sequence)}, %GC: {gc_fraction(sequence)}, Nükleotid Pozisyonu : {nuc_position}",
@@ -939,7 +939,7 @@ def create_frame_seq(request):
                 dag.AgGrid(
                     id="frame_seq_table",
                     style={'width': '100%'},
-                    rowData=df.to_dict("records"),
+                    rowData=df_frame.to_dict("records"),
                     columnSize="sizeToFit",
                     defaultColDef={"resizable": True, "sortable": True, "filter": True, 'editable': True,
                                    "minWidth": 125},
@@ -949,14 +949,14 @@ def create_frame_seq(request):
                         {'field': 'seq', 'headerName': 'SEKANS', 'filter': True},
                     ]
                 ),
-                html.Div(id="output"),
+                html.Div(id="output_frame"),
             ]),
 
             html.Hr(),
         ]),
 
     @frame_seq_app.callback(
-        Output("output", "children"),
+        Output("output_frame", "children"),
         Input("frame_seq_table", "cellClicked"),
         prevent_initial_call=True,
     )
@@ -1072,7 +1072,8 @@ def TemperatureMeltingView(request):
                                                                 [
 
                                                                     html.P(
-                                                                        ["Aşagıdaki değerler von Ahsen et al., 2001 referans alınarak ayarlanmıştır."],
+                                                                        [
+                                                                            "Aşagıdaki değerler von Ahsen et al., 2001 referans alınarak ayarlanmıştır."],
                                                                     ),
 
                                                                     dbc.Label("Sodyum", className="fw-bolder mt-1"),
@@ -1162,7 +1163,7 @@ def TemperatureMeltingView(request):
             elif method == "Tm_NN":
 
                 temp_melting = mt.Tm_NN(seq=seq, c_seq=c_seq, Na=Na, K=K, Tris=Tris, Mg=Mg, dNTPs=dNTPs,
-                                           saltcorr=saltcorr)
+                                        saltcorr=saltcorr)
 
             return html.Div(
                 [
