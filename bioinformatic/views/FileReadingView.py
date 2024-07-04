@@ -1321,7 +1321,7 @@ def molecule_2d_view(request):
         title='MOLEKÜL İNCELEME'
     )
 
-    app.layout = dbc.Card(
+    app.layout = html.Div(
         [
 
             ## NAVBAR ##
@@ -1365,94 +1365,101 @@ def molecule_2d_view(request):
 
             dbc.Card(
                 [
-                    dbc.Row(
-                        [
-                            dbc.Col(
-                                [
-                                    dcc.Tabs(
-                                        id='mol3d-tabs', children=[
+                    dbc.CardBody([
+                        dbc.Row(
+                            [
+                                dbc.Col(
+                                    [
+                                        dcc.Tabs(
+                                            id='mol3d-tabs', children=[
 
-                                            dcc.Tab(
-                                                label='Açıklama',
-                                                children=html.Div(
-                                                    className='control-tab mt-2',
-                                                    children=[
-                                                        html.P(["2D MOLEKÜL GÖRÜNTÜLEME UYGULAMASI NEDİR ? "],
-                                                               className="fw-bolder mt-2"),
-                                                        html.P(["'Görüntüle' sekmesinde, yapısal bilgi için PubChem veritabanında"
+                                                dcc.Tab(
+                                                    label='Açıklama',
+                                                    children=html.Div(
+                                                        className='control-tab mt-2',
+                                                        children=[
+                                                            html.P(["2D MOLEKÜL GÖRÜNTÜLEME UYGULAMASI NEDİR ? "],
+                                                                   className="fw-bolder mt-2"),
+                                                            html.P([
+                                                                "'Görüntüle' sekmesinde, yapısal bilgi için PubChem veritabanında"
                                                                 "molekül adına göre arama yapmak üzere metin girişini kullanabilirsiniz."],
-                                                               className="text-primary mt-2"),
-                                                        html.P(["Ayrıca bağ uzunluklarını değiştirebilirsiniz."],
-                                                               className="text-primary mt-2"),
-                                                    ]
-                                                )
-                                            ),
-
-                                            dcc.Tab(
-                                                label='Görüntüle',
-                                                value='view-options',
-                                                children=[
-
-                                                    html.Label("Molekül adına göre arama", className="fw-bolder mt-2"),
-
-                                                    dcc.Input(
-                                                        id='mol2d-search',
-                                                        placeholder='molekül adı',
-                                                        type='text',
-                                                        value='tylenol',
-                                                        className="form-control",
-                                                    ),
-
-                                                    html.P(["Ör: penta-2,3-diene, buckminsterfullerene, norepinephrine"]),
-
-                                                    html.Label("Bağ uzunluğu", className="fw-bolder mt-2"),
-
-                                                    dcc.Slider(
-                                                        id='mol2d-bond-length',
-                                                        min=1,
-                                                        max=100,
-                                                        value=1
-                                                    ),
-
-                                                    html.Div(
-                                                        id='mol2d-search-results-wrapper', children=[
-                                                            dcc.Dropdown(id='mol2d-search-results')
+                                                                className="text-primary mt-2"),
+                                                            html.P(["Ayrıca bağ uzunluklarını değiştirebilirsiniz."],
+                                                                   className="text-primary mt-2"),
                                                         ]
-                                                    ),
-                                                    html.Hr(),
-                                                    html.Div(id='error-wrapper'),
-                                                    html.Div(id='mol2d-sel-atoms-output'),
-                                                ]
-                                            ),
+                                                    )
+                                                ),
 
-                                        ], className="mb-2"
-                                    ),
+                                                dcc.Tab(
+                                                    label='Görüntüle',
+                                                    value='view-options',
+                                                    children=[
 
-                                ], md=4
-                            ),
+                                                        html.Label("Molekül adına göre arama",
+                                                                   className="fw-bolder mt-2"),
 
-                            dbc.Col(
-                                [
+                                                        dcc.Input(
+                                                            id='mol2d-search',
+                                                            placeholder='molekül adı',
+                                                            type='text',
+                                                            value='tylenol',
+                                                            className="form-control",
+                                                        ),
 
-                                    html.Div(id='mol2d-container', children=[
-                                        dashbio.Molecule2dViewer(
-                                            id='mol2d',
-                                            height=600,
-                                            width=700
-                                        )
-                                    ]),
+                                                        html.P(
+                                                            [
+                                                                "Ör: penta-2,3-diene, buckminsterfullerene, norepinephrine"]),
 
-                                    dcc.Store(id='mol2d-search-results-store'),
-                                    dcc.Store(id='mol2d-compound-options-store')
+                                                        html.Label("Bağ uzunluğu", className="fw-bolder mt-2"),
 
-                                ], md=8, className="mx-auto"
-                            ),
+                                                        dcc.Slider(
+                                                            id='mol2d-bond-length',
+                                                            min=1,
+                                                            max=100,
+                                                            value=1
+                                                        ),
 
-                        ],
-                    ),
+                                                        html.Div(
+                                                            id='mol2d-search-results-wrapper', children=[
+                                                                dcc.Dropdown(id='mol2d-search-results')
+                                                            ]
+                                                        ),
+                                                        html.Hr(),
+                                                        html.Div(id='error-wrapper'),
+                                                        html.Div(id='mol2d-sel-atoms-output'),
+                                                    ]
+                                                ),
+
+                                            ], className="mb-2"
+                                        ),
+
+                                    ], md=4
+                                ),
+
+                                dbc.Col(
+                                    [
+
+                                        html.Div(id='mol2d-container', children=[
+                                            dashbio.Molecule2dViewer(
+                                                id='mol2d',
+                                                height=600,
+                                                width=700
+                                            )
+                                        ]),
+
+                                        dcc.Store(id='mol2d-search-results-store'),
+                                        dcc.Store(id='mol2d-compound-options-store')
+
+                                    ], md=8, className="mx-auto"
+                                ),
+
+                            ],
+                        ),
+                    ]),
+
                 ],
             ),
-        ],className="shadow-lg p-3 bg-body rounded mt-1 container"
+        ], className="shadow-lg p-3 bg-body rounded mr-1 ml-1 mt-1"
     )
 
     @app.callback(
