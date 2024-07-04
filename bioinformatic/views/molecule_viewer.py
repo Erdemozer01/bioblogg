@@ -68,7 +68,7 @@ def molecule_2d_view(request):
                 dark=True,
                 brand_external_link=True,
                 sticky='top',
-                className="shadow-lg bg-body rounded mt-2 mb-1 mr-1 ml-1",
+                className="shadow-lg bg-body rounded mt-2 mb-1 mr-2 ml-2",
             ),
 
             dbc.Card(
@@ -89,7 +89,7 @@ def molecule_2d_view(request):
                                                                className="fw-bolder mt-2"),
                                                         html.P([
                                                                    "'Görüntüle' sekmesinde, yapısal bilgi için PubChem veritabanında"
-                                                                   "molekül adına göre arama yapmak üzere metin girişini kullanabilirsiniz."],
+                                                                   " molekül adına göre arama yapmak üzere metin girişini kullanabilirsiniz."],
                                                                className="text-primary mt-2"),
                                                         html.P(["Ayrıca bağ uzunluklarını değiştirebilirsiniz."],
                                                                className="text-primary mt-2"),
@@ -203,6 +203,9 @@ def molecule_2d_view(request):
                     ]
                 } for compound in results
             }
+
+            for i in results:
+                print(i.iupac_name)
 
         return results_dropdown, options, compounds
 
