@@ -88,9 +88,9 @@ def molecule_2d_view(request):
                                                         html.P(["2D MOLEKÜL GÖRÜNTÜLEME UYGULAMASI NEDİR ? "],
                                                                className="fw-bolder mt-2"),
                                                         html.P([
-                                                                   "'Görüntüle' sekmesinde, yapısal bilgi için PubChem veritabanında"
-                                                                   " molekül adına göre arama yapmak üzere metin girişini kullanabilirsiniz."],
-                                                               className="text-primary mt-2"),
+                                                            "'Görüntüle' sekmesinde, yapısal bilgi için PubChem veritabanında"
+                                                            " molekül adına göre arama yapmak üzere metin girişini kullanabilirsiniz."],
+                                                            className="text-primary mt-2"),
                                                         html.P(["Ayrıca bağ uzunluklarını değiştirebilirsiniz."],
                                                                className="text-primary mt-2"),
                                                     ]
@@ -132,6 +132,7 @@ def molecule_2d_view(request):
                                                     html.Hr(),
                                                     html.Div(id='error-wrapper'),
                                                     html.Div(id='mol2d-sel-atoms-output'),
+                                                    html.Div(id='atoms-output'),
                                                 ]
                                             ),
 
@@ -177,6 +178,7 @@ def molecule_2d_view(request):
     @app.callback(
         [Output('mol2d-search-results-wrapper', 'style'),
          Output('mol2d-compound-options-store', 'data'),
+         Output('atoms-output', 'children'),
          Output('mol2d-search-results-store', 'data')],
         [Input('mol2d-search', 'n_submit')],
         [State('mol2d-search', 'value')]
@@ -200,14 +202,12 @@ def molecule_2d_view(request):
                 compound.to_dict()['iupac_name']: {
                     'PC_Compounds': [
                         compound.record
-                    ]
+                    ],
+
                 } for compound in results
             }
 
-            for i in results:
-                print(i.iupac_name)
-
-        return results_dropdown, options, compounds
+        return results_dropdown, options, compounds,
 
     @app.callback(
         Output('search-results', 'value'),
@@ -262,8 +262,8 @@ def molecule_2d_view(request):
 
     return HttpResponseRedirect(f"/laboratuvarlar/bioinformatic-laboratuvari/app/molecule-2d-view")
 
-def single_molecule_view(request):
 
+def single_molecule_view(request):
     if request.user.is_anonymous:
         from django.conf import settings
         messages.error(request, "Lütfen Giriş Yapınız")
@@ -908,4 +908,3 @@ def multi_molecule_view(request):
         return HttpResponseRedirect("/laboratuvarlar/bioinformatic-laboratuvari/app/multi-molecule-viewer/")
 
     return render(request, 'bioinformatic/form.html', {'form': form, 'title': 'Çoklu 3D MOLEKÜL GÖRÜNTÜLEME'})
-
