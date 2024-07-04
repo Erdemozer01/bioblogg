@@ -236,9 +236,10 @@ def alignment_score(request):
 
 def sequence_analiz(request):
     external_stylesheets = [dbc.themes.ZEPHYR]
+    external_scripts = ["https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"]
 
     sequence_analiz = DjangoDash("sequence_analiz", external_stylesheets=external_stylesheets,
-                                 title='Sekans Analiz', add_bootstrap_links=True)
+                                 title='Sekans Analiz', add_bootstrap_links=True, external_scripts=external_scripts)
 
     sequence_analiz.layout = html.Div(
 
@@ -325,6 +326,7 @@ def sequence_analiz(request):
                     ], className="shadow-lg p-4 mb-4 bg-body rounded mt-2", fluid=False
                 ),
             ),
+
         ], className="mt-4",
     )
 
