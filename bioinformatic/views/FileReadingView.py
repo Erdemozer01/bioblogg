@@ -1450,7 +1450,7 @@ def molecule_2d_view(request):
 
                         ],
                     ),
-                ], className="shadow-lg p-3 bg-body rounded mr-1 ml-1"
+                ], className="shadow-lg p-3 bg-body rounded conteiner mt-1"
             ),
         ],
     )
