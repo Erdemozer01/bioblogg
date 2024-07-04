@@ -19,10 +19,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 def molecule_2d_view(request):
     external_stylesheets = [dbc.themes.BOOTSTRAP]
+    external_scripts = ["https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"]
 
     app = DjangoDash(
         'molecule-2d-view',
         external_stylesheets=external_stylesheets,
+        external_scripts=external_scripts,
         add_bootstrap_links=True,
         title='2D MOLEKÜL İNCELEME'
     )
@@ -133,10 +135,10 @@ def molecule_2d_view(request):
                                                 ]
                                             ),
 
-                                        ], className="mb-2"
+                                        ],
                                     ),
 
-                                ], md=4
+                                ], md=4, lg=4,
                             ),
 
                             dbc.Col(
@@ -145,10 +147,10 @@ def molecule_2d_view(request):
                                     html.Div(id='mol2d-container', children=[
                                         dash_bio.Molecule2dViewer(
                                             id='mol2d',
-                                            height=600,
-                                            width=700
+                                            height=550,
+                                            width=650
                                         )
-                                    ]),
+                                    ], className="mt-4"),
 
                                     dcc.Store(id='mol2d-search-results-store'),
                                     dcc.Store(id='mol2d-compound-options-store')
@@ -158,9 +160,9 @@ def molecule_2d_view(request):
 
                         ],
                     ),
-                ],
+                ], className="mr-2 ml-2"
             ),
-        ], className="shadow-lg p-3 bg-body rounded mr-1 ml-1"
+        ], className="shadow-lg p-3 bg-body rounded mr-2 ml-2"
     )
 
     @app.callback(
