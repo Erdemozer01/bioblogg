@@ -1428,7 +1428,7 @@ def molecule_2d_view(request):
                                         ], className="mb-2"
                                     ),
 
-                                ], md=3
+                                ], md=4
                             ),
 
                             dbc.Col(
@@ -1445,7 +1445,7 @@ def molecule_2d_view(request):
                                     dcc.Store(id='mol2d-search-results-store'),
                                     dcc.Store(id='mol2d-compound-options-store')
 
-                                ], md=9, className="mx-auto"
+                                ], md=8, className="mx-auto"
                             ),
 
                         ],
