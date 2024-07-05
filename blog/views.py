@@ -629,3 +629,20 @@ def about(request):
                 return HttpResponseRedirect(request.build_absolute_uri())
 
     return render(request, "blog/pages/about.html")
+
+
+def abone_ol(request):
+    email = request.POST.get('email_sub')
+    if Subscribe.objects.exists():
+        for abone in Subscribe.objects.all():
+            if email in abone.email:
+                messages.error(request, "Bültene zaten abonesiniz")
+                return redirect(request.META['HTTP_REFERER'])
+            else:
+                Subscribe.objects.create(email=email)
+                messages.success(request, "Başarılı bir şekilde abone oldunuz")
+                return redirect(request.META['HTTP_REFERER'])
+    else:
+        Subscribe.objects.create(email=email)
+        messages.success(request, "Başarılı bir şekilde abone oldunuz")
+        return redirect(request.META['HTTP_REFERER'])

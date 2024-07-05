@@ -1,4 +1,4 @@
-import os.path
+import os.path, pandas, dash_table
 from django.views import generic
 from django.shortcuts import *
 from pathlib import Path
@@ -8,8 +8,171 @@ from bioinformatic.models.bioinformatic import BioinformaticModel, RecordModel
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 from Bio import SeqIO
+from django.shortcuts import *
+from django_plotly_dash import DjangoDash
+from dash import dcc, html, Input, Output, State, MATCH, Patch
+import dash_bootstrap_components as dbc
+import dash_ag_grid as dag
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
+
+
+def DashWriteFile(request):
+    external_stylesheets = [dbc.themes.BOOTSTRAP]
+
+    app = DjangoDash('write-file', external_stylesheets=external_stylesheets,
+                     title='Dosya yazma', update_title="Güncelleniyor...", add_bootstrap_links=True)
+
+    app.layout = dbc.Card(
+        [
+
+            ## NAVBAR ##
+            dbc.NavbarSimple(
+                children=[
+                    dbc.NavItem(dbc.NavLink("Blog", href=HttpResponseRedirect(
+                        reverse("blog:anasayfa")).url, external_link=True)),
+                    dbc.DropdownMenu(
+                        children=[
+                            dbc.DropdownMenuItem("Biyoinformatik",
+                                                 href=HttpResponseRedirect(
+                                                     reverse("bioinformatic:home")).url,
+                                                 external_link=True),
+                            dbc.DropdownMenuItem("Biyoistatislik",
+                                                 href=HttpResponseRedirect(
+                                                     reverse("biyoistatislik")).url,
+                                                 external_link=True),
+                            dbc.DropdownMenuItem("Coğrafi Bilgi sistemleri",
+                                                 href=HttpResponseRedirect(reverse("cbs")).url,
+                                                 external_link=True),
+                            dbc.DropdownMenuItem("Laboratuvarlar",
+                                                 href=HttpResponseRedirect(
+                                                     reverse("lab_home")).url,
+                                                 external_link=True),
+                        ],
+                        nav=True,
+                        in_navbar=True,
+                        label="Laboratuvarlar",
+                        className="float-right",
+
+                    ),
+                ],
+                brand="2D MOLEKÜL GÖRÜNTÜLEME",
+                brand_href=HttpResponseRedirect(reverse("bioinformatic:molecule_2d_view")).url,
+                color="primary",
+                dark=True,
+                brand_external_link=True,
+                sticky='top',
+                className="shadow-lg bg-body rounded mt-2 mb-1 mr-2 ml-2",
+            ),
+
+            dbc.Card(
+                [
+                    dbc.Row(
+                        [
+                            dbc.Col(
+                                [
+                                    dcc.Tabs(
+                                        id='mol3d-tabs', children=[
+
+                                            dcc.Tab(
+                                                label='Açıklama',
+                                                children=html.Div(
+                                                    className='control-tab mt-2',
+                                                    children=[
+                                                        html.P(["Dosya oluştuma"],
+                                                               className="fw-bolder mt-2"),
+                                                        html.P([
+                                                            "Oluşturma istediğiniz dosya türünü oluştur sekmesinden siçiniz ve taloya "
+                                                            "Kolon ve sutunları düzenleyip kayıtları ekleyin oluştura tıklayın."],
+                                                            className="text-primary mt-2"),
+
+                                                    ]
+                                                )
+                                            ),
+
+                                            dcc.Tab(
+                                                label='Oluştur',
+                                                value='view-options',
+                                                children=[
+
+                                                    html.Label("Dosya türünü seçiniz",
+                                                               className="text-primary fw-bolder mt-2"),
+
+                                                    dcc.Dropdown(
+                                                        id='file-type',
+                                                        options=[
+                                                            {'label': 'Fasta', 'value': 'fasta'},
+                                                            {'label': 'Genbank', 'value': 'gb'},
+                                                        ],
+                                                        value='fasta',
+                                                    ),
+
+                                                    html.Hr(className="text-danger fw-bolder mt-2"),
+
+                                                    html.Div(id="output-rec")
+
+                                                ]
+                                            ),
+
+                                        ],
+                                    ),
+
+                                ], md=4, lg=4,
+                            ),
+
+                            dbc.Col(
+                                [
+
+                                    dash_table.DataTable(
+                                        id='adding-rows-table',
+                                        columns=[
+                                            {'name': 'id', 'deletable': True, 'renamable': True},
+                                            {'name': 'Tanım', 'deletable': True, 'renamable': True},
+                                            {'name': 'Sekans', 'deletable': True, 'renamable': True},
+                                        ],
+
+                                        editable=True,
+                                        row_deletable=True
+                                    ),
+
+                                    html.Button('Kayıt ekle', id='editing-rows-button', n_clicks=0,
+                                                className='btn btn-primary float-right mt-2'),
+
+                                ], md=8, className="mx-auto"
+                            ),
+
+                        ],
+                    ),
+                ], className="mr-2 ml-2"
+            ),
+        ], className="shadow-lg p-3 bg-body rounded mr-2 ml-2"
+    )
+
+    @app.callback(
+        Output('adding-rows-table', 'data'),
+        Input('editing-rows-button', 'n_clicks'),
+        State('adding-rows-table', 'data'),
+        State('adding-rows-table', 'columns'))
+    def add_row(n_clicks, rows, columns):
+        if n_clicks > 0:
+            list(rows).append({c['id']: '' for c in columns})
+        return rows
+
+    @app.callback(
+        Output('adding-rows-table', 'columns'),
+        Input('adding-rows-button', 'n_clicks'),
+        State('adding-rows-name', 'value'),
+        State('adding-rows-table', 'columns'))
+    def update_columns(n_clicks, value, existing_columns):
+        if n_clicks > 0:
+            existing_columns.append(
+                {'name': value, 'deletable': True, 'renamable': True},
+                {'name': value, 'deletable': True, 'renamable': True},
+                {'name': value, 'deletable': True, 'renamable': True},
+            )
+        return existing_columns
+
+    return HttpResponseRedirect("/laboratuvarlar/bioinformatic-laboratuvari/app/write-file/")
 
 
 def file_writing_format_select(request, user):

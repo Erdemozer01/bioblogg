@@ -28,6 +28,7 @@ urlpatterns = [
     path('download/<user>/<format>/', views.CreateFileView, name='create_and_download'),
     path('record-detail/<pk>/<user>/<description>/', views.RecordDetailView.as_view(), name='record_detail'),
     path('delete/<pk>/', views.RecordDeleteView, name='delete_record'),
+    path('dash-write/', views.DashWriteFile, name='dash_write_file'),
 
     # Download
     path('download/', views.download_file, name='download'),

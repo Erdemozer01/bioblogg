@@ -13,57 +13,85 @@
                 <div class="row mb-4 justify-content-center">
                     <div class="col-12 col-md-8 col-lg-7 mt-1">
                         <h1 class="display-4 mb-1">LABORATUVARLAR</h1>
+                        {% if messages %}
+                            {% for message in messages %}
+                                {% if message.tags == 'error' %}
+                                    <div class="alert alert-danger alert-dismissible shadow-soft fade show"
+                                         role="alert">
+                                {% else %}
+                                    <div class="alert alert-{{ message.tags }} alert-dismissible shadow-soft fade show"
+                                         role="alert">
+                                {% endif %}
+
+                            <span class="alert-inner--icon">
+                                    {% if message.tags == 'error' %}
+                                        <span class="far fa-thumbs-down"></span>
+                                    {% elif message.tags == 'success' %}
+                                        <span class="far fa-thumbs-up"></span>
+                                    {% else %}
+
+                                    {% endif %}
+                                </span>
+
+                            <span class="alert-inner--text"><strong>{{ message }}</strong> </span>
+
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                            </div>
+                            {% endfor %}
+                        {% endif %}
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <section class="section bg-primary text-dark section-lg">
-            <div class="container">
-                <div class="row mb-3">
+            <section class="section bg-primary text-dark section-lg">
+                <div class="container">
+                    <div class="row mb-3">
 
-                    <div class="col-12 col-md-6 col-lg-4 mb-5">
-                        <a href="{% url 'bioinformatic:home' %}">
-                            <div class="card bg-primary border-light shadow-soft">
-                                <img src="{% static 'bioinformatic/OIG2.jpeg' %}"
-                                     class="card-img-top rounded-top"
-                                     alt="Biyoinformatik" height="250px">
-                                <div class="card-body">
-                                    <h3 class="h5 card-title mt-2">Biyoinformatik</h3>
+                        <div class="col-12 col-md-6 col-lg-4 mb-5">
+                            <a href="{% url 'bioinformatic:home' %}">
+                                <div class="card bg-primary border-light shadow-soft">
+                                    <img src="{% static 'bioinformatic/OIG2.jpeg' %}"
+                                         class="card-img-top rounded-top"
+                                         alt="Biyoinformatik" height="250px">
+                                    <div class="card-body">
+                                        <h3 class="h5 card-title mt-2">Biyoinformatik</h3>
+                                    </div>
                                 </div>
-                            </div>
-                        </a>
-                    </div>
+                            </a>
+                        </div>
 
-                    <div class="col-12 col-md-6 col-lg-4 mb-5">
-                        <a href="{% url 'biyoistatislik' %}">
-                            <div class="card bg-primary border-light shadow-soft">
-                                <img src="{% static 'bioinformatic/bioinformatic_aı.jpeg' %}"
-                                     class="card-img-top rounded-top"
-                                     alt="Biyoistatislik" height="250px">
-                                <div class="card-body">
-                                    <h3 class="h5 card-title mt-2">Biyoistatislik</h3>
+                        <div class="col-12 col-md-6 col-lg-4 mb-5">
+                            <a href="{% url 'biyoistatislik' %}">
+                                <div class="card bg-primary border-light shadow-soft">
+                                    <img src="{% static 'bioinformatic/bioinformatic_aı.jpeg' %}"
+                                         class="card-img-top rounded-top"
+                                         alt="Biyoistatislik" height="250px">
+                                    <div class="card-body">
+                                        <h3 class="h5 card-title mt-2">Biyoistatislik</h3>
+                                    </div>
                                 </div>
-                            </div>
-                        </a>
-                    </div>
+                            </a>
+                        </div>
 
-                    <div class="col-12 col-md-6 col-lg-4">
-                        <a href="{% url 'cbs' %}">
-                            <div class="card bg-primary border-light shadow-soft">
-                                <img src="{% static 'bioinformatic/COĞRAFİ.png' %}"
-                                     class="card-img-top rounded-top"
-                                     alt="Coğrafi Bilgi Sistemleri" height="250px">
-                                <div class="card-body">
-                                    <h3 class="h5 card-title mt-2">Coğrafi Bilgi Sistemleri</h3>
+                        <div class="col-12 col-md-6 col-lg-4">
+                            <a href="{% url 'cbs' %}">
+                                <div class="card bg-primary border-light shadow-soft">
+                                    <img src="{% static 'bioinformatic/COĞRAFİ.png' %}"
+                                         class="card-img-top rounded-top"
+                                         alt="Coğrafi Bilgi Sistemleri" height="250px">
+                                    <div class="card-body">
+                                        <h3 class="h5 card-title mt-2">Coğrafi Bilgi Sistemleri</h3>
+                                    </div>
                                 </div>
-                            </div>
-                        </a>
-                    </div>
+                            </a>
+                        </div>
 
+                    </div>
                 </div>
-            </div>
-        </section>
+            </section>
     </main>
 
 {% endblock %}

@@ -7,7 +7,7 @@ from django.contrib import messages
 from bioinformatic.forms.file_convert import FileConvertForm
 from bioinformatic.models.bioinformatic import BioinformaticModel
 from django.utils.translation import gettext as _
-from django.http import FileResponse
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 

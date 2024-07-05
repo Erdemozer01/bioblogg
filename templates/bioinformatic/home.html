@@ -13,6 +13,33 @@
                 <div class="row mb-4 justify-content-center">
                     <div class="col-12 col-md-8 col-lg-7 mt-6">
                         <h1 class="mb-4 display-4 animate-down-7">BİYOİNFORMATİK LABORATUVARI</h1>
+                        {% if messages %}
+            {% for message in messages %}
+                {% if message.tags == 'error' %}
+                    <div class="alert alert-danger alert-dismissible shadow-soft fade show" role="alert">
+                {% else %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible shadow-soft fade show"
+                         role="alert">
+                {% endif %}
+
+            <span class="alert-inner--icon">
+                                    {% if message.tags == 'error' %}
+                                        <span class="far fa-thumbs-down"></span>
+                                    {% elif message.tags == 'success' %}
+                                        <span class="far fa-thumbs-up"></span>
+                                    {% else %}
+
+                                    {% endif %}
+                                </span>
+
+            <span class="alert-inner--text"><strong>{{ message }}</strong> </span>
+
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            </div>
+            {% endfor %}
+        {% endif %}
                     </div>
                 </div>
             </div>
@@ -20,6 +47,7 @@
 
         <section class="section bg-primary text-dark section-lg">
             <div class="container">
+                
                 <div class="row mb-3">
 
                     <div class="container z-2">
@@ -109,12 +137,14 @@
                     </div>
                     
                 </div>
+                
             </div>
+            
         </section>
 
-        <section class="section bg-primary text-dark ">
+        <section class="section bg-primary text-dark">
+            
             <div class="container">
-
                 <div class="row mb-1">
 
                     <div class="container">
@@ -156,7 +186,7 @@
                             <div class="card bg-primary border-light shadow-soft">
 
                                 <img src="{% static 'bioinformatic/5103530.jpg' %}"
-                                     class="card-img-top rounded-top" height="250px">
+                                     class="card-img-top rounded-top" alt="" height="250px">
 
                                 <div class="card-body">
                                     <h3 class="h5 card-title mt-2">Dosya dönüştürme</h3>
@@ -257,8 +287,27 @@
                             </div>
                         </a>
                     </div>
+                    
+                    <div class="col-12 col-md-6 col-lg-4 mb-5">
+                        <a href="{% url 'bioinformatic:dash_write_file' %}" target="_blank">
+                            
+                            <div class="card bg-primary border-light shadow-soft">
+                                
+                                <img src="{% static 'bioinformatic/5101920.jpg' %}"
+                                     class="card-img-top rounded-top" height="250px">
+                                
+                                <div class="card-body">
+                                    <h3 class="h5 card-title mt-2">Dash Write</h3>
+                                </div>
+                                
+                            </div>
+                            
+                        </a>
+                    </div>
+                    
                 </div>
             </div>
+            
         </section>
     </main>
 
