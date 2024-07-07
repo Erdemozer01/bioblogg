@@ -1,21 +1,15 @@
-import os.path, pandas, dash_table
-from django.views import generic
-from django.shortcuts import *
+import os.path
+import datetime
 from pathlib import Path
 from django.contrib import messages
-from bioinformatic.forms.writing import SelectWritingForm, FileWritingForm
+from bioinformatic.forms.writing import SelectWritingForm, GenbankWritingForm, FastaWritingForm
 from bioinformatic.models.bioinformatic import BioinformaticModel, RecordModel
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 from Bio import SeqIO
 from django.shortcuts import *
-from django_plotly_dash import DjangoDash
-from dash import dcc, html, Input, Output, State
-import dash_bootstrap_components as dbc
-import dash_ag_grid as dag
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
-
 
 
 def file_writing_format_select(request, user):
@@ -47,91 +41,101 @@ def file_writing_format_select(request, user):
     return render(request, 'bioinformatic/form.html', {'form': form, 'title': 'DOSYA OLUŞTURMA'})
 
 
-class FileWritingListView(generic.ListView):
-    template_name = "bioinformatic/writing/list.html"
-    model = RecordModel
-    paginate_by = 10
-
-    def get(self, request, *args, **kwargs):
-        if request.user.is_anonymous:
-            from django.conf import settings
-            messages.error(request, "Lütfen Giriş Yapınız")
-            return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
-        return super().get(request, *args, **kwargs)
-
-    def get_queryset(self):
-        return RecordModel.objects.filter(records__user=self.request.user, records__tool="DOSYA YAZMA")
-
-    def get_context_data(self, *, object_list=None, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['count'] = self.object_list.count()
-        context['format'] = BioinformaticModel.objects.filter(user=self.request.user,
-                                                              tool="DOSYA YAZMA").last().writing_file_format
-        context['title'] = f"{context['format'].upper()} KAYITLARI"
-        return context
-
-
-def FileWritingView(request, format, user):
+def FileWritingView(request, user, format):
     if request.user.is_anonymous:
         from django.conf import settings
         messages.error(request, "Lütfen Giriş Yapınız")
         return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
 
-    form = FileWritingForm(request.POST or None)
+    if format == 'fasta':
+        object_list = BioinformaticModel.objects.filter(user=request.user, tool="DOSYA YAZMA")
+        rec_obj = RecordModel.objects.filter(records__user=request.user, records__tool="DOSYA YAZMA",
+                                             records__writing_file_format=format)
+        form = FastaWritingForm(request.POST or None)
 
-    if request.method == "POST":
+        if request.method == "POST":
+            if form.is_valid():
 
-        if form.is_valid():
+                sekans = form.cleaned_data['sequence'].upper()
 
-            sekans = form.cleaned_data['sequence'].upper()
+                sekans = sekans.replace(" ", "")
+                sekans = sekans.replace("\n", "")
+                sekans = sekans.replace("\t", "")
+                sekans = sekans.replace("\r", "")
+                sekans = sekans.replace("0", "")
+                sekans = sekans.replace("1", "")
+                sekans = sekans.replace("2", "")
+                sekans = sekans.replace("3", "")
+                sekans = sekans.replace("4", "")
+                sekans = sekans.replace("5", "")
+                sekans = sekans.replace("6", "")
+                sekans = sekans.replace("7", "")
+                sekans = sekans.replace("8", "")
+                sekans = sekans.replace("9", "")
 
-            sekans = sekans.replace(" ", "")
-            sekans = sekans.replace("\n", "")
-            sekans = sekans.replace("\t", "")
-            sekans = sekans.replace("\r", "")
-            sekans = sekans.replace("0", "")
-            sekans = sekans.replace("1", "")
-            sekans = sekans.replace("2", "")
-            sekans = sekans.replace("3", "")
-            sekans = sekans.replace("4", "")
-            sekans = sekans.replace("5", "")
-            sekans = sekans.replace("6", "")
-            sekans = sekans.replace("7", "")
-            sekans = sekans.replace("8", "")
-            sekans = sekans.replace("9", "")
+                for obj in object_list:
+                    obj.record_content.create(
+                        molecule=form.cleaned_data['molecule'],
+                        molecule_id=form.cleaned_data['molecule_id'].replace("|", ""),
+                        name=form.cleaned_data['name'],
+                        description=form.cleaned_data['description'],
+                        sequence=str(sekans)
+                    )
 
-            object_list = BioinformaticModel.objects.filter(user=request.user, tool="DOSYA YAZMA")
+                return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
-            for obj in object_list:
-                obj.record_content.create(
-                    molecule=form.cleaned_data['molecule'],
-                    molecule_id=form.cleaned_data['molecule_id'].replace("|", ""),
-                    name=form.cleaned_data['name'],
-                    description=form.cleaned_data['description'],
-                    db_xrefs=form.cleaned_data['db_xrefs'],
-                    annotations=form.cleaned_data['annotations'],
-                    source=form.cleaned_data['source'],
-                    organism=form.cleaned_data['organism'],
-                    keywords=form.cleaned_data['keywords'],
-                    accession=form.cleaned_data['accessions'],
-                    sequence=str(sekans)
-                )
+        return render(request, "bioinformatic/writing/list.html",
+                      {'form': form, 'rec_obj': rec_obj, 'format': format,
+                       'title': f'{format} dosyası oluşturma'.upper()})
 
-            return HttpResponseRedirect(
-                reverse("bioinformatic:file_writing_list", kwargs={'format': format, 'user': request.user}))
+    elif format == 'genbank':
+        object_list = BioinformaticModel.objects.filter(user=request.user, tool="DOSYA YAZMA")
+        rec_obj = RecordModel.objects.filter(records__user=request.user, records__tool="DOSYA YAZMA",
+                                             records__writing_file_format=format)
+        form = GenbankWritingForm(request.POST or None)
 
-        else:
+        if request.method == "POST":
+            if form.is_valid():
 
-            form = FileWritingForm()
+                sekans = form.cleaned_data['sequence'].upper()
 
-    return render(
-        request, 'bioinformatic/writing/form.html',
-        {
-            'form': form,
-            'title': f'{format.upper()} DOSYASI OLUŞTURMA',
-            'format': format
-        }
-    )
+                sekans = sekans.replace(" ", "")
+                sekans = sekans.replace("\n", "")
+                sekans = sekans.replace("\t", "")
+                sekans = sekans.replace("\r", "")
+                sekans = sekans.replace("0", "")
+                sekans = sekans.replace("1", "")
+                sekans = sekans.replace("2", "")
+                sekans = sekans.replace("3", "")
+                sekans = sekans.replace("4", "")
+                sekans = sekans.replace("5", "")
+                sekans = sekans.replace("6", "")
+                sekans = sekans.replace("7", "")
+                sekans = sekans.replace("8", "")
+                sekans = sekans.replace("9", "")
+
+                for obj in object_list:
+                    obj.record_content.create(
+                        molecule=form.cleaned_data['molecule'],
+                        molecule_id=form.cleaned_data['molecule_id'].replace("|", ""),
+                        name=form.cleaned_data['name'],
+                        description=form.cleaned_data['description'],
+                        data_file_division='CON',
+                        date=str(datetime.datetime.now().strftime("%d-%b-%Y")).upper(),
+                        source=form.cleaned_data['source'],
+                        taxonomy=form.cleaned_data['taxonomy'],
+                        organism=form.cleaned_data['organism'],
+                        keywords=".",
+                        accession=form.cleaned_data['accessions'],
+                        topology=form.cleaned_data["topology"],
+                        sequence=str(sekans)
+                    )
+
+                return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+        return render(request, "bioinformatic/writing/list.html",
+                      {'form': form, 'rec_obj': rec_obj, 'format': format,
+                       'title': f'{format} dosyası oluşturma'.upper()})
 
 
 def CreateFileView(request, user, format):
@@ -146,40 +150,38 @@ def CreateFileView(request, user, format):
         records__writing_file_format=format
     )
 
-    file_path = os.path.join(BASE_DIR, 'media', f'{user}_{format}_file.{format}')
+    write_file_path = os.path.join(BASE_DIR, 'media', 'laboratory', f'{user}_{format}_file.{format}')
 
     SeqIO.write(
 
         [
             SeqRecord(
 
-                seq=Seq(record.sequence.replace('\n', '').replace("\r", "")).replace("\t", ""),
+                seq=Seq(str(record.sequence)),
                 id=record.molecule_id,
                 name=str(record.name).replace(" ", ""),
                 description=record.description,
-                dbxrefs=[record.db_xrefs],
+                dbxrefs=record.db_xrefs,
                 annotations={
-                    'molecule_type': [record.molecule],
-                    'source': [record.source],
+                    'molecule_type': record.molecule,
+                    'taxonomy': [record.taxonomy],
+                    'data_file_division': 'CON',
+                    'date': str(datetime.datetime.now().strftime("%d-%b-%Y")).upper(),
+                    'source': record.source,
                     'keywords': [str(record.keywords)],
-                    'organism': [record.organism],
-                    'accession': [record.accession],
-                    'MDAT': [record.records.created],
+                    'organism': record.organism,
+                    'accession': record.accession,
+                    'topology': record.topology
                 },
 
             )
 
             for record in obj_list
 
-        ], file_path, format
+        ], write_file_path, format
     )
 
-    return HttpResponseRedirect(reverse('bioinformatic:download'))
-
-
-class RecordDetailView(generic.DetailView):
-    template_name = "bioinformatic/writing/detail.html"
-    model = RecordModel
+    return HttpResponseRedirect(reverse('bioinformatic:download_file'))
 
 
 def RecordDeleteView(request, pk):

@@ -7,142 +7,81 @@
 {% block stylesheets %}{% endblock %}
 
 {% block navbar %}
-	{% include 'blog/includes/navigation.html' %}
+    {% include 'blog/includes/navigation.html' %}
 {% endblock %}
 
 {% block content %}
     <!-- Section -->
-    <section class="min-vh-100 d-flex bg-primary align-items-center mt-5">
+    <section class="min-vh-100 d-flex bg-primary align-items-center mt-7">
         <div class="container">
             <div class="row justify-content-center">
-                <div class="col-12 col-md-12 col-lg-12 col-sm-12 justify-content-center">
+
+                <div class="col-6 col-md-6 float-lg-left">
+
+                    <div class="card bg-primary shadow-soft border-light p-4">
+                        <p class="font-weight-bold">{{ title }}</p>
+                        <div class="card-body">
+
+                            <form method="post" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                {% bootstrap_form form %}
+                                <button type="submit" class="btn btn-primary float-right"> Kayıt ekle
+                                </button>
+                            </form>
+                            <!-- End of Form -->
+                            <a href="{% url 'bioinformatic:file_writing_format_select' request.user %}">
+                                <button type="button" class="btn btn-primary float-left">&laquo; Geri</button>
+                            </a>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="col-6  float-lg-right">
+
                     <div class="card bg-primary shadow-soft border-light p-4">
 
                         <div class="card-body">
-                            <a href="{% url 'bioinformatic:file_writing' format request.user %}"
-                               class="float-right mr-2">
-                                <i class=" fas fa-plus text-success"></i> KAYIT
-                                EKLE
-                            </a>
+                            <p class="font-weight-bolder ">{{ format|upper }} DOSYASI KAYITLARI</p>
+                            <hr>
                             <div class="mb-2">
-                                {% if object_list %}
-                                    <table class="table table-responsive-sm shadow-soft rounded-lg text-center">
-                                        <p class="text-facebook h5">EKLENEN KAYITLAR</p>
-                                        <tr>
-                                            <th class="border-1" scope="col" id="class">KAYIT</th>
-                                            <th class="border-0" scope="col" id="class">DOSYA</th>
-                                            <th class="border-0" scope="col" id="class">TARİH</th>
-                                            <th class="border-0" scope="col" id="class">İŞLEM</th>
-                                        </tr>
-                                        {% for object in object_list %}
-                                            <tr>
-                                                <td id="Bolter" headers="{{ object.description }}">
-                                                    <a href="{% url 'bioinformatic:record_detail' object.pk object.records.user object.description|slugify %}">
-                                                        {{ object.description }}
-                                                    </a>
-                                                </td>
+                                {% if rec_obj %}
+                                    {% for foo in rec_obj %}
 
-                                                <td id="Bolter"
-                                                    headers="{{ object.records.writing_file_format }}">{{ object.records.writing_file_format.upper }}</td>
+                                        <p class="text-small">
 
-                                                <td id="Bolter"
-                                                    headers="{{ object.records.created }}">{{ object.records.created }}</td>
+                                            {{ foo.molecule_id|truncatechars_html:40 }}
 
-                                                <td id="Bolter"><a
-                                                        href="{% url 'bioinformatic:delete_record' object.pk %}"
-                                                        class="text-danger">SİL</a></td>
+                                            <a href="{% url 'bioinformatic:file_create_rec_delete' foo.pk %}"
+                                               class="float-right mr-2" title="Kaydı sil">
+                                                <i class=" fas fa-minus text-danger"></i>
+                                            </a>
 
-                                            </tr>
-                                        {% endfor %}
-                                    </table>
-                                    <p class="ml-2">Toplam {{ count }} kayıt bulundu.</p>
+                                        </p>
+
+                                    {% endfor %}
+
+                                    <p>Toplam {{ rec_obj.count }} kayıt bulundu.</p>
 
                                     <p>
-                                        <a href="{% url 'bioinformatic:create_and_download' request.user format %}"
+                                        <a href="{% url 'bioinformatic:create_file' request.user format %}"
                                            class="float-right">
-                                             <button type="button" class="btn btn-info"> DOSYAYI OLUŞTUR </button>
+                                            <button type="button" class="btn btn-info"> DOSYAYI OLUŞTUR</button>
                                         </a>
                                     </p>
 
-                                    <p>
-                                        <a href="{% url 'bioinformatic:home' %}" class="float-left">
-                                             <button type="button" class="btn btn-primary"> ANASAYFA </button>
-                                        </a>
-                                    </p>
-
-                                    {% if object_list.count > 5 %}
-                                        <!-- Pagination -->
-                                        <div class="d-flex justify-content-center w-100">
-                                            <div class="mt-2">
-                                                <nav aria-label="Blog page navigation">
-                                                    <ul class="pagination">
-                                                        {% if page_obj.has_previous %}
-                                                            <li class="page-item">
-                                                                <a class="page-link" aria-label="ilk sayfa"
-                                                                   title="ilk sayfa"
-                                                                   href="?page=1">
-                                                                    <span class="fas fa-angle-double-left"></span>
-                                                                </a>
-                                                            </li>
-
-                                                            <li class="page-item">
-                                                                <a class="page-link rounded"
-                                                                   aria-label="önceki sayfa"
-                                                                   title="önceki sayfa"
-                                                                   href="?page={{ page_obj.previous_page_number }}">
-                                                                    <span class="fas fa-angle-left"></span>
-                                                                </a>
-                                                            </li>
-
-                                                        {% endif %}
-                                                        {% for number in pagelist %}
-                                                            {% if page_obj.number == number %}
-                                                                <li class="page-item active">
-                                                                    <a class="page-link" href="#">{{ number }}</a>
-                                                                </li>
-                                                            {% else %}
-                                                                <li class="page-item">
-                                                                    <a class="page-link"
-                                                                       href="?page={{ number }}">{{ number }}</a>
-                                                                </li>
-                                                            {% endif %}
-                                                        {% endfor %}
-                                                        {% if page_obj.has_next %}
-                                                            <li class="page-item">
-                                                                <a class="page-link rounded" aria-label="first link"
-                                                                   title="sonraki sayfa"
-                                                                   href="?page={{ page_obj.next_page_number }}">
-                                                                    <span class="fas fa-angle-right"></span>
-                                                                </a>
-                                                            </li>
-                                                            <li class="page-item">
-                                                                <a class="page-link" aria-label="first link"
-                                                                   title="son sayfa"
-                                                                   href="?page={{ page_obj.paginator.num_pages }}">
-                                                                    <span class="fas fa-angle-double-right"></span>
-                                                                </a>
-                                                            </li>
-
-                                                        {% else %}
-                                                            <li class="page-item">
-                                                                <a class="page-link" aria-label="first link"
-                                                                   href="#">
-                                                                    <span class="fas fa-angle-double-right"></span>
-                                                                </a>
-                                                            </li>
-                                                        {% endif %}
-                                                    </ul>
-                                                </nav>
-                                            </div>
-                                        </div>
-                                    {% endif %}
                                 {% else %}
                                     <p>Henüz Kayıt Yok.</p>
                                 {% endif %}
                             </div>
+
                         </div>
+
                     </div>
+
                 </div>
+
             </div>
         </div>
     </section>

@@ -1,3 +1,9 @@
+TOPOLOGY = (
+    ('', '------------'),
+    ('circular', 'Halkasal Zincir'),
+    ('linear', 'Düz Zincir'),
+)
+
 BLAST_PROGRAM = (
     ('', '------------'),
     ('blastn', 'BLASTN'),
@@ -100,27 +106,8 @@ READ_FILE_FORMAT = [
 ]
 
 WRITE_FILE_FORMAT = [
-    ("clustal", "clustal".upper()),
-    ("embl", "embl".upper()),
-    ("fasta", "fasta".upper()),
-    ("fastq", "fastq".upper()),
-    ("fasta-2line", "fasta-2line".upper()),
-    ("fastq-sanger", "fastq-sanger".upper()),
-    ("fastq-solexa", "fastq-solexa".upper()),
-    ("fastq-illumina", "fastq-illumina".upper()),
-    ("gb", "GENBANK (.gb) "),
-    ("genbank", "GENBANK (.genbank)"),
-    ("imgt", "imgt".upper()),
-    ("nexus", "nexus".upper()),
-    ("phd", "phd".upper()),
-    ("phylip", "phylip".upper()),
-    ("pir", "pir".upper()),
-    ("seqxml", "seqxml".upper()),
-    ("sff", "sff".upper()),
-    ("stockholm", "stockholm".upper()),
-    ("tab", "tab".upper()),
-    ("qual", "qual".upper()),
-    ("xdna", "xdna".upper()),
+    ("fasta", "Fasta"),
+    ("genbank", "Genbank"),
 ]
 
 ALIGNMENT_MODE = (

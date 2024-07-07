@@ -23,14 +23,15 @@ urlpatterns = [
     # Writing
     path('file-format-select/<user>/', views.FileWritingView.file_writing_format_select,
          name="file_writing_format_select"),
-    path('dosya-oluşturma/<format>/<user>/', views.FileWritingView.FileWritingView, name="file_writing"),
-    path('file-writing-list/<format>/<user>/', views.FileWritingListView.as_view(), name="file_writing_list"),
-    path('download/<user>/<format>/', views.CreateFileView, name='create_and_download'),
-    path('record-detail/<pk>/<user>/<description>/', views.RecordDetailView.as_view(), name='record_detail'),
-    path('delete/<pk>/', views.RecordDeleteView, name='delete_record'),
+
+    path('dosya-oluşturma/<user>/<format>/', views.FileWritingView.FileWritingView, name="file_writing"),
+
+    path('olustur/<user>/<format>/', views.CreateFileView, name='create_file'),
+
+    path('delete/<pk>/', views.RecordDeleteView, name='file_create_rec_delete'),
 
     # Download
-    path('download/', views.download_file, name='download'),
+    path('download/', views.download_file, name='download_file'),
 
     # FileConvert
     path('dosya-dönüştürme/', views.FileConvert, name='file_convert'),
