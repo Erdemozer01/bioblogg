@@ -14,15 +14,16 @@
                     <div class="col-12 col-md-8 col-lg-7 mt-6">
                         <h1 class="mb-4 display-4 animate-down-7">BİYOİSTATİSLİK LABORATUVARI</h1>
                         {% if messages %}
-            {% for message in messages %}
-                {% if message.tags == 'error' %}
-                    <div class="alert alert-danger alert-dismissible shadow-soft fade show" role="alert">
-                {% else %}
-                    <div class="alert alert-{{ message.tags }} alert-dismissible shadow-soft fade show"
-                         role="alert">
-                {% endif %}
+                            {% for message in messages %}
+                                {% if message.tags == 'error' %}
+                                    <div class="alert alert-danger alert-dismissible shadow-soft fade show"
+                                         role="alert">
+                                {% else %}
+                                    <div class="alert alert-{{ message.tags }} alert-dismissible shadow-soft fade show"
+                                         role="alert">
+                                {% endif %}
 
-            <span class="alert-inner--icon">
+                            <span class="alert-inner--icon">
                                     {% if message.tags == 'error' %}
                                         <span class="far fa-thumbs-down"></span>
                                     {% elif message.tags == 'success' %}
@@ -32,194 +33,45 @@
                                     {% endif %}
                                 </span>
 
-            <span class="alert-inner--text"><strong>{{ message }}</strong> </span>
+                            <span class="alert-inner--text"><strong>{{ message }}</strong> </span>
 
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
-            </div>
-            {% endfor %}
-        {% endif %}
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <section class="section bg-primary text-dark section-lg">
-            <div class="container">
-                
-                <div class="row mb-3">
-
-                    <div class="col-12 col-md-6 col-lg-4 mb-5">
-                        <a href="#">
-                            <div class="card bg-primary border-light shadow-soft">
-                                <img src="{% static 'biostatistic/biostatistic.jpeg' %}"
-                                     class="card-img-top rounded-top"
-                                     alt="İstatistik" height="250px">
-                                <div class="card-body">
-                                    <h5 class="h5 card-title mt-2">İstatistik tablonuzu oluşturun ve görüntüleyin</h5>
-                                </div>
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
                             </div>
-                        </a>
-                    </div>
-                    
-                </div>
-                
-            </div>
-            
-        </section>
-
-        <section class="section bg-primary text-dark">
-            
-            <div class="container">
-                <div class="row mb-1">
-
-                    <div class="container">
-                        <div class="row mb-1 ">
-                            <div class="col-12 col-md-8 col-lg-7">
-                                <h1 class="display-4 mb-4 text-left border-bottom border-light">DOSYA İŞLEMLERİ</h1>
-                            </div>
+                            {% endfor %}
+                        {% endif %}
                         </div>
                     </div>
-
-                    <div class="col-12 col-md-6 col-lg-4 mb-5">
-                        <a href="{% url 'bioinformatic:file_reading' %}">
-                            <div class="card bg-primary border-light shadow-soft">
-                                <img src="{% static 'bioinformatic/file_read.jpg' %}"
-                                     class="card-img-top rounded-top"
-                                     alt="DOSYA OKUMA" height="250px">
-                                <div class="card-body">
-                                    <h3 class="h5 card-title mt-2">Dosya okuma</h3>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-
-                    <div class="col-12 col-md-6 col-lg-4 mb-5">
-                        <a href="{% url 'bioinformatic:file_writing_format_select' request.user %}">
-                            <div class="card bg-primary border-light shadow-soft">
-                                <img src="{% static 'bioinformatic/3810087.jpg' %}"
-                                     class="card-img-top rounded-top"
-                                     alt="DOSYA YAZMA" height="250px">
-                                <div class="card-body">
-                                    <h3 class="h5 card-title mt-2">Dosya yazma</h3>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-
-                    <div class="col-12 col-md-6 col-lg-4 mb-5">
-                        <a href="{% url 'bioinformatic:file_convert' %}">
-                            <div class="card bg-primary border-light shadow-soft">
-
-                                <img src="{% static 'bioinformatic/5103530.jpg' %}"
-                                     class="card-img-top rounded-top" alt="" height="250px">
-
-                                <div class="card-body">
-                                    <h3 class="h5 card-title mt-2">Dosya dönüştürme</h3>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-
-                    <div class="col-12 col-md-6 col-lg-4 mb-5">
-                        <a href="{% url 'bioinformatic:pyhlo_tree' %}">
-                            <div class="card bg-primary border-light shadow-soft">
-                                <img src="{% static 'bioinformatic/5138210.jpg' %}"
-                                     class="card-img-top rounded-top"
-                                     alt="Filogenetik Ağaç oluşturma" height="250px">
-                                <div class="card-body">
-                                    <h3 class="h5 card-title mt-2">Filogeni</h3>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-
-                    <div class="col-12 col-md-6 col-lg-4 mb-5">
-                        <a href="{% url 'bioinformatic:blast' %}">
-                            <div class="card bg-primary border-light shadow-soft">
-                                <img src="{% static 'bioinformatic/5138210.jpg' %}"
-                                     class="card-img-top rounded-top"
-                                     alt="Kmer ve Sekans Kesme" height="250px">
-                                <div class="card-body">
-                                    <h3 class="h5 card-title mt-2">BLAST</h3>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                    
-                    <div class="col-12 col-md-6 col-lg-4 mb-5">
-                        <a href="{% url 'bioinformatic:single_molecule_3d_view' %}">
-                            <div class="card bg-primary border-light shadow-soft">
-                                <img src="{% static 'bioinformatic/5138210.jpg' %}"
-                                     class="card-img-top rounded-top"
-                                     alt="Tekli 3D molekül görüntüleme" height="250px">
-                                <div class="card-body">
-                                    <h3 class="h5 card-title mt-2">Tekli 3D molekül görüntüleme</h3>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                    
-                    <div class="col-12 col-md-6 col-lg-4 mb-5">
-                        <a href="{% url 'bioinformatic:multiple_molecule_3d_view' %}">
-                            <div class="card bg-primary border-light shadow-soft">
-                                <img src="{% static 'bioinformatic/blue-animation.gif' %}"
-                                     class="card-img-top rounded-top"
-                                     alt="Çoklu 3D molekül görüntüleme" height="250px">
-                                <div class="card-body">
-                                    <h3 class="h5 card-title mt-2">Çoklu 3D molekül görüntüleme</h3>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-
-                    <div class="col-12 col-md-6 col-lg-4 mb-5">
-                        <a href="{% url 'bioinformatic:alignment_mapping' %}">
-                            <div class="card bg-primary border-light shadow-soft">
-                                <img src="{% static 'bioinformatic/msa.png' %}"
-                                     class="card-img-top rounded-top"
-                                     alt="Alingment haritalama" height="250px">
-                                <div class="card-body">
-                                    <h3 class="h5 card-title mt-2">Alingment haritalama</h3>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                    
-                    <div class="col-12 col-md-6 col-lg-4 mb-5">
-                        <a href="{% url 'bioinformatic:entrez_tools' %}" target="_blank">
-                            <div class="card bg-primary border-light shadow-soft">
-                                <img src="{% static 'bioinformatic/5101920.jpg' %}"
-                                     class="card-img-top rounded-top"
-                                     alt="Entrez Araçları" height="250px">
-                                <div class="card-body">
-                                    <h3 class="h5 card-title mt-2">Entrez Araçları</h3>
-                                    
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                    
-                    <div class="col-12 col-md-6 col-lg-4 mb-5">
-                        <a href="{% url 'bioinformatic:molecule_2d_view' %}" target="_blank">
-                            <div class="card bg-primary border-light shadow-soft">
-                                <img src="{% static 'bioinformatic/5101920.jpg' %}"
-                                     class="card-img-top rounded-top"
-                                     alt="2D MOLECULE" height="250px">
-                                <div class="card-body">
-                                    <h3 class="h5 card-title mt-2">2D Molekül görüntüle</h3>
-                                    
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                    
                 </div>
             </div>
-            
-        </section>
-        
+
+            <section class="section bg-primary text-dark section-lg">
+                <div class="container">
+
+                    <div class="row mb-3">
+
+                        <div class="col-12 col-md-6 col-lg-4 mb-5">
+                            <a href="#">
+                                <div class="card bg-primary border-light shadow-soft">
+                                    <img src="{% static 'biostatistic/biostatistic.jpeg' %}"
+                                         class="card-img-top rounded-top"
+                                         alt="İstatistik" height="250px">
+                                    <div class="card-body">
+                                        <h5 class="h5 card-title mt-2">İstatistik tablonuzu oluşturun ve
+                                            görüntüleyin</h5>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+        </div>
+    
     </main>
 
 {% endblock %}
