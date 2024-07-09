@@ -32,6 +32,12 @@ def molecule_2d_view(request):
     app.layout = dbc.Card(
         [
 
+            html.Meta(
+                name='yazar',
+                children=["Mehmet Erdem ÖZER, Phd student, Bioinformatic, ozer246@gmail.com"]
+
+            ),
+
             ## NAVBAR ##
             dbc.NavbarSimple(
                 children=[
@@ -163,6 +169,7 @@ def molecule_2d_view(request):
                     ),
                 ], className="mr-2 ml-2"
             ),
+
         ], className="shadow-lg p-3 bg-body rounded mr-2 ml-2"
     )
 
@@ -274,7 +281,7 @@ def single_molecule_view(request):
 
     external_stylesheets = [dbc.themes.BOOTSTRAP]
 
-    app = DjangoDash('molecule-3d-viewer', external_stylesheets=external_stylesheets,
+    app = DjangoDash('single-molecule-3d-viewer', external_stylesheets=external_stylesheets,
                      title='3D MOLEKÜL GÖRÜNTÜLEME', add_bootstrap_links=True)
 
     form = SingleMoleculeViewForm(request.POST or None, request.FILES or None)
@@ -348,6 +355,11 @@ def single_molecule_view(request):
 
             app.layout = dbc.Card(
                 [
+
+                    html.Meta(
+                        name='yazar',
+                        children=["Mehmet Erdem ÖZER, Phd student, Bioinformatic, ozer246@gmail.com"]
+                    ),
 
                     ## NAVBAR ##
                     dbc.NavbarSimple(
@@ -628,7 +640,7 @@ def single_molecule_view(request):
                     html.Br()
                 ]) for atm in atom_ids].pop()
 
-        return HttpResponseRedirect("/laboratuvarlar/bioinformatic-laboratuvari/app/molecule-3d-viewer/")
+        return HttpResponseRedirect("/laboratuvarlar/bioinformatic-laboratuvari/app/single-molecule-3d-viewer/")
 
     return render(request, 'bioinformatic/form.html', {'form': form, 'title': 'Tekli 3D MOLEKÜL GÖRÜNTÜLEME'})
 
@@ -644,7 +656,7 @@ def multi_molecule_view(request):
 
     external_stylesheets = [dbc.themes.BOOTSTRAP]
 
-    app = DjangoDash('molecule3dviewer', external_stylesheets=external_stylesheets,
+    app = DjangoDash('bio-multi-molecule3dviewer', external_stylesheets=external_stylesheets,
                      title='Çoklu 3D MOLEKÜL GÖRÜNTÜLEME', add_bootstrap_links=True)
 
     form = MultiMoleculeViewForm(request.POST or None, request.FILES or None)
@@ -705,6 +717,11 @@ def multi_molecule_view(request):
 
             app.layout = dbc.Card(
                 [
+                    html.Meta(
+                        name='yazar',
+                        children=["Mehmet Erdem ÖZER, Phd student, Bioinformatic, ozer246@gmail.com"]
+
+                    ),
 
                     ## NAVBAR ##
                     dbc.NavbarSimple(
@@ -905,6 +922,6 @@ def multi_molecule_view(request):
 
                 return data_list, molstyles_dict, stage_params, downloadImage, imageParameters
 
-        return HttpResponseRedirect("/laboratuvarlar/bioinformatic-laboratuvari/app/bio-molecule3dviewer/")
+        return HttpResponseRedirect("/laboratuvarlar/bioinformatic-laboratuvari/app/bio-multi-molecule3dviewer/")
 
     return render(request, 'bioinformatic/form.html', {'form': form, 'title': 'Çoklu 3D MOLEKÜL GÖRÜNTÜLEME'})
