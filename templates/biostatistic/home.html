@@ -12,7 +12,7 @@
             <div class="container z-2">
                 <div class="row mb-4 justify-content-center">
                     <div class="col-12 col-md-8 col-lg-7 mt-6">
-                        <h1 class="mb-4 display-4 animate-down-7">BİYOİSTATİSLİK LABORATUVARI</h1>
+                        <h1 class="display-4 animate-down-7">BİYOİSTATİSLİK LABORATUVARI</h1>
                         {% if messages %}
                             {% for message in messages %}
                                 {% if message.tags == 'error' %}
@@ -52,7 +52,7 @@
                     <div class="row mb-3">
 
                         <div class="col-12 col-md-6 col-lg-4 mb-5">
-                            <a href="#">
+                            <a href="{% url "biostatistic:table_create" %}">
                                 <div class="card bg-primary border-light shadow-soft">
                                     <img src="{% static 'biostatistic/biostatistic.jpeg' %}"
                                          class="card-img-top rounded-top"

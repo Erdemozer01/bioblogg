@@ -20,8 +20,7 @@ urlpatterns = [
                   path('', generic.TemplateView.as_view(template_name="cover.html"), name='anasayfa'),
                   path('laboratuvarlar/', generic.TemplateView.as_view(template_name="laboratory.html"),
                        name='lab_home'),
-                  path('laboratuvarlar/biyoistatislik/', generic.TemplateView.as_view(template_name="cover.html"),
-                       name="biyoistatislik"),
+
                   path('laboratuvarlar/cbs/', generic.TemplateView.as_view(template_name="cover.html"), name="cbs"),
 
               ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

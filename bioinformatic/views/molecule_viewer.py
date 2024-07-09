@@ -45,7 +45,7 @@ def molecule_2d_view(request):
                                                  external_link=True),
                             dbc.DropdownMenuItem("Biyoistatislik",
                                                  href=HttpResponseRedirect(
-                                                     reverse("biyoistatislik")).url,
+                                                     reverse("biostatistic:home")).url,
                                                  external_link=True),
                             dbc.DropdownMenuItem("Coğrafi Bilgi sistemleri",
                                                  href=HttpResponseRedirect(reverse("cbs")).url,
@@ -362,7 +362,7 @@ def single_molecule_view(request):
                                                          external_link=True),
                                     dbc.DropdownMenuItem("Biyoistatislik",
                                                          href=HttpResponseRedirect(
-                                                             reverse("biyoistatislik")).url,
+                                                             reverse("biostatistic:home")).url,
                                                          external_link=True),
                                     dbc.DropdownMenuItem("Coğrafi Bilgi sistemleri",
                                                          href=HttpResponseRedirect(reverse("cbs")).url,
@@ -644,7 +644,7 @@ def multi_molecule_view(request):
 
     external_stylesheets = [dbc.themes.BOOTSTRAP]
 
-    app = DjangoDash('multi-molecule-viewer', external_stylesheets=external_stylesheets,
+    app = DjangoDash('molecule3dviewer', external_stylesheets=external_stylesheets,
                      title='Çoklu 3D MOLEKÜL GÖRÜNTÜLEME', add_bootstrap_links=True)
 
     form = MultiMoleculeViewForm(request.POST or None, request.FILES or None)
@@ -719,7 +719,7 @@ def multi_molecule_view(request):
                                                          external_link=True),
                                     dbc.DropdownMenuItem("Biyoistatislik",
                                                          href=HttpResponseRedirect(
-                                                             reverse("biyoistatislik")).url,
+                                                             reverse("biostatistic:home")).url,
                                                          external_link=True),
                                     dbc.DropdownMenuItem("Coğrafi Bilgi sistemleri",
                                                          href=HttpResponseRedirect(reverse("cbs")).url,
@@ -905,6 +905,6 @@ def multi_molecule_view(request):
 
                 return data_list, molstyles_dict, stage_params, downloadImage, imageParameters
 
-        return HttpResponseRedirect("/laboratuvarlar/bioinformatic-laboratuvari/app/multi-molecule-viewer/")
+        return HttpResponseRedirect("/laboratuvarlar/bioinformatic-laboratuvari/app/bio-molecule3dviewer/")
 
     return render(request, 'bioinformatic/form.html', {'form': form, 'title': 'Çoklu 3D MOLEKÜL GÖRÜNTÜLEME'})

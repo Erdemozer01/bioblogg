@@ -40,7 +40,6 @@ def PhylogeneticTree(request):
         return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
 
     external_stylesheets = [dbc.themes.BOOTSTRAP]
-    external_scripts = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js']
 
     if BioinformaticModel.objects.filter(user=request.user, tool="Filogenetik Ağaç").exists():
         BioinformaticModel.objects.filter(user=request.user, tool="Filogenetik Ağaç").delete()
@@ -224,7 +223,7 @@ def PhylogeneticTree(request):
                                                          external_link=True),
                                     dbc.DropdownMenuItem("Biyoistatislik",
                                                          href=HttpResponseRedirect(
-                                                             reverse("biyoistatislik")).url,
+                                                             reverse("biostatistic:home")).url,
                                                          external_link=True),
                                     dbc.DropdownMenuItem("Coğrafi Bilgi sistemleri",
                                                          href=HttpResponseRedirect(reverse("cbs")).url,
