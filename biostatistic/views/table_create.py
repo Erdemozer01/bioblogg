@@ -74,6 +74,7 @@ def create_table(request):
                 className="shadow-lg bg-body rounded mt-2 mb-1 mr-2 ml-2",
             ),
 
+
             dbc.Card(
                 [
 
