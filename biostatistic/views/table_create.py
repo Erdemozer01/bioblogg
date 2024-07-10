@@ -1,16 +1,19 @@
+import pandas as pd
 from dash import html, dcc, Input, Output, dash_table, State
 from django.shortcuts import *
 from django_plotly_dash import DjangoDash
 import dash_bootstrap_components as dbc
 
-label = ['bar', 'barpolar', 'box', 'candlestick', 'carpet', 'choropleth',
-         'choroplethmapbox', 'cone', 'contour', 'contourcarpet', 'densitymapbox', 'funnel',
-         'funnelarea', 'heatmap', 'heatmapgl', 'histogram', 'histogram2d',
-         'histogram2dcontour', 'icicle', 'image', 'indicator', 'isosurface',
-         'mesh3d', 'ohlc', 'parcats', 'parcoords', 'pie', 'pointcloud',
-         'sankey', 'scatter', 'scatter3d', 'scattercarpet', 'scattergeo', 'scattergl', 'scattermapbox',
-         'scatterpolar', 'scatterpolargl', 'scattersmith', 'scatterternary', 'splom', 'streamtube', 'sunburst',
-         'surface', 'table', 'treemap', 'violin', 'volume', 'waterfall']
+label = [
+    'bar', 'barpolar', 'box', 'candlestick', 'carpet', 'choropleth',
+    'choroplethmapbox', 'cone', 'contour', 'contourcarpet', 'densitymapbox', 'funnel',
+    'funnelarea', 'heatmap', 'heatmapgl', 'histogram', 'histogram2d',
+    'histogram2dcontour', 'icicle', 'image', 'indicator', 'isosurface',
+    'mesh3d', 'ohlc', 'parcats', 'parcoords', 'pie', 'pointcloud',
+    'sankey', 'scatter', 'scatter3d', 'scattercarpet', 'scattergeo', 'scattergl', 'scattermapbox',
+    'scatterpolar', 'scatterpolargl', 'scattersmith', 'scatterternary', 'splom', 'streamtube', 'sunburst',
+    'surface', 'table', 'treemap', 'violin', 'volume', 'waterfall'
+]
 
 graph_type = [
     {"label": f"{i}".upper(), "value": f"{i}"} for i in label
@@ -22,6 +25,12 @@ def create_table(request):
 
     app = DjangoDash('table-create', external_stylesheets=external_stylesheets,
                      title="Tablo ve Grafik", add_bootstrap_links=True)
+
+    data = [ {'column-{}'.format(i): (j + (i - 1) * 5) for i in range(1, 5)} for j in range(5) ]
+
+    df = pd.DataFrame(data)
+
+    print()
 
     app.layout = dbc.Card(
         [
@@ -67,6 +76,7 @@ def create_table(request):
 
             dbc.Card(
                 [
+
                     dbc.Row(
                         [
                             dbc.Col(
@@ -114,10 +124,7 @@ def create_table(request):
                                             'renamable': True
                                         } for i in range(1, 5)],
 
-                                        data=[
-                                            {'column-{}'.format(i): (j + (i - 1) * 5) for i in range(1, 5)}
-                                            for j in range(5)
-                                        ],
+                                        data=df.to_dict("records"),
 
                                         style_table={'overflowY': 'auto', 'overflowX': 'auto'},
                                         style_cell={'textAlign': 'center'},
@@ -149,13 +156,25 @@ def create_table(request):
                         ]
                     ),
 
-                    html.Hr(),
-                    dcc.Graph(id='adding-rows-graph', className="m-2")
+                    dbc.Row(
+
+                        [
+
+                            html.Hr(),
+
+                            dbc.Col([
+                                html.H5(["Tablo Grafiği"], className="fw-bolder"),
+                                dcc.Graph(id='adding-rows-graph')
+                            ], md=10, className="mx-auto"),
+
+
+                        ]
+                    ),
 
                 ], className="shadow-lg mr-2 ml-2 mt-1"
             ),
 
-        ], className="shadow-lg p-3 bg-body rounded"
+        ], className="shadow-lg p-2 bg-body rounded"
     )
 
     @app.callback(
@@ -189,6 +208,7 @@ def create_table(request):
         Input('graph-type', 'value'),
     )
     def display_output(rows, columns, type):
+
         return {
             'data': [
                 {
