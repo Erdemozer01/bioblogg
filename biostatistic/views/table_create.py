@@ -3,6 +3,10 @@ from dash import html, dcc, Input, Output, dash_table, State
 from django.shortcuts import *
 from django_plotly_dash import DjangoDash
 import dash_bootstrap_components as dbc
+import plotly.express as px
+
+
+ex_data = px.data.iris()
 
 label = [
     'bar', 'barpolar', 'box', 'candlestick', 'carpet', 'choropleth',
@@ -19,18 +23,16 @@ graph_type = [
     {"label": f"{i}".upper(), "value": f"{i}"} for i in label
 ]
 
+table = dbc.Table.from_dataframe(
+    ex_data.describe(), striped=True, bordered=True, hover=True, index=True, size='sm'
+)
+
 
 def create_table(request):
     external_stylesheets = [dbc.themes.BOOTSTRAP]
 
     app = DjangoDash('table-create', external_stylesheets=external_stylesheets,
                      title="Tablo ve Grafik", add_bootstrap_links=True)
-
-    data = [ {'column-{}'.format(i): (j + (i - 1) * 5) for i in range(1, 5)} for j in range(5) ]
-
-    df = pd.DataFrame(data)
-
-    print()
 
     app.layout = dbc.Card(
         [
@@ -71,9 +73,8 @@ def create_table(request):
                 dark=True,
                 brand_external_link=True,
                 sticky='top',
-                className="shadow-lg bg-body rounded mt-2 mb-1 mr-2 ml-2",
+                className="shadow-lg bg-body rounded mb-2",
             ),
-
 
             dbc.Card(
                 [
@@ -83,76 +84,148 @@ def create_table(request):
                             dbc.Col(
                                 [
 
-                                    html.Label("Tablo ayarları", style={'font-weight': 'bold'}, className="ml-3 mt-3"),
+                                    dbc.Tabs(
+                                        [
+                                            dbc.Tab(
+                                                label='Tablo',
+                                                children=[
 
-                                    dcc.Input(
-                                        id='adding-rows-name',
-                                        className="form-control mt-2 ml-2 col-12",
-                                        placeholder='Kolon adı',
-                                        value='',
+                                                    html.Label("Tablo ayarları", style={'font-weight': 'bold'},
+                                                               className="ml-2 text-small"),
+
+                                                    dcc.Input(
+                                                        id='adding-rows-name',
+                                                        className="form-control ml-2 col-10",
+                                                        placeholder='Kolon adı',
+                                                    ),
+
+                                                    html.Button('Kolon ekle', id='adding-rows-button', n_clicks=0,
+                                                                className='btn btn-sm btn-outline-primary mt-1 ml-2 col-4'),
+
+                                                    html.Button('Satır ekle', id='editing-rows-button', n_clicks=0,
+                                                                className='btn btn-sm btn-outline-primary mt-1 ml-2 col-4'
+                                                                ),
+
+                                                    html.P("Korelasyon", style={'font-weight': 'bold'},
+                                                               className="ml-2 text-small mt-1"),
+
+                                                    dcc.Dropdown(
+                                                        id="corr_method",
+                                                        className="col-11",
+                                                        options=["pearson", "kendall", "spearman"],
+                                                        value="pearson",
+                                                        style={'marginLeft': -4, 'marginTop': -9},
+                                                    ),
+                                                ]
+                                            ),
+
+                                            dbc.Tab(
+                                                label='Grafik',
+                                                children=[
+
+                                                    html.Label("Grafik türü", style={'font-weight': 'bold'},
+                                                               className="ml-2 text-small mt-1"),
+
+                                                    dcc.Dropdown(
+                                                        id="graph-type",
+                                                        className='col-11',
+                                                        value='heatmap',
+                                                        options=graph_type,
+                                                        style={'marginLeft': -4},
+                                                    ),
+
+                                                    html.Label("Grafik başlığı", style={'font-weight': 'bold'},
+                                                               className="ml-2 mt-1"),
+
+                                                    dbc.Input(id="graph-title",
+                                                              className="form-control ml-2 col-10",
+                                                              type="text",
+                                                              value="Demo Grafik Başlığı"),
+
+                                                    html.Label("Kolon seçin", style={'font-weight': 'bold'},
+                                                               className="ml-2 text-small mt-1"),
+
+                                                    dcc.Dropdown(
+                                                        id="sel-col",
+                                                        className='col-11',
+                                                        multi=True,
+                                                        style={'marginLeft': -4},
+                                                    ),
+
+                                                ]
+                                            ),
+
+                                            dbc.Tab(
+                                                label='Ayar',
+                                                children=[
+
+                                                    html.Label("X Ekseni", style={'font-weight': 'bold'},
+                                                               className="ml-2 text-small mt-1"),
+
+                                                    dcc.Dropdown(
+                                                        id="x-axis",
+                                                        className='col-11',
+
+                                                        style={'marginLeft': -4},
+                                                    ),
+
+                                                    html.Label("Y Ekseni", style={'font-weight': 'bold'},
+                                                               className="ml-2 text-small mt-1"),
+
+                                                    dcc.Dropdown(
+                                                        id="y-axis",
+                                                        className='col-11',
+
+                                                        style={'marginLeft': -4},
+                                                    ),
+
+                                                    html.Label("Renklendirme", style={'font-weight': 'bold'},
+                                                               className="ml-2 text-small mt-1"),
+
+                                                    dcc.Dropdown(
+                                                        id="color",
+                                                        className='col-11',
+
+                                                        style={'marginLeft': -4},
+                                                    ),
+
+                                                ]
+                                            ),
+
+                                        ], className='ml-1'
                                     ),
 
-                                    html.Button('Kolon ekle', id='adding-rows-button', n_clicks=0,
-                                                className='btn btn-outline-primary mt-2 ml-2 col-5'),
-
-                                    html.Button('Satır ekle', id='editing-rows-button', n_clicks=0,
-                                                className='btn btn-outline-primary mt-2 ml-2 col-5 mr-2'
-                                                ),
-                                    html.Label("Grafik türü", style={'font-weight': 'bold'}, className="ml-3 mt-3"),
-
-                                    dcc.Dropdown(
-                                        id="graph-type",
-                                        className="ml-2",
-                                        value='heatmap',
-                                        options=graph_type
-                                    ),
-
-                                ], md=3,
+                                ], md=3, className="p-2"
                             ),
 
                             dbc.Col(
                                 [
+
                                     html.Label("Tablo", style={'font-weight': 'bold'}, className="mt-1"),
 
                                     dash_table.DataTable(
-
                                         id='adding-rows-table',
-
-                                        columns=[{
-                                            'name': 'Column {}'.format(i),
-                                            'id': 'column-{}'.format(i),
-                                            'deletable': True,
-                                            'renamable': True
-                                        } for i in range(1, 5)],
-
-                                        data=df.to_dict("records"),
+                                        data=ex_data.to_dict('records'),
+                                        columns=[
+                                            {"name": i, 'id': i, 'type': 'numeric', 'deletable': True, "renamable": True,
+                                             "selectable": True} for i in ex_data.columns
+                                        ],
 
                                         style_table={'overflowY': 'auto', 'overflowX': 'auto'},
                                         style_cell={'textAlign': 'center'},
-
                                         style_data={
                                             'whiteSpace': 'normal',
                                             'height': 'auto',
                                         },
 
-                                        filter_action="native",
-                                        sort_action="native",
-                                        sort_mode="multi",
-                                        column_selectable="single",
-
-                                        filter_options={"placeholder_text": "Ara"},
                                         row_deletable=True,
-                                        selected_rows=[],
                                         editable=True,
-
                                         page_action='native',
-                                        page_size=10,
+                                        page_size=6,
+
                                     ),
 
-                                    html.Small(["Eklediğiniz Kolonu silerseniz diğer eklediğinizde silinecek"],
-                                               className="text-small text-danger fst-italic")
-
-                                ], md=8, className="mt-2 mx-auto"
+                                ], md=9, style={'maxWidth': '70%', 'marginLeft': "3%"}
                             ),
                         ]
                     ),
@@ -163,19 +236,44 @@ def create_table(request):
 
                             html.Hr(),
 
-                            dbc.Col([
-                                html.H5(["Tablo Grafiği"], className="fw-bolder"),
-                                dcc.Graph(id='adding-rows-graph')
-                            ], md=10, className="mx-auto"),
+                            dbc.Col(
+                                [
 
+                                    dbc.Tabs(
 
+                                        [
+                                            dbc.Tab(
+                                                label='Grafik',
+                                                children=[
+                                                    dcc.Graph(id='adding-rows-graph'),
+                                                ],
+                                            ),
+
+                                            dbc.Tab(
+                                                id="stats_out",
+                                                label='İstatislik Tablosu',
+                                                children=[
+
+                                                ],
+                                            ),
+
+                                            dbc.Tab(
+                                                id="st_corr",
+                                                label='Korelasyon Tablosu',
+                                                children=[
+
+                                                ],
+                                            ),
+                                        ]
+                                    ),
+                                ], md=11, className="container-fluid"
+                            ),
                         ]
                     ),
-
-                ], className="shadow-lg mr-2 ml-2 mt-1"
+                ], className="shadow-lg p-4 bg-body rounded"
             ),
 
-        ], className="shadow-lg p-2 bg-body rounded"
+        ], className="shadow-lg p-4 bg-body rounded"
     )
 
     @app.callback(
@@ -193,31 +291,66 @@ def create_table(request):
         Output('adding-rows-table', 'columns'),
         Input('adding-rows-button', 'n_clicks'),
         State('adding-rows-name', 'value'),
-        State('adding-rows-table', 'columns'))
+        State('adding-rows-table', 'columns'),
+    )
     def update_columns(n_clicks, value, existing_columns):
         if n_clicks > 0:
-            existing_columns.append({
-                'id': value, 'name': value,
-                'renamable': True, 'deletable': True
-            })
+            existing_columns.append({'name': value, 'id': value, 'type': 'numeric', 'renamable': True, 'deletable': True})
         return existing_columns
 
     @app.callback(
         Output('adding-rows-graph', 'figure'),
+        Output('sel-col', 'options'),
+        Output('x-axis', 'options'),
+        Output('y-axis', 'options'),
+        Output('color', 'options'),
+        Output('stats_out', 'children'),
+        Output('st_corr', 'children'),
+
         Input('adding-rows-table', 'data'),
         Input('adding-rows-table', 'columns'),
         Input('graph-type', 'value'),
-    )
-    def display_output(rows, columns, type):
+        Input('graph-title', 'value'),
+        Input('sel-col', 'value'),
+        Input('x-axis', 'value'),
+        Input('y-axis', 'value'),
+        Input('color', 'value'),
+        Input('corr_method', 'value'),
 
-        return {
-            'data': [
-                {
-                    'type': f'{type}',
-                    'z': [[row.get(c['id'], None) for c in columns] for row in rows],
-                    'x': [c['name'] for c in columns]
-                }
-            ]
-        }
+        State('adding-rows-table', 'columns'),
+    )
+    def display_output(data, columns, select_graph, title, selected_columns, x_axs, y_axs, color, corr_method, col):
+
+        hover_data = None
+
+        df = pd.DataFrame(data=[[row.get(c['id'], None) for c in columns] for row in data],
+                          columns=[i['name'] for i in columns])
+
+        sel_col = [c.get('name') for c in col]
+        x = [c.get('name') for c in col]
+        y = [c.get('name') for c in col]
+        renk = [c.get('name') for c in col]
+
+        stats_desc = dbc.Table.from_dataframe(
+            df.describe(), striped=True, bordered=True, hover=True, index=True, size='sm', responsive=True
+        )
+
+        stats_corr = dbc.Table.from_dataframe(
+            df.corr(numeric_only=True, method=corr_method), striped=True, bordered=True, hover=True, index=True, size='sm', responsive=True
+        )
+
+        if select_graph == 'heatmap':
+            if selected_columns:
+                df = df[selected_columns]
+
+            fig = px.imshow(df, title=title, text_auto=True, aspect="auto")
+
+        elif select_graph == 'bar':
+            if selected_columns:
+                hover_data = selected_columns
+
+            fig = px.bar(df, x=x_axs, y=y_axs, color=color, title=title, hover_data=hover_data)
+
+        return fig, sel_col, x, y, renk, stats_desc, stats_corr
 
     return HttpResponseRedirect("/laboratuvarlar/bioinformatic-laboratuvari/app/table-create/")
