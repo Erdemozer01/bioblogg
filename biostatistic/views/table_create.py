@@ -391,8 +391,6 @@ def create_table(request):
             size='sm', responsive=True
         )
 
-        print(df.cov(numeric_only=True))
-
         if select_graph == 'heatmap':
             if selected_columns:
                 df = df[selected_columns]
