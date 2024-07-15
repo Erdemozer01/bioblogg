@@ -333,7 +333,7 @@ def create_table(request):
         )
 
         stats_corr = dbc.Table.from_dataframe(
-            df.corr(numeric_only=True, method=corr_method), striped=True, bordered=True, hover=True, index=True,
+            df.corr(method=corr_method), striped=True, bordered=True, hover=True, index=True,
             size='sm', responsive=True
         )
 
