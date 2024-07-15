@@ -5,7 +5,6 @@ from django_plotly_dash import DjangoDash
 import dash_bootstrap_components as dbc
 import plotly.express as px
 
-
 ex_data = px.data.iris()
 
 label = [
@@ -22,10 +21,6 @@ label = [
 graph_type = [
     {"label": f"{i}".upper(), "value": f"{i}"} for i in label
 ]
-
-table = dbc.Table.from_dataframe(
-    ex_data.describe(), striped=True, bordered=True, hover=True, index=True, size='sm'
-)
 
 
 def create_table(request):
@@ -107,7 +102,7 @@ def create_table(request):
                                                                 ),
 
                                                     html.P("Korelasyon", style={'font-weight': 'bold'},
-                                                               className="ml-2 text-small mt-1"),
+                                                           className="ml-2 text-small mt-1"),
 
                                                     dcc.Dropdown(
                                                         id="corr_method",
@@ -207,7 +202,8 @@ def create_table(request):
                                         id='adding-rows-table',
                                         data=ex_data.to_dict('records'),
                                         columns=[
-                                            {"name": i, 'id': i, 'type': 'numeric', 'deletable': True, "renamable": True,
+                                            {"name": i, 'id': i, 'type': 'numeric', 'deletable': True,
+                                             "renamable": True,
                                              "selectable": True} for i in ex_data.columns
                                         ],
 
@@ -295,7 +291,8 @@ def create_table(request):
     )
     def update_columns(n_clicks, value, existing_columns):
         if n_clicks > 0:
-            existing_columns.append({'name': value, 'id': value, 'type': 'numeric', 'renamable': True, 'deletable': True})
+            existing_columns.append(
+                {'name': value, 'id': value, 'type': 'numeric', 'renamable': True, 'deletable': True})
         return existing_columns
 
     @app.callback(
@@ -336,7 +333,8 @@ def create_table(request):
         )
 
         stats_corr = dbc.Table.from_dataframe(
-            df.corr(numeric_only=True, method=corr_method), striped=True, bordered=True, hover=True, index=True, size='sm', responsive=True
+            df.corr(numeric_only=True, method=corr_method), striped=True, bordered=True, hover=True, index=True,
+            size='sm', responsive=True
         )
 
         if select_graph == 'heatmap':
