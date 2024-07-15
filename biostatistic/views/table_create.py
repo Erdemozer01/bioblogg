@@ -187,6 +187,46 @@ def create_table(request):
                                                 ]
                                             ),
 
+                                            dbc.Tab(
+                                                label='Diğer',
+                                                children=[
+
+                                                    html.Label("Marginal X", style={'font-weight': 'bold'},
+                                                               className="ml-2 text-small mt-1"),
+
+                                                    dcc.Dropdown(
+                                                        id="marginal_x",
+                                                        className='col-11',
+                                                        options=["histogram", "rug", "box", "violin"],
+                                                        style={'marginLeft': -4},
+                                                    ),
+
+                                                    html.Label("Marginal Y", style={'font-weight': 'bold'},
+                                                               className="ml-2 text-small mt-1"),
+
+                                                    dcc.Dropdown(
+                                                        id="marginal_y",
+                                                        className='col-11',
+                                                        options=["histogram", "rug", "box", "violin"],
+                                                        style={'marginLeft': -4},
+                                                    ),
+
+                                                    html.Label("Lineer Regresyon Çizgisi",
+                                                               style={'font-weight': 'bold'},
+                                                               className="ml-2 text-small mt-1"),
+
+                                                    dcc.Dropdown(
+                                                        id="trendline",
+                                                        className='col-11',
+                                                        options=[
+                                                            {'label': 'ordinary least squares (OLS)', 'value': 'ols'},
+                                                        ],
+                                                        style={'marginLeft': -4},
+                                                    ),
+
+                                                ]
+                                            ),
+
                                         ], className='ml-1'
                                     ),
 
@@ -203,8 +243,7 @@ def create_table(request):
                                         data=ex_data.to_dict('records'),
                                         columns=[
                                             {"name": i, 'id': i, 'type': 'numeric', 'deletable': True,
-                                             "renamable": True,
-                                             "selectable": True} for i in ex_data.columns
+                                             "renamable": True, "selectable": True} for i in ex_data.columns
                                         ],
 
                                         style_table={'overflowY': 'auto', 'overflowX': 'auto'},
@@ -218,7 +257,6 @@ def create_table(request):
                                         editable=True,
                                         page_action='native',
                                         page_size=6,
-
                                     ),
 
                                 ], md=9, style={'maxWidth': '70%', 'marginLeft': "3%"}
@@ -296,32 +334,48 @@ def create_table(request):
         return existing_columns
 
     @app.callback(
-        Output('adding-rows-graph', 'figure'),
-        Output('sel-col', 'options'),
-        Output('x-axis', 'options'),
-        Output('y-axis', 'options'),
-        Output('color', 'options'),
-        Output('stats_out', 'children'),
-        Output('st_corr', 'children'),
 
-        Input('adding-rows-table', 'data'),
-        Input('adding-rows-table', 'columns'),
-        Input('graph-type', 'value'),
-        Input('graph-title', 'value'),
-        Input('sel-col', 'value'),
-        Input('x-axis', 'value'),
-        Input('y-axis', 'value'),
-        Input('color', 'value'),
-        Input('corr_method', 'value'),
+        [
+            Output('adding-rows-graph', 'figure'),
+            Output('sel-col', 'options'),
+            Output('x-axis', 'options'),
+            Output('y-axis', 'options'),
+            Output('color', 'options'),
+            Output('stats_out', 'children'),
+            Output('st_corr', 'children')
+        ],
 
-        State('adding-rows-table', 'columns'),
+        [
+            Input('adding-rows-table', 'data'),
+            Input('adding-rows-table', 'columns'),
+            Input('graph-type', 'value'),
+            Input('graph-title', 'value'),
+            Input('sel-col', 'value'),
+            Input('x-axis', 'value'),
+            Input('y-axis', 'value'),
+            Input('color', 'value'),
+            Input('corr_method', 'value'),
+            Input('trendline', 'value'),
+            Input('marginal_x', 'value'),
+            Input('marginal_y', 'value'),
+        ],
+
+        [
+            State('adding-rows-table', 'columns')
+        ]
     )
-    def display_output(data, columns, select_graph, title, selected_columns, x_axs, y_axs, color, corr_method, col):
+    def display_output(
+            data, columns, select_graph, title,
+            selected_columns, x_axs, y_axs, color,
+            corr_method, trendline, marginal_x, marginal_y,
+            col):
 
         hover_data = None
 
-        df = pd.DataFrame(data=[[row.get(c['id'], None) for c in columns] for row in data],
-                          columns=[i['name'] for i in columns])
+        df = pd.DataFrame(
+            data=[[row.get(c['id'], None) for c in columns] for row in data],
+            columns=[i['name'] for i in columns]
+        )
 
         sel_col = [c.get('name') for c in col]
         x = [c.get('name') for c in col]
@@ -333,9 +387,11 @@ def create_table(request):
         )
 
         stats_corr = dbc.Table.from_dataframe(
-            df.corr(method=corr_method), striped=True, bordered=True, hover=True, index=True,
+            df.corr(method=corr_method, numeric_only=True), striped=True, bordered=True, hover=True, index=True,
             size='sm', responsive=True
         )
+
+        print(df.cov(numeric_only=True))
 
         if select_graph == 'heatmap':
             if selected_columns:
@@ -348,6 +404,10 @@ def create_table(request):
                 hover_data = selected_columns
 
             fig = px.bar(df, x=x_axs, y=y_axs, color=color, title=title, hover_data=hover_data)
+
+        elif select_graph == 'scatter':
+            fig = px.scatter(df, x=x_axs, y=y_axs, color=color, title=title, trendline_scope="overall",
+                             trendline=trendline, marginal_x=marginal_x, marginal_y=marginal_y)
 
         return fig, sel_col, x, y, renk, stats_desc, stats_corr
 
