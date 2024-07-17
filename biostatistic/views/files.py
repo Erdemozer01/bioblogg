@@ -4,11 +4,12 @@ from django.shortcuts import *
 from django_plotly_dash import DjangoDash
 import dash_bootstrap_components as dbc
 import plotly.express as px
+import io, base64, os
 
 ex_data = px.data.iris()
 
 label = [
-    'bar', 'barpolar', 'box', 'candlestick', 'carpet', 'choropleth',
+    'bar', 'line', 'barpolar', 'box', 'candlestick', 'carpet', 'choropleth',
     'choroplethmapbox', 'cone', 'contour', 'contourcarpet', 'densitymapbox', 'funnel',
     'funnelarea', 'heatmap', 'heatmapgl', 'histogram', 'histogram2d',
     'histogram2dcontour', 'icicle', 'image', 'indicator', 'isosurface',
@@ -23,11 +24,23 @@ graph_type = [
 ]
 
 
-def create_table(request):
+def parse_contents(contents, filename):
+    content_type, content_string = contents.split(',')
+    decoded = base64.b64decode(content_string)
+    if 'csv' in filename:
+        # Assume that the user uploaded a CSV file
+        return pd.read_csv(
+            io.StringIO(decoded.decode('utf-8')))
+    elif 'xls' or 'xlsx' in filename:
+        # Assume that the user uploaded an excel file
+        return pd.read_excel(io.BytesIO(decoded))
+
+
+def files_table(request):
     external_stylesheets = [dbc.themes.BOOTSTRAP]
 
-    app = DjangoDash('table-create', external_stylesheets=external_stylesheets,
-                     title="Tablo ve Grafik", add_bootstrap_links=True)
+    app = DjangoDash('files-stats', external_stylesheets=external_stylesheets,
+                     title="Dosya ve Grafik", add_bootstrap_links=True)
 
     app.layout = dbc.Card(
         [
@@ -62,8 +75,8 @@ def create_table(request):
 
                     ),
                 ],
-                brand="Tablo ve Grafik",
-                brand_href=HttpResponseRedirect(reverse("biostatistic:table_create")).url,
+                brand="Dosya ve Grafik",
+                brand_href=HttpResponseRedirect(reverse("biostatistic:files_table")).url,
                 color="primary",
                 dark=True,
                 brand_external_link=True,
@@ -73,7 +86,6 @@ def create_table(request):
 
             dbc.Card(
                 [
-
                     dbc.Row(
                         [
                             dbc.Col(
@@ -81,42 +93,84 @@ def create_table(request):
 
                                     dbc.Tabs(
                                         [
+
+                                            dbc.Tab(
+                                                label='Açıklama',
+                                                children=[
+                                                    html.P(
+                                                        ["Dinamik istatistiksel uygulamasına hoş geldiniz."],
+                                                        className="mt-2"
+                                                    ),
+
+                                                    html.P(
+                                                        [
+                                                            "Excel yada csv uzantılı dosyanızı seçtikten sonra girdiğiniz veriler, istatistik ve korelasyon tablonuz ile grafiğiniz oluşacaktır."
+                                                        ],
+
+                                                    ),
+
+                                                    html.P(
+                                                        [
+                                                            "Görüntülemede sorun yaşarsanız sayfayı yenileyin yada ayarlarınızı ve verilerinizi gözden geçirin"
+                                                        ],
+
+                                                    ),
+                                                ]
+                                            ),
+
                                             dbc.Tab(
                                                 label='Tablo',
                                                 children=[
 
-                                                    html.Label("Tablo ayarları", style={'font-weight': 'bold'},
-                                                               className="ml-2 text-small mt-2"),
-
-                                                    dcc.Input(
-                                                        id='adding-rows-name',
-                                                        className="form-control ml-2 col-11",
-                                                        placeholder='Kolon adı',
-                                                    ),
-
-                                                    html.Button('Kolon ekle', id='adding-rows-button', n_clicks=0,
-                                                                className='btn btn-sm btn-outline-primary mt-1 ml-2 col-4'),
-
-                                                    html.Button('Satır ekle', id='editing-rows-button', n_clicks=0,
-                                                                className='btn btn-sm btn-outline-primary mt-1 ml-2 col-4'
-                                                                ),
-
-                                                    html.P("Korelasyon", style={'font-weight': 'bold'},
+                                                    html.P("Korelasyon Metodu Seçiniz", style={'font-weight': 'bold'},
                                                            className="ml-2 text-small mt-1"),
 
                                                     dcc.Dropdown(
                                                         id="corr_method",
-                                                        className="col-12",
+                                                        className="col-11",
                                                         options=["pearson", "kendall", "spearman"],
                                                         value="pearson",
+                                                        placeholder="Seçiniz",
                                                         style={'marginLeft': -4, 'marginTop': -9},
                                                     ),
+
+                                                ]
+                                            ),
+
+                                            dbc.Tab(
+                                                label='Dosya',
+                                                children=[
+                                                    dcc.Upload(
+                                                        id='datatable-upload',
+                                                        children=html.Div([
+                                                            'Dosyanızı Seçin yada Sürükleyin',
+
+                                                        ]),
+                                                        style={
+                                                            'width': '99%', 'height': '60px', 'lineHeight': '60px',
+                                                            'borderWidth': '1px', 'borderStyle': 'dashed',
+                                                            'borderRadius': '5px', 'textAlign': 'center',
+                                                            'margin': '10px', 'marginLeft': -1
+                                                        },
+                                                    ),
+
+                                                    html.Small(['Dosya .xlsx, .xls yada .csv uzantılı olmalıdır.'],
+                                                               className="text-danger", )
+
                                                 ]
                                             ),
 
                                             dbc.Tab(
                                                 label='Grafik',
                                                 children=[
+
+                                                    html.Label("Grafik başlığı", style={'font-weight': 'bold'},
+                                                               className="ml-2 mt-1"),
+
+                                                    dcc.Input(id="graph-title",
+                                                              className="form-control ml-2 col-11",
+                                                              type="text",
+                                                              value="Demo Grafik Başlığı"),
 
                                                     html.Label("Grafik türü", style={'font-weight': 'bold'},
                                                                className="ml-2 text-small mt-1"),
@@ -128,31 +182,6 @@ def create_table(request):
                                                         options=graph_type,
                                                         style={'marginLeft': -4},
                                                     ),
-
-                                                    html.Label("Grafik başlığı", style={'font-weight': 'bold'},
-                                                               className="ml-2 mt-1"),
-
-                                                    dcc.Input(id="graph-title",
-                                                              className="form-control ml-2 col-11",
-                                                              type="text",
-                                                              value="Demo Grafik Başlığı"),
-
-                                                    html.Label("Kolon seçin", style={'font-weight': 'bold'},
-                                                               className="ml-2 text-small mt-1"),
-
-                                                    dcc.Dropdown(
-                                                        id="sel-col",
-                                                        className='col-11',
-                                                        multi=True,
-                                                        style={'marginLeft': -4},
-                                                    ),
-
-                                                ]
-                                            ),
-
-                                            dbc.Tab(
-                                                label='Ayar',
-                                                children=[
 
                                                     html.Label("X Ekseni", style={'font-weight': 'bold'},
                                                                className="ml-2 text-small mt-1"),
@@ -172,7 +201,7 @@ def create_table(request):
                                                         style={'marginLeft': -4},
                                                     ),
 
-                                                    html.Label("Renklendirme", style={'font-weight': 'bold'},
+                                                    html.Label("Lejant Seçiniz", style={'font-weight': 'bold'},
                                                                className="ml-2 text-small mt-1"),
 
                                                     dcc.Dropdown(
@@ -181,30 +210,13 @@ def create_table(request):
                                                         style={'marginLeft': -4},
                                                     ),
 
-                                                ]
-                                            ),
-
-                                            dbc.Tab(
-                                                label='Diğer',
-                                                children=[
-
-                                                    html.Label("Marginal X", style={'font-weight': 'bold'},
+                                                    html.Label("Guruplandır", style={'font-weight': 'bold'},
                                                                className="ml-2 text-small mt-1"),
 
                                                     dcc.Dropdown(
-                                                        id="marginal_x",
+                                                        id="sel-col",
                                                         className='col-11',
-                                                        options=["histogram", "rug", "box", "violin"],
-                                                        style={'marginLeft': -4},
-                                                    ),
-
-                                                    html.Label("Marginal Y", style={'font-weight': 'bold'},
-                                                               className="ml-2 text-small mt-1"),
-
-                                                    dcc.Dropdown(
-                                                        id="marginal_y",
-                                                        className='col-11',
-                                                        options=["histogram", "rug", "box", "violin"],
+                                                        multi=True,
                                                         style={'marginLeft': -4},
                                                     ),
 
@@ -216,7 +228,7 @@ def create_table(request):
                                                         id="trendline",
                                                         className='col-11',
                                                         options=[
-                                                            {'label': 'ordinary least squares (OLS)', 'value': 'ols'},
+                                                            {'label': 'Ordinary Least Squares (OLS)', 'value': 'ols'},
                                                         ],
                                                         style={'marginLeft': -4},
                                                     ),
@@ -224,6 +236,48 @@ def create_table(request):
                                                 ]
                                             ),
 
+                                            dbc.Tab(
+                                                label='Ayar',
+                                                children=[
+
+                                                    html.Label("Marginal X", style={'font-weight': 'bold'},
+                                                               className="ml-2 text-small mt-1"),
+
+                                                    dcc.Dropdown(
+                                                        id="marginal_x",
+                                                        className='col-11',
+                                                        options=["histogram", "rug", "box", "violin"],
+                                                        placeholder="Seçiniz",
+                                                        style={'marginLeft': -4},
+                                                    ),
+
+                                                    html.Label("Marginal Y", style={'font-weight': 'bold'},
+                                                               className="ml-2 text-small mt-1"),
+
+                                                    dcc.Dropdown(
+                                                        id="marginal_y",
+                                                        className='col-11',
+                                                        options=["histogram", "rug", "box", "violin"],
+                                                        placeholder="Seçiniz",
+                                                        style={'marginLeft': -4},
+                                                    ),
+
+                                                    html.Label("Histogram Türü", style={'font-weight': 'bold'},
+                                                               className="ml-2 text-small mt-1"),
+
+                                                    dcc.Dropdown(
+                                                        id="histnorm",
+                                                        className='col-11',
+                                                        options=[
+                                                            {'label': 'Yüzde', 'value': 'percent'},
+                                                            {'label': 'Olasılık', 'value': 'probability density'},
+                                                        ],
+                                                        placeholder="Seçiniz",
+                                                        style={'marginLeft': -4},
+                                                    ),
+
+                                                ]
+                                            ),
                                         ],
                                     ),
 
@@ -236,12 +290,7 @@ def create_table(request):
                                     html.Label("Tablo", style={'font-weight': 'bold'}, className="mt-1"),
 
                                     dash_table.DataTable(
-                                        id='adding-rows-table',
-                                        data=ex_data.to_dict('records'),
-                                        columns=[
-                                            {"name": i, 'id': i, 'type': 'numeric', 'deletable': True,
-                                             "renamable": True, "selectable": True} for i in ex_data.columns
-                                        ],
+                                        id='datatable-upload-container',
 
                                         style_table={'overflowY': 'auto', 'overflowX': 'auto'},
                                         style_cell={'textAlign': 'center'},
@@ -261,6 +310,8 @@ def create_table(request):
                         ]
                     ),
 
+                    # Çıktı ##
+
                     dbc.Row(
 
                         [
@@ -276,7 +327,7 @@ def create_table(request):
                                             dbc.Tab(
                                                 label='Grafik',
                                                 children=[
-                                                    dcc.Graph(id='adding-rows-graph'),
+                                                    dcc.Graph(id='datatable-upload-graph')
                                                 ],
                                             ),
 
@@ -308,102 +359,101 @@ def create_table(request):
     )
 
     @app.callback(
-        Output('adding-rows-table', 'data'),
-        Input('editing-rows-button', 'n_clicks'),
-        State('adding-rows-table', 'data'),
-        State('adding-rows-table', 'columns'),
+        Output('datatable-upload-container', 'data'),
+        Output('datatable-upload-container', 'columns'),
+        Input('datatable-upload', 'contents'),
+        State('datatable-upload', 'filename'),
     )
-    def add_row(n_clicks, rows, columns):
-        if n_clicks > 0:
-            rows.append({c['id']: '' for c in columns})
-        return rows
+    def update_output(contents, filename):
+        if contents is None:
+            return [{}], []
+        df = parse_contents(contents, filename)
+        return df.to_dict('records'), [{"name": i, "id": i, 'type': 'numeric', 'deletable': True,
+                                        "renamable": True, "selectable": True} for i in df.columns]
 
     @app.callback(
-        Output('adding-rows-table', 'columns'),
-        Input('adding-rows-button', 'n_clicks'),
-        State('adding-rows-name', 'value'),
-        State('adding-rows-table', 'columns'),
+        Output('datatable-upload-graph', 'figure'),
+        Output('stats_out', 'children'),
+        Output('sel-col', 'options'),
+        Output('x-axis', 'options'),
+        Output('y-axis', 'options'),
+        Output('color', 'options'),
+        Output('st_corr', 'children'),
+
+        Input('datatable-upload-container', 'data'),
+        Input('datatable-upload-container', 'columns'),
+        Input('graph-title', 'value'),
+        Input('graph-type', 'value'),
+        Input('sel-col', 'value'),
+        Input('x-axis', 'value'),
+        Input('y-axis', 'value'),
+        Input('color', 'value'),
+        Input('trendline', 'value'),
+        Input('marginal_x', 'value'),
+        Input('marginal_y', 'value'),
+        Input('corr_method', 'value'),
+        Input('histnorm', 'value'),
+        prevent_initial_call=True,
+
     )
-    def update_columns(n_clicks, value, existing_columns):
-        if n_clicks > 0:
-            existing_columns.append(
-                {'name': value, 'id': value, 'type': 'numeric', 'renamable': True, 'deletable': True})
-        return existing_columns
+    def display_graph(rows, columns, title, graph_type, selected_columns, x_axs, y_axs, color,
+                      trendline, marginal_x, marginal_y, corr_method, histnorm):
 
-    @app.callback(
-
-        [
-            Output('adding-rows-graph', 'figure'),
-            Output('sel-col', 'options'),
-            Output('x-axis', 'options'),
-            Output('y-axis', 'options'),
-            Output('color', 'options'),
-            Output('stats_out', 'children'),
-            Output('st_corr', 'children')
-        ],
-
-        [
-            Input('adding-rows-table', 'data'),
-            Input('adding-rows-table', 'columns'),
-            Input('graph-type', 'value'),
-            Input('graph-title', 'value'),
-            Input('sel-col', 'value'),
-            Input('x-axis', 'value'),
-            Input('y-axis', 'value'),
-            Input('color', 'value'),
-            Input('corr_method', 'value'),
-            Input('trendline', 'value'),
-            Input('marginal_x', 'value'),
-            Input('marginal_y', 'value'),
-        ],
-
-        [
-            State('adding-rows-table', 'columns')
-        ]
-    )
-    def display_output(
-            data, columns, select_graph, title,
-            selected_columns, x_axs, y_axs, color,
-            corr_method, trendline, marginal_x, marginal_y,
-            col):
-
-        hover_data = None
+        facet_row = None
 
         df = pd.DataFrame(
-            data=[[row.get(c['id'], None) for c in columns] for row in data],
+            data=[[row.get(c['id'], None) for c in columns] for row in rows],
             columns=[i['name'] for i in columns]
         )
 
-        sel_col = [c.get('name') for c in col]
-        x = [c.get('name') for c in col]
-        y = [c.get('name') for c in col]
-        renk = [c.get('name') for c in col]
+        sel_col = [c for c in df.columns]
+        x = [c for c in df.columns]
+        y = [c for c in df.columns]
+        renk = [c for c in df.columns]
 
         stats_desc = dbc.Table.from_dataframe(
             df.describe(), striped=True, bordered=True, hover=True, index=True, size='sm', responsive=True
         )
 
         stats_corr = dbc.Table.from_dataframe(
-            df.corr(method=corr_method, numeric_only=True), striped=True, bordered=True, hover=True, index=True,
+            df.corr(numeric_only=True, method=corr_method), striped=True, bordered=True, hover=True, index=True,
             size='sm', responsive=True
         )
 
-        if select_graph == 'heatmap':
+        if graph_type == 'heatmap':
             if selected_columns:
                 df = df[selected_columns]
+            fig = px.imshow(df, text_auto=True, aspect="auto", title=title)
 
-            fig = px.imshow(df, title=title, text_auto=True, aspect="auto")
+        elif graph_type == 'bar':
+            fig = px.bar(df, x=x_axs, y=y_axs, color=color, title=title)
 
-        elif select_graph == 'bar':
+        elif graph_type == 'scatter':
             if selected_columns:
-                hover_data = selected_columns
+                facet_row = selected_columns[0]
 
-            fig = px.bar(df, x=x_axs, y=y_axs, color=color, title=title, hover_data=hover_data)
-
-        elif select_graph == 'scatter':
             fig = px.scatter(df, x=x_axs, y=y_axs, color=color, title=title, trendline_scope="overall",
-                             trendline=trendline, marginal_x=marginal_x, marginal_y=marginal_y)
+                             trendline=trendline, marginal_x=marginal_x, marginal_y=marginal_y, facet_row=facet_row)
 
-        return fig, sel_col, x, y, renk, stats_desc, stats_corr
+        elif graph_type == 'line':
+            fig = px.line(df, x=x_axs, y=y_axs, color=color, title=title, markers=True)
 
-    return HttpResponseRedirect("/laboratuvarlar/bioinformatic-laboratuvari/app/table-create/")
+        elif graph_type == 'pie':
+            fig = px.pie(df, values=x_axs, names=y_axs, title=title)
+
+        elif graph_type == 'histogram':
+
+            fig = px.histogram(df, x=x_axs, title=title, color=color, marginal=marginal_x, text_auto=True,
+                               histnorm=histnorm)
+
+        if (df.empty or len(df.columns) < 1):
+            return {
+                'data': [{
+                    'x': [],
+                    'y': [],
+                    'type': 'bar'
+                }]
+            }
+        return fig, stats_desc, sel_col, x, y, renk, stats_corr
+
+    return HttpResponseRedirect("/laboratuvarlar/bioinformatic-laboratuvari/app/files-stats/")
