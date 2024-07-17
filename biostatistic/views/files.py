@@ -140,11 +140,11 @@ def files_table(request):
                                             dbc.Tab(
                                                 label='Dosya',
                                                 children=[
+
                                                     dcc.Upload(
                                                         id='datatable-upload',
                                                         children=html.Div([
                                                             'Dosyanızı Seçin yada Sürükleyin',
-
                                                         ]),
                                                         style={
                                                             'width': '99%', 'height': '60px', 'lineHeight': '60px',
