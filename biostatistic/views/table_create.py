@@ -282,7 +282,7 @@ def create_table(request):
 
                                             dbc.Tab(
                                                 id="stats_out",
-                                                label='İstatislik Tablosu',
+                                                label='Tanımlayıcı İstatislik',
                                                 children=[
 
                                                 ],
@@ -290,7 +290,7 @@ def create_table(request):
 
                                             dbc.Tab(
                                                 id="st_corr",
-                                                label='Korelasyon Tablosu',
+
                                                 children=[
 
                                                 ],
@@ -339,7 +339,8 @@ def create_table(request):
             Output('y-axis', 'options'),
             Output('color', 'options'),
             Output('stats_out', 'children'),
-            Output('st_corr', 'children')
+            Output('st_corr', 'children'),
+            Output('st_corr', 'label'),
         ],
 
         [
@@ -404,6 +405,6 @@ def create_table(request):
             fig = px.scatter(df, x=x_axs, y=y_axs, color=color, title=title, trendline_scope="overall",
                              trendline=trendline, marginal_x=marginal_x, marginal_y=marginal_y)
 
-        return fig, sel_col, x, y, renk, stats_desc, stats_corr
+        return fig, sel_col, x, y, renk, stats_desc, stats_corr, f'{corr_method.capitalize()} Korelasyon'
 
     return HttpResponseRedirect("/laboratuvarlar/bioinformatic-laboratuvari/app/table-create/")
