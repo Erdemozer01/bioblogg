@@ -11,10 +11,8 @@ import plotly.figure_factory as ff
 ex_data = px.data.iris()
 
 label = [
-    'bar', 'line', 'barpolar', 'box', 'candlestick', 'carpet', 'choropleth',
-    'choroplethmapbox', 'cone', 'contour', 'contourcarpet', 'densitymapbox', 'funnel',
-    'distplots', 'funnelarea', 'heatmap', 'heatmapgl', 'histogram', 'histogram2d',
-    'histogram2dcontour', 'icicle', 'image', 'indicator', 'isosurface','mesh3d', 'ohlc',
+    'bar', 'line', 'barpolar', 'box','cone', 'contour', 'contourcarpet', 'densitymapbox', 'funnel',
+    'funnelarea', 'heatmap', 'heatmapgl', 'histogram', 'icicle', 'image', 'indicator', 'isosurface', 'ohlc',
     'parcats', 'parcoords', 'pie', 'pointcloud','sankey', 'scatter', 'scatter3d', 'scattercarpet',
     'scattergeo', 'scattergl', 'scattermapbox','scatterpolar', 'scattersmith', 'scatterternary',
     'splom', 'streamtube', 'sunburst','surface', 'table', 'treemap', 'violin', 'volume', 'waterfall'
@@ -100,13 +98,14 @@ def files_table(request):
                                                 label='Açıklama',
                                                 children=[
                                                     html.P(
-                                                        ["Dinamik istatistiksel uygulamasına hoş geldiniz."],
+                                                        ["Dinamik istatistik uygulamasına hoş geldiniz."],
                                                         className="mt-2"
                                                     ),
 
                                                     html.P(
                                                         [
-                                                            "Excel yada csv uzantılı dosyanızı seçtikten sonra girdiğiniz veriler, istatistik ve korelasyon tablonuz ile grafiğiniz oluşacaktır."
+                                                            "Excel yada csv uzantılı dosyanızı seçtikten sonra girdiğiniz veriler, "
+                                                            "istatistik ve korelasyon tablonuz ile grafiğiniz oluşacaktır."
                                                         ],
 
                                                     ),
@@ -516,6 +515,12 @@ def files_table(request):
 
         elif graph_type == 'scatter3d':
             fig = px.scatter_3d(df.to_dict('records'), x=x_axs, y=y_axs, z=color, title=title, color=color)
+
+        elif graph_type == 'box':
+            fig = px.box(df, x=x_axs, y=y_axs, color=color, title=title)
+
+        elif graph_type == 'funnel':
+            fig = px.funnel(df, x=x_axs, y=y_axs, color=color, title=title)
 
         return fig, stats_desc, sel_col, x, y, renk, stats_corr, f'{corr_method.capitalize()} Korelasyon'
 
