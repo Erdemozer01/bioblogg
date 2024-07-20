@@ -138,6 +138,17 @@ def create_table(request):
                                                         style={'marginLeft': -4, 'marginTop': -9},
                                                     ),
 
+                                                    html.Button('Tanımlayıcı istatistik tablosunu indir', id='ex_std',
+                                                                n_clicks=0,
+                                                                className='btn btn-sm btn-outline-primary mt-1 ml-2 col-10'),
+
+                                                    html.Button('Korelasyon tablosunu indir', id='ex_cor', n_clicks=0,
+                                                                className='btn btn-sm btn-outline-primary mt-1 ml-2 col-10'
+                                                                ),
+
+                                                    dcc.Download(id="download-std-xlsx"),
+                                                    dcc.Download(id="download-cor-xlsx"),
+
                                                 ]
                                             ),
 
@@ -253,7 +264,7 @@ def create_table(request):
                                             ),
 
                                             dbc.Tab(
-                                                label='Hist',
+                                                label='Hist.',
                                                 children=[
 
                                                     html.Label("Histogram Türü", style={'font-weight': 'bold'},
@@ -267,6 +278,23 @@ def create_table(request):
                                                             {'label': 'Olasılık', 'value': 'probability'},
                                                             {'label': 'Olasılık-Yoğunluk',
                                                              'value': 'probability density'},
+                                                        ],
+                                                        placeholder="Seçiniz",
+                                                        style={'marginLeft': -4},
+                                                    ),
+
+                                                    html.Label("Histogram Fonksiyonu", style={'font-weight': 'bold'},
+                                                               className="ml-2 text-small mt-1"),
+
+                                                    dcc.Dropdown(
+                                                        id="histfunc",
+                                                        className='col-11',
+                                                        options=[
+                                                            {'label': 'Sayı', 'value': 'count'},
+                                                            {'label': 'Toplam', 'value': 'sum'},
+                                                            {'label': 'Ortalama', 'value': 'avg'},
+                                                            {'label': 'min', 'value': 'min'},
+                                                            {'label': 'max', 'value': 'max'},
                                                         ],
                                                         placeholder="Seçiniz",
                                                         style={'marginLeft': -4},
@@ -288,31 +316,32 @@ def create_table(request):
                                                         value="relative"
                                                     ),
 
-                                                    dcc.Checklist(
+                                                    dbc.Checklist(
                                                         id="text_auto",
                                                         className="ml-2 text-small mt-1",
                                                         options=[
                                                             {'label': ' Yazıyı göster', 'value': "True"},
                                                         ],
-                                                        value=["True"],
+                                                        inline=True,
+
                                                     ),
 
-                                                    dcc.Checklist(
+                                                    dbc.Checklist(
                                                         id="markers",
                                                         className="ml-2 text-small mt-1",
                                                         options=[
                                                             {'label': ' İşaret', 'value': "True"},
                                                         ],
-                                                        value=["True"],
+                                                        inline=True,
                                                     ),
 
-                                                    dcc.Checklist(
+                                                    dbc.Checklist(
                                                         id="cumulative",
                                                         className="ml-2 text-small mt-1",
                                                         options=[
                                                             {'label': ' Kümulatif', 'value': "True"},
                                                         ],
-                                                        value=["True"],
+                                                        inline=True,
                                                     )
                                                 ]
                                             ),
@@ -331,12 +360,9 @@ def create_table(request):
 
                                         id='adding-rows-table',
 
-                                        data=ex_data.to_dict('records'),
+                                        data=[],
 
-                                        columns=[
-                                            {"name": i, 'id': i, 'type': 'numeric', 'deletable': True,
-                                             "renamable": True, "selectable": True} for i in ex_data.columns
-                                        ],
+                                        columns=[],
 
                                         style_table={'overflowY': 'auto', 'overflowX': 'auto'},
                                         style_cell={'textAlign': 'center'},
@@ -534,5 +560,31 @@ def create_table(request):
             fig = px.funnel(df, x=x_axs, y=y_axs, color=color, title=title)
 
         return fig, sel_col, x, y, renk, stats_desc, stats_corr, f'{corr_method.capitalize()} Korelasyon'
+
+    @app.callback(
+        Output('download-std-xlsx', 'data'),
+        Input('ex_std', 'n_clicks'),
+        State('adding-rows-table', 'data'),
+        prevent_initial_call=True,
+    )
+    def download_des_tables(n_clicks, data):
+        df = pd.DataFrame(data)
+        if n_clicks > 0:
+            std = dcc.send_data_frame(df.describe().to_excel, "Tanımlayıcı istatistik Tablosu.xlsx")
+        return std
+
+    @app.callback(
+        Output('download-cor-xlsx', 'data'),
+        Input('ex_cor', 'n_clicks'),
+        Input('corr_method', 'value'),
+        State('adding-rows-table', 'data'),
+        prevent_initial_call=True,
+    )
+    def download_cor_tables(n_clicks, method, data):
+        df = pd.DataFrame(data)
+        if n_clicks > 0:
+            corr = dcc.send_data_frame(df.corr(method=method, numeric_only=True).to_excel,
+                                       f"{method.capitalize()} Tablosu.xlsx")
+        return corr
 
     return HttpResponseRedirect("/laboratuvarlar/bioinformatic-laboratuvari/app/table-create/")

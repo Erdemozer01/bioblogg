@@ -135,6 +135,7 @@ def molecule_2d_view(request):
                                                             dcc.Dropdown(id='mol2d-search-results')
                                                         ]
                                                     ),
+
                                                     html.Hr(),
                                                     html.Div(id='error-wrapper'),
                                                     html.Div(id='mol2d-sel-atoms-output'),
@@ -185,7 +186,6 @@ def molecule_2d_view(request):
     @app.callback(
         [Output('mol2d-search-results-wrapper', 'style'),
          Output('mol2d-compound-options-store', 'data'),
-         Output('atoms-output', 'children'),
          Output('mol2d-search-results-store', 'data')],
         [Input('mol2d-search', 'n_submit')],
         [State('mol2d-search', 'value')]
@@ -209,12 +209,11 @@ def molecule_2d_view(request):
                 compound.to_dict()['iupac_name']: {
                     'PC_Compounds': [
                         compound.record
-                    ],
-
+                    ]
                 } for compound in results
             }
 
-        return results_dropdown, options, compounds,
+        return results_dropdown, options, compounds
 
     @app.callback(
         Output('search-results', 'value'),
@@ -236,11 +235,11 @@ def molecule_2d_view(request):
         error_message = ''
 
         if stored_compounds is None or len(stored_compounds.keys()) == 0:
-            error_message = 'Sonuç görüntülenemiyor.'
+            error_message = 'No results found for your query.'
             model_data = {'nodes': [], 'links': []}
 
         elif len(stored_compounds.keys()) == 1:
-            error_message = 'IUPAC : {}'.format(
+            error_message = 'Displaying: {}'.format(
                 list(stored_compounds.keys())[0]
             )
             model_data = read_chem_structure(
@@ -249,7 +248,7 @@ def molecule_2d_view(request):
                 bond_distance=bond_length
             )
         elif selected_compound is not None:
-            error_message = 'IUPAC : {}'.format(
+            error_message = 'Displaying: {}'.format(
                 selected_compound
             )
             model_data = read_chem_structure(
