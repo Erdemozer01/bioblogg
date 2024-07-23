@@ -5,14 +5,21 @@ from django_plotly_dash import DjangoDash
 import dash_bootstrap_components as dbc
 import plotly.express as px
 import io, base64, os
-import plotly.figure_factory as ff
+import statsmodels.api as sm
+import pandas as pd
+from statsmodels.formula.api import ols
+from patsy import desc
+from patsy.highlevel import dmatrices
+from sklearn.cluster import KMeans
+import plotly.graph_objs as go
 
 ex_data = px.data.iris()
 
 label = [
     'bar', 'line', 'barpolar', 'box', 'cone', 'contour', 'contourcarpet', 'densitymapbox', 'funnel',
-    'funnelarea', 'heatmap', 'heatmapgl', 'histogram', 'icicle', 'image', 'indicator', 'isosurface', 'ohlc',
-    'parcats', 'parcoords', 'pie', 'pointcloud', 'sankey', 'scatter', 'scatter3d', 'scattercarpet',
+    'funnelarea', 'heatmap', 'heatmapgl', 'histogram', 'histogram2d', 'k-means', 'icicle', 'image', 'indicator',
+    'isosurface', 'ohlc', 'parcats', 'parcoords', 'pie', 'pointcloud', 'sankey', 'scatter', 'scatter3d',
+    'scattercarpet',
     'scattergeo', 'scattergl', 'scattermapbox', 'scatterpolar', 'scattersmith', 'scatterternary',
     'splom', 'streamtube', 'sunburst', 'surface', 'table', 'treemap', 'violin', 'volume', 'waterfall'
 ]
@@ -36,7 +43,7 @@ def files_table(request):
     external_stylesheets = [dbc.themes.BOOTSTRAP]
 
     app = DjangoDash('files-stats', external_stylesheets=external_stylesheets,
-                     title="Dosya ve Grafik", add_bootstrap_links=True)
+                     title="Dosya ve Grafik", add_bootstrap_links=True, update_title="Güncelleniyor...")
 
     app.layout = dbc.Card(
         [
@@ -92,10 +99,11 @@ def files_table(request):
                                         [
 
                                             dbc.Tab(
-                                                label='Uyg.',
+                                                label='Giriş',
                                                 children=[
 
-                                                    html.P(["Uygulamaya ilişkin açıklamalar"], style={'font-weight': 'bold'}, className="mt-1 ml-1 mb-1"),
+                                                    html.P(["Uygulamaya ilişkin açıklamalar"],
+                                                           style={'font-weight': 'bold'}, className="mt-1 ml-1 mb-1"),
 
                                                     html.P(
                                                         ["- Dinamik istatistik uygulamasına hoş geldiniz."],
@@ -113,7 +121,7 @@ def files_table(request):
                                                     html.P(
                                                         [
                                                             "- Görüntülemede sorun yaşarsanız sayfayı yenileyin yada ayarlarınızı ve verilerinizi gözden geçirin"
-                                                        ],className="mb-0"
+                                                        ], className="mb-0"
 
                                                     ),
 
@@ -123,59 +131,6 @@ def files_table(request):
                                                         ], className="text-danger text-sm mb-0",
 
                                                     ),
-                                                ]
-                                            ),
-
-                                            dbc.Tab(
-                                                label='Tablo',
-                                                children=[
-
-                                                    html.P("Korelasyon Metodu Seçiniz", style={'font-weight': 'bold'},
-                                                           className="ml-2 text-small mt-1"),
-
-                                                    dcc.Dropdown(
-                                                        id="corr_method",
-                                                        className="col-11",
-                                                        options=["pearson", "kendall", "spearman"],
-                                                        value="pearson",
-                                                        placeholder="Seçiniz",
-                                                        style={'marginLeft': -4, 'marginTop': -9},
-                                                    ),
-
-                                                    html.P("Dosya Seçiniz", style={'font-weight': 'bold'},
-                                                           className="ml-2 text-small mt-1"),
-
-                                                    dcc.Upload(
-                                                        id='datatable-upload',
-                                                        children=html.Div([
-                                                            'Dosyanızı Seçin yada Sürükleyin',
-                                                        ], className="mt-2"),
-                                                        style={
-                                                            'width': '85%', 'height': '80px', 'lineHeight': '60px',
-                                                            'borderWidth': '1px', 'borderStyle': 'solid',
-                                                            'borderRadius': '5px', 'textAlign': 'center',
-                                                            'margin': '10px', 'marginLeft': 3
-                                                        },
-                                                    ),
-
-                                                    html.Small(['Dosya .xlsx, .xls yada .csv uzantılı olmalıdır.'],
-                                                               className="text-danger ml-1"),
-
-                                                    html.Div([
-                                                        html.Label("İstatistiksel Tabloları İndirme", style={'font-weight': 'bold'},
-                                                                   className="ml-2"),
-                                                    ], style={'marginBottom': -2}),
-
-                                                    html.Button('Tanımlayıcı', id='ex_std',
-                                                                n_clicks=0,
-                                                                className='btn btn-sm btn-outline-primary ml-2 col-4'),
-
-                                                    html.Button('Korelasyon', id='ex_cor', n_clicks=0,
-                                                                className='btn btn-sm btn-outline-primary ml-2 col-4'
-                                                                ),
-
-                                                    dcc.Download(id="download-std-xlsx"),
-                                                    dcc.Download(id="download-cor-xlsx"),
                                                 ]
                                             ),
 
@@ -202,6 +157,46 @@ def files_table(request):
                                                         style={'marginLeft': -4},
                                                     ),
 
+                                                    html.P("Korelasyon Metodu Seçiniz", style={'font-weight': 'bold'},
+                                                           className="ml-2 text-small mt-1"),
+
+                                                    dcc.Dropdown(
+                                                        id="corr_method",
+                                                        className="col-11",
+                                                        options=["pearson", "kendall", "spearman"],
+                                                        value="pearson",
+                                                        placeholder="Seçiniz",
+                                                        style={'marginLeft': -4, 'marginTop': -9},
+                                                    ),
+
+                                                    html.P("Dosya Seçiniz", style={'font-weight': 'bold'},
+                                                           className="ml-2 text-small mt-1"),
+
+                                                    dcc.Upload(
+                                                        id='datatable-upload',
+                                                        children=html.Div([
+                                                            'Dosyanızı Seçin yada Sürükleyin',
+
+                                                        ], className="mt-2"),
+                                                        style={
+                                                            'width': '85%', 'height': '80px', 'lineHeight': '60px',
+                                                            'borderWidth': '1px', 'borderStyle': 'dashed',
+                                                            'borderRadius': '5px', 'textAlign': 'center',
+                                                            'margin': '10px', 'marginLeft': 3
+                                                        },
+                                                    ),
+
+                                                    html.Small(['Not: Dosya .xlsx, .xls yada .csv uzantılı olmalıdır.'],
+                                                               className="text-danger ml-1", style={'marginTop': -8}),
+
+                                                    html.Div(id="filename_out", className="ml-1")
+                                                ]
+                                            ),
+
+                                            dbc.Tab(
+                                                label='Eksen',
+                                                children=[
+
                                                     html.Label("X Ekseni", style={'font-weight': 'bold'},
                                                                className="ml-2 text-small mt-1"),
 
@@ -213,14 +208,23 @@ def files_table(request):
 
                                                     html.Div([
                                                         html.Small(["*Polar grafiklerde yarıçap"],
-                                                               className="text-sm text-danger ml-2"),
+                                                                   className="text-sm text-danger ml-2"),
                                                     ]),
 
                                                     html.Label("Y Ekseni", style={'font-weight': 'bold'},
-                                                           className="ml-2 text-sm"),
+                                                               className="ml-2 text-sm"),
 
                                                     dcc.Dropdown(
                                                         id="y-axis",
+                                                        className='col-11',
+                                                        style={'marginLeft': -4},
+                                                    ),
+
+                                                    html.Label("Z Ekseni", style={'font-weight': 'bold'},
+                                                               className="ml-2 text-sm"),
+
+                                                    dcc.Dropdown(
+                                                        id="z-axis",
                                                         className='col-11',
                                                         style={'marginLeft': -4},
                                                     ),
@@ -231,16 +235,6 @@ def files_table(request):
                                                     dcc.Dropdown(
                                                         id="color",
                                                         className='col-11',
-                                                        style={'marginLeft': -4},
-                                                    ),
-
-                                                    html.Label("Guruplandır", style={'font-weight': 'bold'},
-                                                               className="ml-2 text-small mt-1"),
-
-                                                    dcc.Dropdown(
-                                                        id="sel-col",
-                                                        className='col-11',
-                                                        multi=True,
                                                         style={'marginLeft': -4},
                                                     ),
 
@@ -264,7 +258,8 @@ def files_table(request):
                                             ),
 
                                             dbc.Tab(
-                                                label='Yardımcı',
+                                                label='Yard.',
+                                                labelClassName="text-sm",
                                                 children=[
 
                                                     html.Label("Kenarlık X", style={'font-weight': 'bold'},
@@ -288,6 +283,19 @@ def files_table(request):
                                                         placeholder="Seçiniz",
                                                         style={'marginLeft': -4},
                                                     ),
+
+                                                    html.Label("Guruplandır", style={'font-weight': 'bold'},
+                                                               className="ml-2 text-small mt-1"),
+
+                                                    dcc.Dropdown(
+                                                        id="sel-col",
+                                                        className='col-11',
+                                                        multi=True,
+                                                        style={'marginLeft': -4},
+                                                    ),
+
+                                                    dbc.Label("Kümeleme Sayısı"),
+                                                    dbc.Input(id="cluster-count", type="number", value=3),
 
                                                 ]
                                             ),
@@ -376,21 +384,63 @@ def files_table(request):
                                             ),
 
                                             dbc.Tab(
-                                                label='Mod',
+                                                label='Model',
                                                 children=[
-                                                    html.P(["İstatistiksel Moldellemeler"], style={'font-weight': 'bold'}, className="mt-1 ml-1 mb-1")
+                                                    html.P(["İstatistiksel Moldellemeler"],
+                                                           style={'font-weight': 'bold'}, className="mt-1 ml-1 mb-1"),
+
+                                                    dcc.Dropdown(
+                                                        id="tests",
+                                                        className='col-11',
+                                                        options=[
+                                                            {'label': 'Ordinary Least Squares (OLS)', 'value': 'ols'},
+                                                            {'label': 'ANOVA (one way)', 'value': 'anova_oneway'},
+                                                            {'label': 'ANOVA (two way)', 'value': 'anova_twoway'},
+                                                        ],
+                                                        placeholder="Seçiniz",
+                                                        style={'marginLeft': -4},
+                                                    ),
+
+                                                    html.P(["Bağımlı Değişken"],
+                                                           style={'font-weight': 'bold'}, className="mt-1 ml-1 mb-1"),
+
+                                                    dcc.Dropdown(
+                                                        id="dep_val",
+                                                        className='col-11',
+                                                        placeholder="Seçiniz",
+                                                        style={'marginLeft': -4},
+                                                    ),
+
+                                                    html.Small(["**Not: Bağımlı değişken sadece numeric olabilir."],
+                                                               className="ml-1 p-2 text-danger"),
+
+                                                    html.P(["Bağımsız Değişken"],
+                                                           style={'font-weight': 'bold'}, className="mt-1 ml-1 mb-1"),
+
+                                                    dcc.Dropdown(
+                                                        id="in_dep_val",
+                                                        className='col-11',
+                                                        placeholder="Seçiniz",
+                                                        style={'marginLeft': -4},
+                                                        multi=True
+                                                    ),
+
+                                                    html.Small(["**Not : En fazla 4 değişken seçebilirsiniz."],
+                                                               className="ml-1 p-2 text-danger")
+
                                                 ]
                                             ),
 
                                         ],
                                     ),
+
                                 ], md=4, className="p-3 mb-3"
                             ),
 
                             dbc.Col(
                                 [
 
-                                    html.P("Tablo", className="mt-3 border-bottom text-primary"),
+                                    html.P("Tablo", className="mt-4 border-bottom text-primary pb-2"),
 
                                     dash_table.DataTable(
                                         id='datatable-upload-container',
@@ -403,23 +453,22 @@ def files_table(request):
                                         row_deletable=True,
                                         editable=True,
                                         page_action='native',
-                                        page_size=6,
+                                        page_size=8,
                                     ),
 
-                                ], md=8, style={'maxWidth': '63%'}, className="mx-auto mt-3 mb-3"
+                                ], md=8, style={'maxWidth': '63%'}, className="mx-auto mb-3"
                             ),
-
                         ]
                     ),
 
                     dbc.Row(
                         [
                             html.Hr(),
+
                             dbc.Col(
                                 [
 
                                     dbc.Tabs(
-
                                         [
                                             dbc.Tab(
                                                 label='Grafik',
@@ -431,19 +480,42 @@ def files_table(request):
                                             dbc.Tab(
                                                 id="stats_out",
                                                 label='Tanımlayıcı İstatislik',
-                                                children=[
-
-                                                ],
+                                                children=html.Div([
+                                                    html.Div(id='stats_out-container'),
+                                                    html.Button('Sonuçları İndir', id='ex_std',
+                                                                n_clicks=0,
+                                                                className='btn btn-sm btn-outline-primary col-2 float-end mt-2'),
+                                                    dcc.Download(id="download-std-xlsx"),
+                                                ])
                                             ),
 
                                             dbc.Tab(
                                                 id="st_corr",
-                                                children=[
+                                                children=html.Div([
+                                                    html.Div(id='st_corr-container'),
+                                                    html.Button('Sonuçları İndir', id='ex_cor', n_clicks=0,
+                                                                className='btn btn-sm btn-outline-primary col-2 float-end mt-2'
+                                                                ),
+                                                    dcc.Download(id="download-cor-xlsx"),
+                                                ])
+                                            ),
 
-                                                ],
+                                            dbc.Tab(
+                                                id="test_results",
+                                                label="Test Sonuçları",
+                                                children=html.Div(
+                                                    [
+                                                        dbc.Row(
+                                                            id="test_results-container",
+
+                                                        ),
+
+                                                    ]
+                                                )
                                             ),
                                         ]
                                     ),
+
                                 ], md=11, className="container-fluid"
                             ),
                         ]
@@ -466,18 +538,30 @@ def files_table(request):
             return None, None
         df = parse_contents(contents, filename)
         return df.to_dict('records'), [
-            {"name": i, "id": i, 'type': 'numeric', 'deletable': True, "renamable": True, "selectable": True} for i in
+            {"name": i, "id": i, 'deletable': True, "renamable": True, "selectable": True} for i in
             df.columns]
 
     @app.callback(
+        Output('st_corr', 'label'),
+        Input('corr_method', 'value'),
+    )
+    def update_label(method):
+        cor_met_label = f'{method} Korelasyon'.capitalize()
+        return cor_met_label
+
+    @app.callback(
         Output('datatable-upload-graph', 'figure'),
-        Output('stats_out', 'children'),
+        Output('stats_out-container', 'children'),
         Output('sel-col', 'options'),
         Output('x-axis', 'options'),
         Output('y-axis', 'options'),
+        Output('z-axis', 'options'),
         Output('color', 'options'),
-        Output('st_corr', 'children'),
-        Output('st_corr', 'label'),
+        Output('st_corr-container', 'children'),
+
+        Output('dep_val', 'options'),
+        Output('in_dep_val', 'options'),
+        Output('filename_out', 'children'),
 
         Input('datatable-upload-container', 'data'),
         Input('datatable-upload-container', 'columns'),
@@ -486,6 +570,7 @@ def files_table(request):
         Input('sel-col', 'value'),
         Input('x-axis', 'value'),
         Input('y-axis', 'value'),
+        Input('z-axis', 'value'),
         Input('color', 'value'),
         Input('trendline', 'value'),
         Input('marginal_x', 'value'),
@@ -497,14 +582,19 @@ def files_table(request):
         Input('markers', 'value'),
         Input('cumulative', 'value'),
         Input('histfunc', 'value'),
+        Input('cluster-count', 'value'),
+        State('datatable-upload', 'filename'),
+
         prevent_initial_call=True,
     )
-    def display_graph(rows, columns, title, graph_type, selected_columns, x_axs, y_axs, color,
+    def display_graph(rows, columns, title, graph_type, selected_columns, x_axs, y_axs, z_axs, color,
                       trend_line, marginal_x, marginal_y, corr_method, histnorm, barmode, text_auto, markers,
-                      cumulative, histfunc):
+                      cumulative, histfunc, n_clusters, filename):
 
-        global fig
+        global fig, facet_col
         facet_row = None
+
+        file_name = html.P([f'{(filename)}'], className='fw-bold')
 
         df = pd.DataFrame(
             data=[[row.get(c['id'], None) for c in columns] for row in rows],
@@ -520,6 +610,7 @@ def files_table(request):
         x = [c for c in df.columns]
         y = [c for c in df.columns]
         renk = [c for c in df.columns]
+        z = [c for c in df.columns]
 
         stats_desc = dbc.Table.from_dataframe(
             df.describe(), striped=True, bordered=True, hover=True, index=True, size='sm', responsive=True
@@ -537,6 +628,11 @@ def files_table(request):
 
         elif graph_type == 'bar':
             fig = px.bar(df, x=x_axs, y=y_axs, color=color, title=title)
+
+        elif graph_type == 'histogram2d':
+
+            fig = px.density_heatmap(df, x=x_axs, y=y_axs, z=z_axs, title=title, text_auto=bool(text_auto),
+                                     marginal_x=marginal_x, marginal_y=marginal_y)
 
         elif graph_type == 'scatter':
             if selected_columns:
@@ -572,7 +668,40 @@ def files_table(request):
         elif graph_type == 'funnel':
             fig = px.funnel(df, x=x_axs, y=y_axs, color=color, title=title)
 
-        return fig, stats_desc, sel_col, x, y, renk, stats_corr, f'{corr_method.capitalize()} Korelasyon'
+        elif graph_type == 'k-means':
+            km = KMeans(n_clusters=max(n_clusters, 1))
+            df = df.loc[:, [x_axs, y_axs]]
+            km.fit(df.values)
+            df["cluster"] = km.labels_
+            centers = km.cluster_centers_
+            data = [
+                go.Scatter(
+                    x=df.loc[df.cluster == c, x_axs],
+                    y=df.loc[df.cluster == c, y_axs],
+                    mode="markers",
+                    marker={"size": 8},
+                    name="Cluster {}".format(c),
+                )
+                for c in range(n_clusters)
+            ]
+
+            data.append(
+                go.Scatter(
+                    x=centers[:, 0],
+                    y=centers[:, 1],
+                    mode="markers",
+                    marker={"color": "#000", "size": 12, "symbol": "diamond"},
+                    name="Kümeleme merkezi",
+                )
+            )
+
+            layout = {"xaxis": {"title": x_axs}, "yaxis": {"title": y_axs}}
+
+            fig = go.Figure(data=data, layout=layout)
+
+            fig.update_layout(title=title)
+
+        return fig, stats_desc, sel_col, x, y, z, renk, stats_corr, sel_col, sel_col, file_name
 
     @app.callback(
         Output('download-std-xlsx', 'data'),
@@ -580,7 +709,7 @@ def files_table(request):
         State('datatable-upload-container', 'data'),
         prevent_initial_call=True,
     )
-    def download_tables(n_clicks, data):
+    def download_des_tables(n_clicks, data):
         df = pd.DataFrame(data)
         if n_clicks > 0:
             std = dcc.send_data_frame(df.describe().to_excel, "Tanımlayıcı istatistik Tablosu.xlsx")
@@ -593,11 +722,149 @@ def files_table(request):
         State('datatable-upload-container', 'data'),
         prevent_initial_call=True,
     )
-    def download_tables(n_clicks, method, data):
+    def download_cor_tables(n_clicks, method, data):
         df = pd.DataFrame(data)
         if n_clicks > 0:
             corr = dcc.send_data_frame(df.corr(method=method, numeric_only=True).to_excel,
                                        f"{method.capitalize()} Tablosu.xlsx")
         return corr
+
+    @app.callback(
+        Output('test_results-container', 'children'),
+
+
+        Input('tests', 'value'),
+        Input('dep_val', 'value'),
+        Input('in_dep_val', 'value'),
+
+        State('datatable-upload-container', 'data'),
+
+        prevent_initial_call=True,
+    )
+    def mod_st(test, dep_val, in_dep_val, rows):
+
+        global comment
+        df = pd.DataFrame(rows)
+        df = df.dropna()
+
+        try:
+            formula = f'{dep_val} ~ {in_dep_val[0]} + {in_dep_val[1]} + {in_dep_val[2]} + {in_dep_val[3]}'
+        except IndexError:
+            try:
+                formula = f'{dep_val} ~ {in_dep_val[0]} + {in_dep_val[1]} + {in_dep_val[2]}'
+            except IndexError:
+                try:
+                    formula = f'{dep_val} ~ {in_dep_val[0]} + {in_dep_val[1]}'
+                except IndexError:
+                    formula = f'{dep_val} ~ {in_dep_val[0]}'
+
+        if test == 'ols':
+
+            y, X = dmatrices(formula, data=df, return_type='dataframe')
+            model = sm.OLS(y, X).fit()
+            results = model.summary()
+
+            figure = px.scatter(model.predict(X), title=f"{dep_val} ~ {in_dep_val} tahmin grafiği ", trendline="ols")
+
+            if model.pvalues[0] > 0.05:
+                comment = f"P value değeri 0.05'den büyük çıktığı için istatistiksel olarak anlamsızdır."
+            elif model.pvalues[0] < 0.05:
+                comment = f"P value değeri 0.05'den küçük çıktığı için istatistiksel olarak anlamlıdır."
+
+            value = str(results) + "\n" + "=" * 64 + "\n" + f"P value : {model.pvalues[0]}" + "\n" + comment
+
+            children = [
+                dbc.Col(
+                    [
+
+                        dbc.Textarea(
+                            id="results",
+                            className="mt-1",
+                            value=value,
+                            style={'height': 400},
+                        ),
+
+                        html.Button('İndir', id='test_res',
+                                    n_clicks=0,
+                                    className='btn btn-sm btn-outline-primary col-2 mt-2 float-end'
+                                    ),
+
+                        dcc.Download(id="download-tests-result"),
+                    ], md=6
+                ),
+
+                dbc.Col(
+                    [
+                        dcc.Graph(id="predict_graph", figure=figure),
+                    ], md=6
+                ),
+            ]
+
+            return children
+
+        elif test == 'anova_oneway':
+            model = ols(formula, data=df).fit()
+            results = sm.stats.anova_lm(model, typ=1)
+            value = str(results)
+            children = [
+                dbc.Col(
+                    [
+
+                        dbc.Textarea(
+                            id="results",
+                            className="mt-1",
+                            value=value,
+                            style={'height': 400},
+                        ),
+
+                        html.Button('İndir', id='test_res',
+                                    n_clicks=0,
+                                    className='btn btn-sm btn-outline-primary col-2 mt-2 float-end'
+                                    ),
+
+                        dcc.Download(id="download-tests-result"),
+                    ], md=12
+                ),
+            ]
+            return children
+
+        elif test == 'anova_twoway':
+            model = ols(formula, data=df).fit()
+            results = sm.stats.anova_lm(model, typ=2)
+            value = str(results)
+
+            children = [
+                dbc.Col(
+                    [
+
+                        dbc.Textarea(
+                            id="results",
+                            className="mt-1",
+                            value=value,
+                            style={'height': 400},
+                        ),
+
+                        html.Button('İndir', id='test_res',
+                                    n_clicks=0,
+                                    className='btn btn-sm btn-outline-primary col-2 mt-2 float-end'
+                                    ),
+
+                        dcc.Download(id="download-tests-result"),
+                    ], md=12
+                ),
+            ]
+
+            return children
+
+    @app.callback(
+        Output('download-tests-result', 'data'),
+        Input('test_res', 'n_clicks'),
+
+        State('results', 'value'),
+        prevent_initial_call=True,
+    )
+    def download_test_results(n_clicks, content):
+        if n_clicks > 0:
+            return dict(content=content, filename="test_sonucları.txt")
 
     return HttpResponseRedirect("/laboratuvarlar/bioinformatic-laboratuvari/app/files-stats/")

@@ -27,7 +27,7 @@ def create_table(request):
     external_stylesheets = [dbc.themes.BOOTSTRAP]
 
     app = DjangoDash('table-create', external_stylesheets=external_stylesheets,
-                     title="Tablo ve Grafik", add_bootstrap_links=True)
+                     title="Tablo ve Grafik", add_bootstrap_links=True, update_title="Güncelleniyor...")
 
     app.layout = dbc.Card(
         [
@@ -196,6 +196,15 @@ def create_table(request):
                                                         style={'marginLeft': -4, 'marginTop': -3},
                                                     ),
 
+                                                    html.Label("Z Ekseni", style={'font-weight': 'bold'},
+                                                               className="ml-2 text-sm"),
+
+                                                    dcc.Dropdown(
+                                                        id="z-axis",
+                                                        className='col-11',
+                                                        style={'marginLeft': -4},
+                                                    ),
+
                                                     html.Label("Lejant Seçiniz", style={'font-weight': 'bold'},
                                                                className="ml-2 text-small mt-1"),
 
@@ -354,7 +363,7 @@ def create_table(request):
                             dbc.Col(
                                 [
 
-                                    html.Label("Tablo", style={'font-weight': 'bold'}, className="mt-1"),
+                                    html.P("Tablo", className="mt-2 border-bottom text-primary pb-2"),
 
                                     dash_table.DataTable(
 
@@ -457,6 +466,7 @@ def create_table(request):
             Output('sel-col', 'options'),
             Output('x-axis', 'options'),
             Output('y-axis', 'options'),
+            Output('z-axis', 'options'),
             Output('color', 'options'),
             Output('stats_out', 'children'),
             Output('st_corr', 'children'),
@@ -471,6 +481,7 @@ def create_table(request):
             Input('sel-col', 'value'),
             Input('x-axis', 'value'),
             Input('y-axis', 'value'),
+            Input('z-axis', 'value'),
             Input('color', 'value'),
             Input('corr_method', 'value'),
             Input('trendline', 'value'),
@@ -489,7 +500,7 @@ def create_table(request):
     )
     def display_output(
             data, columns, graph_type, title,
-            selected_columns, x_axs, y_axs, color,
+            selected_columns, x_axs, y_axs, z_axs, color,
             corr_method, trendline, marginal_x, marginal_y, histnorm, barmode,
             text_auto, markers, cumulative,
             col):
@@ -506,6 +517,7 @@ def create_table(request):
         sel_col = [c.get('name') for c in col]
         x = [c.get('name') for c in col]
         y = [c.get('name') for c in col]
+        z = [c.get('name') for c in col]
         renk = [c.get('name') for c in col]
 
         stats_desc = dbc.Table.from_dataframe(
@@ -521,6 +533,9 @@ def create_table(request):
             if selected_columns:
                 df = df[selected_columns]
             fig = px.imshow(df, text_auto=True, aspect="auto", title=title)
+
+        elif graph_type == 'histogram2d':
+            fig = px.density_heatmap(df, x=x_axs, y=y_axs, z=z_axs, title=title, text_auto=bool(text_auto),)
 
         elif graph_type == 'bar':
             fig = px.bar(df, x=x_axs, y=y_axs, color=color, title=title)
@@ -559,7 +574,12 @@ def create_table(request):
         elif graph_type == 'funnel':
             fig = px.funnel(df, x=x_axs, y=y_axs, color=color, title=title)
 
-        return fig, sel_col, x, y, renk, stats_desc, stats_corr, f'{corr_method.capitalize()} Korelasyon'
+        elif graph_type == 'contour':
+            if selected_columns:
+                facet_row = selected_columns[0]
+            fig = px.density_contour(df, x=x_axs, y=y_axs, z=z_axs, color=color, title=title, marginal_x=marginal_x, marginal_y=marginal_y, facet_row=facet_row)
+
+        return fig, sel_col, x, y, z, renk, stats_desc, stats_corr, f'{corr_method.capitalize()} Korelasyon'
 
     @app.callback(
         Output('download-std-xlsx', 'data'),
