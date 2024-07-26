@@ -404,77 +404,44 @@ def single_molecule_view(request):
                                 [
                                     dbc.Col(
                                         [
-                                            dcc.Tabs(
-                                                id='mol3d-tabs', children=[
-                                                    dcc.Tab(
+                                            dbc.Tabs(
+                                                id='mol3d-tabs',
+                                                children=[
+
+                                                    dbc.Tab(
                                                         label='AÇIKLAMA',
-                                                        children=html.Div(
-                                                            className='control-tab mt-2',
-                                                            children=[
-                                                                html.H4(["YAPIYA İLİŞKİN BİLGİLER"], className="mt-2"),
-                                                                html.P(
-                                                                    f"İD : {str(file.name[:4]).upper()}"),
-
-                                                                html.P(
-                                                                    f"ADI : {structure.get('name')}"
-                                                                ),
-
-                                                                html.P(
-                                                                    f"Yayınlanma Tarihi : {structure.get('release_date')}"
-                                                                ),
-
-                                                                html.P(
-                                                                    f"Metod : {structure.get('structure_method')}"
-                                                                ),
-
-                                                                html.P(
-                                                                    f"Referans : {structure.get('journal')}",
-                                                                    className="text-align-justify",
-                                                                ),
-
-                                                                html.A(['Protein Databankta Görüntüle'],
-                                                                       href=f'https://www.rcsb.org/structure/{str(file.name[:4]).lower()}',
-                                                                       target="_blank"),
-
-                                                            ]
-                                                        )
-                                                    ),
-
-                                                    dcc.Tab(
-                                                        label='TABLO',
                                                         children=[
-                                                            html.Div(
-                                                                [
-                                                                    dash_table.DataTable(
-                                                                        id="zooming-table",
-                                                                        columns=columns,
-                                                                        data=df.to_dict("records"),
-                                                                        row_selectable="single",
-                                                                        page_size=10,
-                                                                        filter_action='native',
-                                                                        filter_options={"placeholder_text": "Filtrele"},
-                                                                        editable=True,
-                                                                        style_cell={'textAlign': 'center'},
-                                                                        style_header={
-                                                                            'backgroundColor': 'white',
-                                                                            'fontWeight': 'bold'
-                                                                        }
-                                                                    ),
 
-                                                                ], className="mx-auto"),
+                                                            html.H4(["YAPIYA İLİŞKİN BİLGİLER"], className="mt-2"),
+                                                            html.P(
+                                                                f"İD : {str(file.name[:4]).upper()}"),
 
-                                                            html.Div([
-                                                                html.Button("Su molekülünü kaldır", id="remove-water",
-                                                                            className='btn btn-primary mt-2 mx-auto'),
-                                                            ]),
+                                                            html.P(
+                                                                f"ADI : {structure.get('name')}"
+                                                            ),
 
-                                                            html.P(id="water-size", children=[])
+                                                            html.P(
+                                                                f"Yayınlanma Tarihi : {structure.get('release_date')}"
+                                                            ),
+
+                                                            html.P(
+                                                                f"Metod : {structure.get('structure_method')}"
+                                                            ),
+
+                                                            html.P(
+                                                                f"Referans : {structure.get('journal')}",
+                                                                className="text-align-justify",
+                                                            ),
+
+                                                            html.A(['Protein Databankta Görüntüle'],
+                                                                   href=f'https://www.rcsb.org/structure/{str(file.name[:4]).lower()}',
+                                                                   target="_blank"),
+
                                                         ]
                                                     ),
 
-                                                    dcc.Tab(
+                                                    dbc.Tab(
                                                         label='ARAÇLAR',
-                                                        value='view-options',
                                                         children=[
 
                                                             html.Label("Görünüm", className="fw-bolder mt-2"),
@@ -514,7 +481,13 @@ def single_molecule_view(request):
                                                                 value='atom', className="mt-2"
                                                             ),
 
+                                                            html.Button("Su molekülünü kaldır", id="remove-water",
+                                                                        className='btn btn-sm btn-outline-primary mt-2'),
+
+                                                            html.P(id="water-size", children=[]),
+
                                                             html.P(["Seçtiğiniz Bölge"], className="fw-bolder mt-2"),
+
                                                             html.Div(
                                                                 id='select-atom-output',
                                                                 className="mx-auto",
@@ -530,19 +503,44 @@ def single_molecule_view(request):
 
                                     dbc.Col(
                                         [
-                                            dash_bio.Molecule3dViewer(
-                                                id="visual_output",
-                                                modelData=data,
-                                                styles=styles,
-                                                style={'marginRight': 'auto', 'marginLeft': 'auto'},
-                                                selectionType='atom',
-                                                width=500,
-                                                height=600
+
+                                            dash_table.DataTable(
+                                                id="zooming-table",
+                                                columns=columns,
+                                                data=df.to_dict("records"),
+                                                row_selectable="single",
+                                                style_table={'overflowY': 'auto', 'overflowX': 'auto'},
+                                                style_cell={'textAlign': 'center'},
+                                                style_data={
+                                                    'whiteSpace': 'normal',
+                                                    'height': 'auto',
+                                                },
+                                                row_deletable=True,
+                                                editable=False,
+                                                page_action='native',
+                                                page_size=8,
+
                                             ),
-                                        ], md=8,
-                                    ),
+
+                                        ], md=8, style={'maxWidth': '62%'}, className="mx-auto mb-3 p-2"
+                                    )
                                 ],
                             ),
+
+                            dbc.Row([
+                                dbc.Col(
+                                    [
+                                        dash_bio.Molecule3dViewer(
+                                            id="visual_output",
+                                            modelData=data,
+                                            styles=styles,
+                                            style={'marginRight': 'auto', 'marginLeft': 'auto'},
+                                            selectionType='atom',
+                                            width="80%"
+                                        ),
+                                    ], md=12,
+                                ),
+                            ])
                         ], className="shadow-lg p-3 bg-body rounded mr-1 ml-1 mb-2"
                     ),
                 ],
@@ -624,7 +622,6 @@ def single_molecule_view(request):
             @app.callback(
                 Output('select-atom-output', 'children'),
                 Input('visual_output', 'selectedAtomIds'),
-
             )
             def show_selected_atoms(atom_ids):
 

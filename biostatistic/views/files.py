@@ -16,9 +16,9 @@ import plotly.graph_objs as go
 ex_data = px.data.iris()
 
 label = [
-    'bar', 'line', 'barpolar', 'box', 'cone', 'contour', 'contourcarpet', 'densitymapbox', 'funnel',
-    'funnelarea', 'heatmap', 'heatmapgl', 'histogram', 'histogram2d', 'k-means', 'icicle', 'image', 'indicator',
-    'isosurface', 'ohlc', 'parcats', 'parcoords', 'pie', 'pointcloud', 'sankey', 'scatter', 'scatter3d',
+    'bar', 'line', 'barpolar', 'box', 'funnel',
+    'heatmap', 'histogram', 'histogram2d', 'k-means',
+    'ohlc', 'parcats', 'parcoords', 'pie', 'pointcloud', 'sankey', 'scatter', 'scatter3d',
     'scattercarpet',
     'scattergeo', 'scattergl', 'scattermapbox', 'scatterpolar', 'scattersmith', 'scatterternary',
     'splom', 'streamtube', 'sunburst', 'surface', 'table', 'treemap', 'violin', 'volume', 'waterfall'
@@ -294,8 +294,9 @@ def files_table(request):
                                                         style={'marginLeft': -4},
                                                     ),
 
-                                                    dbc.Label("Kümeleme Sayısı"),
-                                                    dbc.Input(id="cluster-count", type="number", value=3),
+                                                    html.Label("Kümeleme Sayısı", style={'font-weight': 'bold'},
+                                                               className="ml-2 text-small mt-1"),
+                                                    dbc.Input(id="cluster-count", type="number", value=3, className="col-10 ml-2"),
 
                                                 ]
                                             ),
@@ -630,7 +631,6 @@ def files_table(request):
             fig = px.bar(df, x=x_axs, y=y_axs, color=color, title=title)
 
         elif graph_type == 'histogram2d':
-
             fig = px.density_heatmap(df, x=x_axs, y=y_axs, z=z_axs, title=title, text_auto=bool(text_auto),
                                      marginal_x=marginal_x, marginal_y=marginal_y)
 
@@ -660,7 +660,7 @@ def files_table(request):
                                color_discrete_sequence=px.colors.sequential.Plasma_r, title=title)
 
         elif graph_type == 'scatter3d':
-            fig = px.scatter_3d(df.to_dict('records'), x=x_axs, y=y_axs, z=color, title=title, color=color)
+            fig = px.scatter_3d(df.to_dict('records'), x=x_axs, y=y_axs, z=z_axs, title=title, color=color)
 
         elif graph_type == 'box':
             fig = px.box(df, x=x_axs, y=y_axs, color=color, title=title)
@@ -680,11 +680,10 @@ def files_table(request):
                     y=df.loc[df.cluster == c, y_axs],
                     mode="markers",
                     marker={"size": 8},
-                    name="Cluster {}".format(c),
+                    name="Kümeleme {}".format(c),
                 )
                 for c in range(n_clusters)
             ]
-
             data.append(
                 go.Scatter(
                     x=centers[:, 0],
@@ -732,13 +731,11 @@ def files_table(request):
     @app.callback(
         Output('test_results-container', 'children'),
 
-
         Input('tests', 'value'),
         Input('dep_val', 'value'),
         Input('in_dep_val', 'value'),
 
         State('datatable-upload-container', 'data'),
-
         prevent_initial_call=True,
     )
     def mod_st(test, dep_val, in_dep_val, rows):
@@ -749,14 +746,17 @@ def files_table(request):
 
         try:
             formula = f'{dep_val} ~ {in_dep_val[0]} + {in_dep_val[1]} + {in_dep_val[2]} + {in_dep_val[3]}'
-        except IndexError:
+        except:
             try:
                 formula = f'{dep_val} ~ {in_dep_val[0]} + {in_dep_val[1]} + {in_dep_val[2]}'
-            except IndexError:
+            except:
                 try:
                     formula = f'{dep_val} ~ {in_dep_val[0]} + {in_dep_val[1]}'
-                except IndexError:
-                    formula = f'{dep_val} ~ {in_dep_val[0]}'
+                except:
+                    try:
+                        formula = f'{dep_val} ~ {in_dep_val[0]}'
+                    except:
+                        pass
 
         if test == 'ols':
 
@@ -789,7 +789,7 @@ def files_table(request):
                                     className='btn btn-sm btn-outline-primary col-2 mt-2 float-end'
                                     ),
 
-                        dcc.Download(id="download-tests-result"),
+                        dcc.Download(id="download-tests-result-ols"),
                     ], md=6
                 ),
 
@@ -805,19 +805,28 @@ def files_table(request):
         elif test == 'anova_oneway':
             model = ols(formula, data=df).fit()
             results = sm.stats.anova_lm(model, typ=1)
-            value = str(results)
+            results = results.reset_index().rename(columns={'index': ''})
             children = [
                 dbc.Col(
                     [
 
-                        dbc.Textarea(
+                        dash_table.DataTable(
                             id="results",
-                            className="mt-1",
-                            value=value,
-                            style={'height': 400},
+                            data=results.to_dict('records'),
+                            columns=[{"id": i, "name": i, } for i in results.columns],
+                            style_table={'overflowY': 'auto', 'overflowX': 'auto'},
+                            style_cell={'textAlign': 'center'},
+                            style_data={
+                                'whiteSpace': 'normal',
+                                'height': 'auto',
+                            },
+                            row_deletable=False,
+                            editable=False,
+                            page_action='native',
+                            page_size=8,
                         ),
 
-                        html.Button('İndir', id='test_res',
+                        html.Button('İNDİR', id='test_res',
                                     n_clicks=0,
                                     className='btn btn-sm btn-outline-primary col-2 mt-2 float-end'
                                     ),
@@ -831,20 +840,29 @@ def files_table(request):
         elif test == 'anova_twoway':
             model = ols(formula, data=df).fit()
             results = sm.stats.anova_lm(model, typ=2)
-            value = str(results)
-
+            results = results.reset_index().rename(columns={'index': ''})
             children = [
+
                 dbc.Col(
                     [
 
-                        dbc.Textarea(
+                        dash_table.DataTable(
                             id="results",
-                            className="mt-1",
-                            value=value,
-                            style={'height': 400},
+                            data=results.to_dict('records'),
+                            columns=[{"id": i, "name": i, } for i in results.columns],
+                            style_table={'overflowY': 'auto', 'overflowX': 'auto'},
+                            style_cell={'textAlign': 'center'},
+                            style_data={
+                                'whiteSpace': 'normal',
+                                'height': 'auto',
+                            },
+                            row_deletable=False,
+                            editable=False,
+                            page_action='native',
+                            page_size=8,
                         ),
 
-                        html.Button('İndir', id='test_res',
+                        html.Button('İNDİR', id='test_res',
                                     n_clicks=0,
                                     className='btn btn-sm btn-outline-primary col-2 mt-2 float-end'
                                     ),
@@ -853,18 +871,33 @@ def files_table(request):
                     ], md=12
                 ),
             ]
-
             return children
 
     @app.callback(
         Output('download-tests-result', 'data'),
         Input('test_res', 'n_clicks'),
+        Input('tests', 'value'),
+
+        State('results', 'data'),
+        prevent_initial_call=True,
+    )
+    def download_anova_test_results(n_clicks, test, content):
+        df = pd.DataFrame(content)
+        if n_clicks > 0:
+            return dcc.send_data_frame(df.to_excel,
+                                       f"{test.capitalize()} Tablosu.xlsx")
+
+    @app.callback(
+        Output('download-tests-result-ols', 'data'),
+        Input('test_res', 'n_clicks'),
+        Input('tests', 'value'),
 
         State('results', 'value'),
         prevent_initial_call=True,
     )
-    def download_test_results(n_clicks, content):
+    def download_test_results(n_clicks, test, content):
+
         if n_clicks > 0:
-            return dict(content=content, filename="test_sonucları.txt")
+            return dict(content=content, filename=f"{test.capitalize()}-sonuçları.txt")
 
     return HttpResponseRedirect("/laboratuvarlar/bioinformatic-laboratuvari/app/files-stats/")
