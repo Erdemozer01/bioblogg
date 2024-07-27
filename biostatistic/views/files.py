@@ -628,7 +628,7 @@ def files_table(request):
             fig = px.imshow(df, text_auto=True, aspect="auto", title=title)
 
         elif graph_type == 'bar':
-            fig = px.bar(df, x=x_axs, y=y_axs, color=color, title=title)
+            fig = px.bar(df, x=x_axs, y=y_axs, color=color, title=title, text_auto=bool(text_auto), barmode=barmode)
 
         elif graph_type == 'histogram2d':
             fig = px.density_heatmap(df, x=x_axs, y=y_axs, z=z_axs, title=title, text_auto=bool(text_auto),

@@ -676,12 +676,9 @@ def multi_molecule_view(request):
 
             file_name = []
 
-            files_names = []
-
             for file in files:
-                obj.records_files.create(file=file)
+                obj.records_files.create(file=file).file.name.upper()
                 file_name.append(str(file).upper().rsplit(".PDB")[0])
-                files_names.append(file)
 
             dropdown_options = [{"label": i, "value": i} for i in file_name]
 
