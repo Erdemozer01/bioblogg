@@ -680,6 +680,10 @@ def multi_molecule_view(request):
                 obj.records_files.create(file=file)
                 file_name.append(str(file).upper().rsplit(".PDB")[0])
 
+            for j in obj.records_files.all():
+                print(j.file.name.upper().rsplit(".PDB")[0].split('/').pop())
+                print(str(data_path + j.file.name).replace('\\', '/'))
+
             dropdown_options = [{"label": i, "value": i} for i in file_name]
 
             representation_options = [
@@ -914,9 +918,10 @@ def multi_molecule_view(request):
 
                 data_list = [
                     ngl_parser.get_data(
-                        data_path=data_path, pdb_id=pdb_id,
+                        data_path=str(data_path + pdb_id.file.name).replace('/', '\\'),
+                        pdb_id=str(pdb_id.file.name.upper().rsplit(".PDB")[0].split('/').pop()),
                         color='red', reset_view=True, local=True
-                    ) for pdb_id in file_name
+                    ) for pdb_id in obj.records_files.all()
                 ]
 
                 return data_list, molstyles_dict, stage_params, downloadImage, imageParameters
