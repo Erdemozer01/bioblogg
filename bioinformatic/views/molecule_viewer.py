@@ -676,17 +676,12 @@ def multi_molecule_view(request):
 
             file_name = []
 
+            files_names = []
+
             for file in files:
                 obj.records_files.create(file=file)
                 file_name.append(str(file).upper().rsplit(".PDB")[0])
-
-            data_list = [
-                ngl_parser.get_data(
-                    data_path=str(data_path),
-                    pdb_id=str(pdb_id),
-                    color='red', reset_view=True, local=True
-                ) for pdb_id in file_name
-            ]
+                files_names.append(file)
 
             dropdown_options = [{"label": i, "value": i} for i in file_name]
 
@@ -920,7 +915,13 @@ def multi_molecule_view(request):
                 if n_clicks > 0:
                     downloadImage = True
 
-
+                data_list = [
+                    ngl_parser.get_data(
+                        data_path=data_path,
+                        pdb_id=pdb_id,
+                        color='red', reset_view=True, local=True
+                    ) for pdb_id in value
+                ]
 
                 return data_list, molstyles_dict, stage_params, downloadImage, imageParameters
 
