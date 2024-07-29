@@ -169,6 +169,7 @@ FILE_UPLOAD_HANDLERS = [
 CKEDITOR_5_ALLOW_ALL_FILE_TYPES = True
 CKEDITOR_5_UPLOAD_FILE_TYPES = ['jpeg', 'pdf', 'png']  # optional
 
+
 customColorPalette = [
     {
         'color': 'hsl(4, 90%, 58%)',
