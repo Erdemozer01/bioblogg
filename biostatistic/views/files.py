@@ -12,6 +12,7 @@ from patsy import desc
 from patsy.highlevel import dmatrices
 from sklearn.cluster import KMeans
 import plotly.graph_objs as go
+from dash.exceptions import PreventUpdate
 
 ex_data = px.data.iris()
 
@@ -99,38 +100,49 @@ def files_table(request):
                                         [
 
                                             dbc.Tab(
-                                                label='Giriş',
+                                                label='Tablo',
                                                 children=[
 
-                                                    html.P(["Uygulamaya ilişkin açıklamalar"],
-                                                           style={'font-weight': 'bold'}, className="mt-1 ml-1 mb-1"),
+                                                    html.Label("Tablo ayarları", style={'font-weight': 'bold'},
+                                                               className="ml-2 text-small mt-2"),
 
-                                                    html.P(
-                                                        ["- Dinamik istatistik uygulamasına hoş geldiniz."],
-                                                        className="mt-2 mb-0",
+                                                    dcc.Input(
+                                                        id='adding-rows-name',
+                                                        className="form-control ml-2 col-11",
+                                                        debounce=True,
+                                                        placeholder='Kolon adı',
                                                     ),
 
-                                                    html.P(
-                                                        [
-                                                            "- Excel yada csv uzantılı dosyanızı seçtikten sonra girdiğiniz veriler, "
-                                                            "istatistik ve korelasyon tablonuz ile grafiğiniz oluşacaktır."
-                                                        ], className="mb-0"
+                                                    html.Button('Kolon ekle', id='adding-rows-button', n_clicks=0,
+                                                                className='btn btn-sm btn-outline-primary mt-1 ml-2 col-4'),
 
+                                                    html.Button('Satır ekle', id='editing-rows-button', n_clicks=0,
+                                                                className='btn btn-sm btn-outline-primary mt-1 ml-2 col-4'
+                                                                ),
+
+                                                    html.P("Dosya Seçiniz", style={'font-weight': 'bold'},
+                                                           className="ml-2 text-small mt-1"),
+
+                                                    dcc.Upload(
+                                                        id='datatable-upload',
+                                                        children=html.Div(
+                                                            [
+                                                                'Dosyanızı Seçin yada Sürükleyin',
+                                                            ], className="mt-2"),
+                                                        style={
+                                                            'width': '85%', 'height': '80px', 'lineHeight': '60px',
+                                                            'borderWidth': '1px', 'borderStyle': 'dashed',
+                                                            'borderRadius': '5px', 'textAlign': 'center',
+                                                            'margin': '10px', 'marginLeft': 3
+                                                        },
                                                     ),
 
-                                                    html.P(
-                                                        [
-                                                            "- Görüntülemede sorun yaşarsanız sayfayı yenileyin yada ayarlarınızı ve verilerinizi gözden geçirin"
-                                                        ], className="mb-0"
+                                                    html.Small(['Not: Dosya .xlsx, .xls yada .csv uzantılı olmalıdır.'],
+                                                               className="text-danger ml-1", style={'marginTop': -8}),
 
-                                                    ),
+                                                    html.P(id="filename_out", className="ml-1",
+                                                           children=['Dosya Seçmediniz']),
 
-                                                    html.Div(
-                                                        [
-                                                            "Not : Sayfayı yenilediğinizde verileniz kaybolacaktır."
-                                                        ], className="text-danger text-sm mb-0",
-
-                                                    ),
                                                 ]
                                             ),
 
@@ -169,27 +181,6 @@ def files_table(request):
                                                         style={'marginLeft': -4, 'marginTop': -9},
                                                     ),
 
-                                                    html.P("Dosya Seçiniz", style={'font-weight': 'bold'},
-                                                           className="ml-2 text-small mt-1"),
-
-                                                    dcc.Upload(
-                                                        id='datatable-upload',
-                                                        children=html.Div([
-                                                            'Dosyanızı Seçin yada Sürükleyin',
-
-                                                        ], className="mt-2"),
-                                                        style={
-                                                            'width': '85%', 'height': '80px', 'lineHeight': '60px',
-                                                            'borderWidth': '1px', 'borderStyle': 'dashed',
-                                                            'borderRadius': '5px', 'textAlign': 'center',
-                                                            'margin': '10px', 'marginLeft': 3
-                                                        },
-                                                    ),
-
-                                                    html.Small(['Not: Dosya .xlsx, .xls yada .csv uzantılı olmalıdır.'],
-                                                               className="text-danger ml-1", style={'marginTop': -8}),
-
-                                                    html.Div(id="filename_out", className="ml-1")
                                                 ]
                                             ),
 
@@ -296,7 +287,8 @@ def files_table(request):
 
                                                     html.Label("Kümeleme Sayısı", style={'font-weight': 'bold'},
                                                                className="ml-2 text-small mt-1"),
-                                                    dbc.Input(id="cluster-count", type="number", value=3, className="col-10 ml-2"),
+                                                    dbc.Input(id="cluster-count", type="number", value=3,
+                                                              className="col-10 ml-2"),
 
                                                 ]
                                             ),
@@ -445,6 +437,8 @@ def files_table(request):
 
                                     dash_table.DataTable(
                                         id='datatable-upload-container',
+                                        data=[],
+                                        columns=[],
                                         style_table={'overflowY': 'auto', 'overflowX': 'auto'},
                                         style_cell={'textAlign': 'center'},
                                         style_data={
@@ -530,17 +524,53 @@ def files_table(request):
 
     @app.callback(
         Output('datatable-upload-container', 'data'),
-        Output('datatable-upload-container', 'columns'),
+        Input('editing-rows-button', 'n_clicks'),
         Input('datatable-upload', 'contents'),
+        Input('datatable-upload-container', 'columns'),
+        State('datatable-upload', 'filename'),
+        State('datatable-upload-container', 'data'),
+    )
+    def add_row(n_clicks, contents, columns, filename, rows):
+
+        if contents is not None and n_clicks == 0:
+            df = parse_contents(contents, filename)
+            rows = df.to_dict('records')
+
+        elif n_clicks > 0 and contents is None:
+            rows.append({c['id']: '' for c in columns})
+
+        elif contents is not None:
+            rows.append({c['id']: '' for c in columns})
+
+        return rows
+
+    @app.callback(
+        Output('datatable-upload-container', 'columns'),
+        Input('adding-rows-button', 'n_clicks'),
+        Input('datatable-upload', 'contents'),
+        Input('adding-rows-name', 'value'),
+        State('datatable-upload-container', 'columns'),
         State('datatable-upload', 'filename'),
     )
-    def update_output(contents, filename):
-        if contents is None:
-            return None, None
-        df = parse_contents(contents, filename)
-        return df.to_dict('records'), [
-            {"name": i, "id": i, 'deletable': True, "renamable": True, "selectable": True} for i in
-            df.columns]
+    def update_columns(n_clicks, contents, value, existing_columns, filename):
+
+        if contents is not None and n_clicks == 0:
+            df = parse_contents(contents, filename)
+            existing_columns = [
+                {"name": i, "id": i, 'type': 'numeric', 'deletable': True, "renamable": True, "selectable": True} for i
+                in df.columns]
+        elif n_clicks > 0 and contents is None:
+            existing_columns.append(
+                {"name": value, "id": value, 'type': 'numeric', 'deletable': True, "renamable": True,
+                 "selectable": True}
+            )
+
+        elif contents is not None:
+            existing_columns.append(
+                {"name": value, "id": value, 'type': 'numeric', 'deletable': True, "renamable": True,
+                 "selectable": True}
+            )
+        return existing_columns
 
     @app.callback(
         Output('st_corr', 'label'),
@@ -585,15 +615,17 @@ def files_table(request):
         Input('histfunc', 'value'),
         Input('cluster-count', 'value'),
         State('datatable-upload', 'filename'),
-
         prevent_initial_call=True,
     )
-    def display_graph(rows, columns, title, graph_type, selected_columns, x_axs, y_axs, z_axs, color,
+    def displays(rows, columns, title, graph_type, selected_columns, x_axs, y_axs, z_axs, color,
                       trend_line, marginal_x, marginal_y, corr_method, histnorm, barmode, text_auto, markers,
                       cumulative, histfunc, n_clusters, filename):
 
         global fig, facet_col
         facet_row = None
+
+        if filename is None:
+            filename = 'Dosya seçmediniz'
 
         file_name = html.P([f'{(filename)}'], className='fw-bold')
 

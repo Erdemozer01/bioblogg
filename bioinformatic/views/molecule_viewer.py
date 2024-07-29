@@ -1,3 +1,5 @@
+import glob
+
 import parmed, os, json
 from django.shortcuts import *
 from django.contrib import messages
@@ -885,6 +887,8 @@ def multi_molecule_view(request):
             )
             def return_molecule(style, sidebyside, value, color, quality, cameraType, n_clicks):
 
+                print(value)
+
                 sidebyside_bool = sidebyside == "True"
 
                 molstyles_dict = {
@@ -915,8 +919,8 @@ def multi_molecule_view(request):
 
                 data_list = [
                     ngl_parser.get_data(
-                        data_path=data_path,
-                        pdb_id=pdb_id,
+                        data_path=str(data_path),
+                        pdb_id=str(pdb_id),
                         color='red', reset_view=True, local=True
                     ) for pdb_id in value
                 ]
