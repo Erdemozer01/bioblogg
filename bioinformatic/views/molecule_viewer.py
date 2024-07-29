@@ -677,7 +677,7 @@ def multi_molecule_view(request):
             file_name = []
 
             for file in files:
-                obj.records_files.create(file=file).file.name.upper()
+                obj.records_files.create(file=file)
                 file_name.append(str(file).upper().rsplit(".PDB")[0])
 
             dropdown_options = [{"label": i, "value": i} for i in file_name]
@@ -874,6 +874,7 @@ def multi_molecule_view(request):
                 Output("molecule-output", "stageParameters"),
                 Output("molecule-output", "downloadImage"),
                 Output("molecule-output", "imageParameters"),
+
                 Input("molecule-representation", "value"),
                 Input("nglstyle-radio", "value"),
                 Input("molecule-select", "value"),
