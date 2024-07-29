@@ -766,9 +766,9 @@ def multi_molecule_view(request):
                                 [
                                     dbc.Col(
                                         [
-                                            dcc.Tabs(
+                                            dbc.Tabs(
                                                 id='mol3d-tabs', children=[
-                                                    dcc.Tab(
+                                                    dbc.Tab(
                                                         label='AÇIKLAMA',
                                                         children=html.Div(
                                                             className='control-tab mt-2',
@@ -783,9 +783,9 @@ def multi_molecule_view(request):
                                                         )
                                                     ),
 
-                                                    dcc.Tab(
+                                                    dbc.Tab(
                                                         label='GÖRÜNTÜLEME',
-                                                        value='view-options',
+
                                                         children=[
 
                                                             html.Label("Molekül Seçin", className="fw-bolder mt-2"),
@@ -860,7 +860,7 @@ def multi_molecule_view(request):
 
                                     dbc.Col(
                                         [
-                                            dash_bio.NglMoleculeViewer(id="molecule-output", height=600, width=1050),
+                                            dash_bio.NglMoleculeViewer(id="molecule-output", height=600, width=900),
                                         ], md=9, className="mx-auto"
                                     ),
                                 ],
@@ -886,8 +886,6 @@ def multi_molecule_view(request):
                 Input("save-img", "n_clicks"),
             )
             def return_molecule(style, sidebyside, value, color, quality, cameraType, n_clicks):
-
-                print(value)
 
                 sidebyside_bool = sidebyside == "True"
 
