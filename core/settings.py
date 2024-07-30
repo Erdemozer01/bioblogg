@@ -154,8 +154,7 @@ PLOTLY_COMPONENTS = [
 
     # django-plotly-dash components
     'dpd_components',
-    # static support if serving local assets
-    'dpd_static_support',
+
 
     # Other components, as needed
     'dash_bootstrap_components',
