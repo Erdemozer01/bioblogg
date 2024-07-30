@@ -652,7 +652,7 @@ def multi_molecule_view(request):
     if BioinformaticModel.objects.filter(user=request.user, tool="multi_molecule_view").exists():
         BioinformaticModel.objects.filter(user=request.user, tool="multi_molecule_view").delete()
 
-    external_stylesheets = [dbc.themes.BOOTSTRAP]
+    external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
     form = MultiMoleculeViewForm(request.POST or None, request.FILES or None)
 
@@ -708,7 +708,7 @@ def multi_molecule_view(request):
                 {"label": "BEYAZ", "value": "white"},
             ]
 
-            app = DjangoDash('bio-multi-molecule3d_viewer', external_stylesheets=external_stylesheets,
+            app = DjangoDash('Ngl_molecule3d_viewer', external_stylesheets=external_stylesheets,
                              title='Çoklu 3D MOLEKÜL GÖRÜNTÜLEME', add_bootstrap_links=True)
 
             app.layout = dbc.Card(
@@ -928,6 +928,6 @@ def multi_molecule_view(request):
 
                 return data_list, molstyles_dict, stage_params, downloadImage, imageParameters
 
-        return HttpResponseRedirect("/laboratuvarlar/bioinformatic-laboratuvari/app/bio-multi-molecule3d_viewer/")
+        return HttpResponseRedirect("/laboratuvarlar/bioinformatic-laboratuvari/app/Ngl_molecule3d_viewer/")
 
     return render(request, 'bioinformatic/form.html', {'form': form, 'title': 'Çoklu 3D MOLEKÜL GÖRÜNTÜLEME'})
