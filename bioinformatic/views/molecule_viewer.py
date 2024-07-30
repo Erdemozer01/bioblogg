@@ -922,10 +922,12 @@ def multi_molecule_view(request):
                 data_list = [
                     ngl_parser.get_data(
                         data_path=data_path,
-                        pdb_id=rec.file.name.split("/")[-1].replace(".pdb", ""),
-                        color='red', reset_view=True, local=True
+                        pdb_id=pdb_id,
+                        color='red',
+                        reset_view=True,
+                        local=True
                     )
-                    for rec in obj.records_files.filter(records__user=request.user)
+                    for pdb_id in value
                 ]
 
                 return data_list, molstyles_dict, stage_params, downloadImage, imageParameters
