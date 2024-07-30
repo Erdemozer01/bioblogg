@@ -654,8 +654,6 @@ def multi_molecule_view(request):
 
     external_stylesheets = [dbc.themes.BOOTSTRAP]
 
-
-
     form = MultiMoleculeViewForm(request.POST or None, request.FILES or None)
 
     data_path = os.path.join(BASE_DIR, "media", "laboratory", f"{request.user}\\").replace("\\", "/")
