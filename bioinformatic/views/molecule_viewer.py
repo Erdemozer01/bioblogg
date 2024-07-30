@@ -713,6 +713,10 @@ def multi_molecule_view(request):
                 {"label": "BEYAZ", "value": "white"},
             ]
 
+            for j in obj.records_files.filter(records__user=request.user):
+                print(j.file.path)
+                print(j.file.name.split('/')[-1])
+
             app.layout = dbc.Card(
                 [
                     html.Meta(
@@ -918,9 +922,10 @@ def multi_molecule_view(request):
                 data_list = [
                     ngl_parser.get_data(
                         data_path=data_path,
-                        pdb_id=pdb_id,
+                        pdb_id=rec.file.name.split("/")[-1].replace(".pdb", ""),
                         color='red', reset_view=True, local=True
-                    ) for pdb_id in value
+                    )
+                    for rec in obj.records_files.filter(records__user=request.user)
                 ]
 
                 return data_list, molstyles_dict, stage_params, downloadImage, imageParameters
