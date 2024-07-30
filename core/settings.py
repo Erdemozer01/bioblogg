@@ -154,20 +154,11 @@ PLOTLY_COMPONENTS = [
 
     # django-plotly-dash components
     'dpd_components',
-
+    # static support if serving local assets
+    'dpd_static_support',
 
     # Other components, as needed
     'dash_bootstrap_components',
-]
-
-STATICFILES_FINDERS = [
-
-    'django.contrib.staticfiles.finders.FileSystemFinder',
-    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-
-    'django_plotly_dash.finders.DashAssetFinder',
-    'django_plotly_dash.finders.DashComponentFinder',
-    'django_plotly_dash.finders.DashAppDirectoryFinder',
 ]
 
 FILE_UPLOAD_HANDLERS = [
