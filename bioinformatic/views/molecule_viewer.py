@@ -656,10 +656,6 @@ def multi_molecule_view(request):
 
     form = MultiMoleculeViewForm(request.POST or None, request.FILES or None)
 
-
-
-
-
     if request.method == "POST":
 
         if form.is_valid():
