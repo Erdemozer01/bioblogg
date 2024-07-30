@@ -656,7 +656,9 @@ def multi_molecule_view(request):
 
     form = MultiMoleculeViewForm(request.POST or None, request.FILES or None)
 
-    data_path = os.path.join(BASE_DIR, "media", "laboratory", f"{request.user}\\").replace("\\", "/")
+
+
+
 
     if request.method == "POST":
 
@@ -886,6 +888,8 @@ def multi_molecule_view(request):
                 Input("save-img", "n_clicks"),
             )
             def return_molecule(style, sidebyside, value, color, quality, cameraType, n_clicks):
+
+                data_path = os.path.join(BASE_DIR, "media", "laboratory", f"{request.user}\\").replace("\\", "/")
 
                 sidebyside_bool = sidebyside == "True"
 
