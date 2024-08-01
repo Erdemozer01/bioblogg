@@ -6,7 +6,7 @@ from django.contrib import messages
 from bioinformatic.forms import SingleMoleculeViewForm, MultiMoleculeViewForm
 from bioinformatic.models import BioinformaticModel
 from django_plotly_dash import DjangoDash
-from dash import dcc, html, dash_table, Input, Output, State
+from dash import dcc, html, dash_table, Input, Output, State, Dash
 import dash_bootstrap_components as dbc
 import dash_bio
 from dash_bio.utils import PdbParser, create_mol3d_style, ngl_parser
@@ -649,8 +649,7 @@ def multi_molecule_view(request):
 
     external_stylesheets = [dbc.themes.BOOTSTRAP]
 
-    app = DjangoDash('NglMoleculeView', external_stylesheets=external_stylesheets,
-                     title='Çoklu 3D MOLEKÜL GÖRÜNTÜLEME', add_bootstrap_links=True)
+    app = Dash(__name__, external_stylesheets=external_stylesheets, url_base_pathname="bioinformatic/aa")
 
     form = MultiMoleculeViewForm(request.POST or None, request.FILES or None)
 
