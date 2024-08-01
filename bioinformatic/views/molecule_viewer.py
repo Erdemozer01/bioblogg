@@ -649,7 +649,7 @@ def multi_molecule_view(request):
 
     external_stylesheets = [dbc.themes.BOOTSTRAP]
 
-    app = Dash(__name__, external_stylesheets=external_stylesheets, url_base_pathname="bioinformatic/aa")
+    app = Dash(__name__, external_stylesheets=external_stylesheets, requests_pathname_prefix="lab/bio/", url_base_pathname='ngl/')
 
     form = MultiMoleculeViewForm(request.POST or None, request.FILES or None)
 
@@ -922,6 +922,6 @@ def multi_molecule_view(request):
 
                 return data_list, molstyles_dict, stage_params, downloadImage, imageParameters
 
-        return HttpResponseRedirect("/laboratuvarlar/bioinformatic-laboratuvari/app/NglMoleculeView/")
+        return HttpResponseRedirect("/lab/bio/ngl/")
 
     return render(request, 'bioinformatic/form.html', {'form': form, 'title': 'Çoklu 3D MOLEKÜL GÖRÜNTÜLEME'})
