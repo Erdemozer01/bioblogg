@@ -34,11 +34,6 @@ def molecule_2d_view(request):
     app.layout = dbc.Card(
         [
 
-            html.Meta(
-                name='yazar',
-                children=["Mehmet Erdem ÖZER, Phd student, Bioinformatic, ozer246@gmail.com"]
-
-            ),
 
             ## NAVBAR ##
             dbc.NavbarSimple(
@@ -652,7 +647,7 @@ def multi_molecule_view(request):
     if BioinformaticModel.objects.filter(user=request.user, tool="multi_molecule_view").exists():
         BioinformaticModel.objects.filter(user=request.user, tool="multi_molecule_view").delete()
 
-    external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+    external_stylesheets = [dbc.themes.BOOTSTRAP]
 
     app = DjangoDash('NglMoleculeView', external_stylesheets=external_stylesheets,
                      title='Çoklu 3D MOLEKÜL GÖRÜNTÜLEME', add_bootstrap_links=True)
