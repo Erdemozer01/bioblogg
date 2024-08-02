@@ -48,7 +48,6 @@ def files_table(request):
 
     app.layout = dbc.Card(
         [
-
             ## NAVBAR ##
             dbc.NavbarSimple(
                 children=[
@@ -538,6 +537,7 @@ def files_table(request):
 
         elif n_clicks > 0 and contents is None:
             rows.append({c['id']: '' for c in columns})
+            n_clicks = 0
 
         elif contents is not None:
             rows.append({c['id']: '' for c in columns})
@@ -617,9 +617,11 @@ def files_table(request):
         State('datatable-upload', 'filename'),
         prevent_initial_call=True,
     )
-    def displays(rows, columns, title, graph_type, selected_columns, x_axs, y_axs, z_axs, color,
-                      trend_line, marginal_x, marginal_y, corr_method, histnorm, barmode, text_auto, markers,
-                      cumulative, histfunc, n_clusters, filename):
+    def displays(
+            rows, columns, title, graph_type, selected_columns, x_axs, y_axs, z_axs, color,
+            trend_line, marginal_x, marginal_y, corr_method, histnorm, barmode, text_auto,
+            markers, cumulative, histfunc, n_clusters, filename
+    ):
 
         global fig, facet_col
         facet_row = None
@@ -907,6 +909,7 @@ def files_table(request):
 
     @app.callback(
         Output('download-tests-result', 'data'),
+
         Input('test_res', 'n_clicks'),
         Input('tests', 'value'),
 
@@ -916,8 +919,9 @@ def files_table(request):
     def download_anova_test_results(n_clicks, test, content):
         df = pd.DataFrame(content)
         if n_clicks > 0:
-            return dcc.send_data_frame(df.to_excel,
-                                       f"{test.capitalize()} Tablosu.xlsx")
+            return dcc.send_data_frame(
+                df.to_excel,f"{test.capitalize()} Tablosu.xlsx"
+            )
 
     @app.callback(
         Output('download-tests-result-ols', 'data'),
@@ -928,7 +932,6 @@ def files_table(request):
         prevent_initial_call=True,
     )
     def download_test_results(n_clicks, test, content):
-
         if n_clicks > 0:
             return dict(content=content, filename=f"{test.capitalize()}-sonuçları.txt")
 
