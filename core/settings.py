@@ -177,10 +177,8 @@ PLOTLY_DASH = {
 }
 
 STATICFILES_FINDERS = [
-
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-
     'django_plotly_dash.finders.DashAssetFinder',
     'django_plotly_dash.finders.DashComponentFinder',
     'django_plotly_dash.finders.DashAppDirectoryFinder',
@@ -203,6 +201,15 @@ FILE_UPLOAD_HANDLERS = [
     "django.core.files.uploadhandler.MemoryFileUploadHandler",
     "django.core.files.uploadhandler.TemporaryFileUploadHandler",
 ]
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [('127.0.0.1', 6379), ],
+        },
+    },
+}
 
 CKEDITOR_5_ALLOW_ALL_FILE_TYPES = True
 CKEDITOR_5_UPLOAD_FILE_TYPES = ['jpeg', 'pdf', 'png']  # optional
