@@ -6,6 +6,7 @@ from django.contrib import messages
 from bioinformatic.forms import SingleMoleculeViewForm, MultiMoleculeViewForm
 from bioinformatic.models import BioinformaticModel
 from django_plotly_dash import DjangoDash
+
 from dash import dcc, html, dash_table, Input, Output, State
 import dash_bootstrap_components as dbc
 import dash_bio
@@ -649,7 +650,7 @@ def multi_molecule_view(request):
 
     external_stylesheets = [dbc.themes.BOOTSTRAP]
 
-    app = DjangoDash('NglMoleculeView', external_stylesheets=external_stylesheets)
+    app = DjangoDash('NglMoleculeView', external_stylesheets=external_stylesheets, add_bootstrap_links=True)
 
     form = MultiMoleculeViewForm(request.POST or None, request.FILES or None)
 
@@ -863,6 +864,7 @@ def multi_molecule_view(request):
             )
 
             @app.callback(
+
                 Output("molecule-output", 'data'),
                 Output("molecule-output", "molStyles"),
                 Output("molecule-output", "stageParameters"),
@@ -876,6 +878,7 @@ def multi_molecule_view(request):
                 Input("ngl-stage-quality-dropdown", "value"),
                 Input("ngl-stage-camera-dropdown", "value"),
                 Input("save-img", "n_clicks"),
+
             )
             def return_molecule(style, sidebyside, value, color, quality, cameraType, n_clicks):
 
