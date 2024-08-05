@@ -9,7 +9,7 @@ from blog.views import ArchiveView
 urlpatterns = [
                   path('admin/', admin.site.urls),
                   path('accounts/', include('django.contrib.auth.urls')),
-                  path('laboratuvarlar/bioinformatic-laboratuvari/', include('django_plotly_dash.urls')),
+                  path('laboratuvar/', include('django_plotly_dash.urls')),
                   path("ckeditor5/", include('django_ckeditor_5.urls')),
                   path('blog/', include("blog.urls", namespace='blog')),
                   path('accounts/', include("accounts.urls", namespace='accounts')),
