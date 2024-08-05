@@ -29,7 +29,7 @@ def EntrezToolsView(request):
                                                  external_link=True),
                             dbc.DropdownMenuItem("Biyoistatislik",
                                                  href=HttpResponseRedirect(
-                                                     reverse("biyoistatislik")).url,
+                                                     reverse("biostatistic:home")).url,
                                                  external_link=True),
                             dbc.DropdownMenuItem("Coğrafi Bilgi sistemleri",
                                                  href=HttpResponseRedirect(reverse("cbs")).url,
