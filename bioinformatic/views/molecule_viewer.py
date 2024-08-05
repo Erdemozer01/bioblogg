@@ -650,7 +650,7 @@ def multi_molecule_view(request):
 
     external_stylesheets = [dbc.themes.BOOTSTRAP]
 
-    app = DjangoDash('NglMoleculeView')
+    app = DjangoDash('NglMoleculeView', external_stylesheets=external_stylesheets, add_bootstrap_links=True, )
 
     form = MultiMoleculeViewForm(request.POST or None, request.FILES or None)
 
