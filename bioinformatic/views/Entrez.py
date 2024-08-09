@@ -173,4 +173,4 @@ def EntrezToolsView(request):
                 return dbc.Table.from_dataframe(df_nuc, bordered=True, hover=True, index=True,
                                                 responsive=True), count
 
-    return HttpResponseRedirect("/laboratuvarlar/bioinformatic-laboratuvari/app/entrez-tools/")
+    return HttpResponseRedirect(f"/laboratuvar/bioinformatic/app/entrez-tools/")

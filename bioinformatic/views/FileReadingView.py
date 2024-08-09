@@ -308,7 +308,7 @@ def PhylogeneticTree(request):
 
                 return stylesheet + children_style
 
-        return HttpResponseRedirect(f"/laboratuvarlar/bioinformatic-laboratuvari/app/filogeni-{tree_alg}")
+        return HttpResponseRedirect(f"/laboratuvar/bioinformatic/app/filogeni-{tree_alg}")
 
     return render(request, 'bioinformatic/form.html', {'form': form, 'title': 'Filogeni ve Alignment Haritası'})
 
@@ -1003,7 +1003,7 @@ def file_reading(request):
                     fluid=True, className="shadow-lg p-3 mb-5 bg-body rounded",
                 )
 
-            return HttpResponseRedirect(f"/laboratuvarlar/bioinformatic-laboratuvari/app/{file_format}-dosya-sonuc")
+            return HttpResponseRedirect(f"/laboratuvar/bioinformatic/app/{file_format}-dosya-sonuc")
 
         else:
             form = FileReadingForm()
@@ -1105,7 +1105,7 @@ def blast(request):
 
             blast_obj.delete()
 
-            return HttpResponseRedirect("/laboratuvarlar/bioinformatic-laboratuvari/app/blast/")
+            return HttpResponseRedirect("/laboratuvar/bioinformatic/app/blast/")
 
     return render(request, 'bioinformatic/form.html', {'form': form, 'title': 'BLAST'})
 
@@ -1305,7 +1305,7 @@ def alignment_mapping(request):
 
                 return chart
 
-            return HttpResponseRedirect(f"/laboratuvarlar/bioinformatic-laboratuvari/app/alignment-mapping")
+            return HttpResponseRedirect(f"/laboratuvar/bioinformatic/app/alignment-mapping")
 
     return render(request, "bioinformatic/form.html", {'form': form, 'title': 'DİZİ HARİTALAMA'})
 

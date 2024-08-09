@@ -231,7 +231,7 @@ def alignment_score(request):
     def func(n_clicks, values):
         return dict(content=values, filename="alignment.txt")
 
-    return HttpResponseRedirect("/laboratuvarlar/bioinformatic-laboratuvari/app/alignment_score/")
+    return HttpResponseRedirect("/laboratuvar/bioinformatic/app/alignment_score/")
 
 
 def sequence_analiz(request):
@@ -403,7 +403,7 @@ def sequence_analiz(request):
             return html.P("Henüz bir sekans dizisi girmediniz ! ".upper(),
                           className='text-danger mx-auto text-center mt-3')
 
-    return HttpResponseRedirect("/laboratuvarlar/bioinformatic-laboratuvari/app/sequence_analiz/")
+    return HttpResponseRedirect("/laboratuvar/bioinformatic/app/sequence_analiz/")
 
 
 def translation(request):
@@ -590,7 +590,7 @@ def translation(request):
 
             ])
 
-    return HttpResponseRedirect("/laboratuvarlar/bioinformatic-laboratuvari/app/translate_dna/")
+    return HttpResponseRedirect("/laboratuvar/bioinformatic/app/translate_dna/")
 
 
 def Kmer_SeqSlicing(request):
@@ -779,7 +779,7 @@ def Kmer_SeqSlicing(request):
             ],
         ), html.Br(), html.Hr(),
 
-    return HttpResponseRedirect("/laboratuvarlar/bioinformatic-laboratuvari/app/kmer_seq_slicing/")
+    return HttpResponseRedirect("/laboratuvar/bioinformatic/app/kmer_seq_slicing/")
 
 
 def create_frame_seq(request):
@@ -974,7 +974,7 @@ def create_frame_seq(request):
             ]
         ),
 
-    return HttpResponseRedirect("/laboratuvarlar/bioinformatic-laboratuvari/app/create_frame_seq/")
+    return HttpResponseRedirect("/laboratuvar/bioinformatic/app/create_frame_seq/")
 
 
 def TemperatureMeltingView(request):
@@ -1177,4 +1177,4 @@ def TemperatureMeltingView(request):
         else:
             return html.P(["Sekans girilmedi"], className="text-danger")
 
-    return HttpResponseRedirect("/laboratuvarlar/bioinformatic-laboratuvari/app/temp-melt/")
+    return HttpResponseRedirect("/laboratuvar/bioinformatic/app/temp-melt/")

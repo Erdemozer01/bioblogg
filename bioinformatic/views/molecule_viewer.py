@@ -85,10 +85,194 @@ def molecule_2d_view(request):
                 className="shadow-lg bg-body rounded mt-2 mb-1 mr-2 ml-2",
             ),
 
+            dbc.Card(
+                [
+                    dbc.Row(
+                        [
+                            dbc.Col(
+                                [
+                                    dcc.Tabs(
+                                        id='mol3d-tabs', children=[
 
+                                            dcc.Tab(
+                                                label='Açıklama',
+                                                children=html.Div(
+                                                    className='control-tab mt-2',
+                                                    children=[
+                                                        html.P(["2D MOLEKÜL GÖRÜNTÜLEME UYGULAMASI NEDİR ? "],
+                                                               className="fw-bolder mt-2"),
+                                                        html.P([
+                                                            "'Görüntüle' sekmesinde, yapısal bilgi için PubChem veritabanında"
+                                                            " molekül adına göre arama yapmak üzere metin girişini kullanabilirsiniz."],
+                                                            className="text-primary mt-2"),
+                                                        html.P(["Ayrıca bağ uzunluklarını değiştirebilirsiniz."],
+                                                               className="text-primary mt-2"),
+                                                    ]
+                                                )
+                                            ),
+
+                                            dcc.Tab(
+                                                label='Görüntüle',
+                                                value='view-options',
+                                                children=[
+
+                                                    html.Label("Molekül adına göre arama", className="fw-bolder mt-2"),
+
+                                                    dcc.Input(
+                                                        id='mol2d-search',
+                                                        placeholder='molekül adı',
+                                                        type='text',
+                                                        value='tylenol',
+                                                        className="form-control",
+                                                    ),
+
+                                                    html.P(
+                                                        ["Ör: penta-2,3-diene, buckminsterfullerene, norepinephrine"]),
+
+                                                    html.Label("Bağ uzunluğu", className="fw-bolder mt-2"),
+
+                                                    dcc.Slider(
+                                                        id='mol2d-bond-length',
+                                                        min=1,
+                                                        max=100,
+                                                        value=1
+                                                    ),
+
+                                                    html.Div(
+                                                        id='mol2d-search-results-wrapper', children=[
+                                                            dcc.Dropdown(id='mol2d-search-results')
+                                                        ]
+                                                    ),
+
+                                                    html.Hr(),
+                                                    html.Div(id='error-wrapper'),
+                                                    html.Div(id='mol2d-sel-atoms-output'),
+                                                    html.Div(id='atoms-output'),
+                                                ]
+                                            ),
+
+                                        ],
+                                    ),
+
+                                ], md=4, lg=4,
+                            ),
+
+                            dbc.Col(
+                                [
+
+                                    html.Div(id='mol2d-container', children=[
+                                        dash_bio.Molecule2dViewer(
+                                            id='mol2d',
+                                            height=550,
+                                            width=650
+                                        )
+                                    ], className="mt-4"),
+
+                                    dcc.Store(id='mol2d-search-results-store'),
+                                    dcc.Store(id='mol2d-compound-options-store')
+
+                                ], md=8, className="mx-auto"
+                            ),
+
+                        ],
+                    ),
+                ], className="mr-2 ml-2"
+            ),
 
         ], className="shadow-lg p-3 bg-body rounded mr-2 ml-2"
     )
+
+    @app.callback(
+        Output('mol2d-sel-atoms-output', 'children'),
+        [Input('mol2d', 'selectedAtomIds')]
+    )
+    def show_selected(ids):
+        if ids is None or len(ids) == 0:
+            return ''
+        return str(ids)
+
+    @app.callback(
+        [Output('mol2d-search-results-wrapper', 'style'),
+         Output('mol2d-compound-options-store', 'data'),
+         Output('mol2d-search-results-store', 'data')],
+        [Input('mol2d-search', 'n_submit')],
+        [State('mol2d-search', 'value')]
+    )
+    def update_results(_, query):
+        results_dropdown = {'display': 'none'}
+        options = []
+        compounds = {}
+
+        if query is not None:
+            results = pcp.get_compounds(query, 'name')
+            if len(results) > 1:
+                options = [
+                    {'label': compound.to_dict()['iupac_name'],
+                     'value': compound.to_dict()['iupac_name']}
+                    for compound in results
+                ]
+                results_dropdown = {'display': 'block'}
+
+            compounds = {
+                compound.to_dict()['iupac_name']: {
+                    'PC_Compounds': [
+                        compound.record
+                    ]
+                } for compound in results
+            }
+
+        return results_dropdown, options, compounds
+
+    @app.callback(
+        Output('search-results', 'value'),
+        [Input('compound-options-store', 'data')]
+    )
+    def update_dropdown_options(compounds):
+        return compounds
+
+    @app.callback(
+        [Output('mol2d', 'modelData'),
+         Output('error-wrapper', 'children')],
+        [Input('mol2d-search-results-store', 'modified_timestamp'),
+         Input('mol2d-bond-length', 'value')],
+        [State('mol2d-search-results-store', 'data'),
+         State('mol2d-search-results', 'value')]
+    )
+    def update_model(_, bond_length, stored_compounds, selected_compound):
+
+        error_message = ''
+
+        if stored_compounds is None or len(stored_compounds.keys()) == 0:
+            error_message = 'No results found for your query.'
+            model_data = {'nodes': [], 'links': []}
+
+        elif len(stored_compounds.keys()) == 1:
+            error_message = 'Displaying: {}'.format(
+                list(stored_compounds.keys())[0]
+            )
+            model_data = read_chem_structure(
+                json.dumps(stored_compounds[list(stored_compounds.keys())[0]]),
+                is_datafile=False,
+                bond_distance=bond_length
+            )
+        elif selected_compound is not None:
+            error_message = 'Displaying: {}'.format(
+                selected_compound
+            )
+            model_data = read_chem_structure(
+                json.dumps(stored_compounds[selected_compound]),
+                is_datafile=False,
+                bond_distance=bond_length
+            )
+
+        return model_data, error_message
+
+    @app.callback(
+        Output('mol2d', 'selectedAtomIds'),
+        [Input('mol2d-search', 'n_submit')]
+    )
+    def reset_selected_atoms(_):
+        return []
 
     return HttpResponseRedirect(f"/laboratuvar/bioinformatic/app/molecule-2d-view/")
 
