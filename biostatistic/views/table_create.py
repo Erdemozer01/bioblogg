@@ -26,7 +26,7 @@ graph_type = [
 def create_table(request):
     external_stylesheets = [dbc.themes.BOOTSTRAP]
 
-    app = DjangoDash(f'{request.user}-table-create', external_stylesheets=external_stylesheets,
+    app = DjangoDash('table-create', external_stylesheets=external_stylesheets,
                      title="Tablo ve Grafik", add_bootstrap_links=True, update_title="Güncelleniyor...")
 
     app.layout = dbc.Card(
@@ -607,4 +607,4 @@ def create_table(request):
                                        f"{method.capitalize()} Tablosu.xlsx")
         return corr
 
-    return HttpResponseRedirect(f"/laboratuvar/biostatistic/app/{request.user}-table-create/")
+    return HttpResponseRedirect("/laboratuvar/biostatistic/app/table-create/")

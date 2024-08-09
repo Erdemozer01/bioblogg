@@ -43,7 +43,7 @@ def parse_contents(contents, filename):
 def files_table(request):
     external_stylesheets = [dbc.themes.BOOTSTRAP]
 
-    app = DjangoDash(f'{request.user}-files-stats', external_stylesheets=external_stylesheets,
+    app = DjangoDash('files-stats', external_stylesheets=external_stylesheets,
                      title="Dosya ve Grafik", add_bootstrap_links=True, update_title="Güncelleniyor...")
 
     app.layout = dbc.Card(
@@ -935,4 +935,4 @@ def files_table(request):
         if n_clicks > 0:
             return dict(content=content, filename=f"{test.capitalize()}-sonuçları.txt")
 
-    return HttpResponseRedirect(f"/laboratuvar/biostatistic/app/{request.user}-files-stats/")
+    return HttpResponseRedirect(f"/laboratuvar/biostatistic/app/files-stats/")
