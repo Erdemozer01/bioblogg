@@ -16,6 +16,17 @@ from Bio.PDB import parse_pdb_header
 from pathlib import Path
 import pubchempy as pcp
 from dash_bio.utils.chem_structure_reader import read_chem_structure
+from Bio.PDB import PDBParser, PDBIO, Select
+
+
+class GlySelect(Select):
+    def accept_residue(self, residue):
+
+        if residue.get_name() == "GLY":
+            return True
+        else:
+            return False
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -34,7 +45,6 @@ def molecule_2d_view(request):
 
     app.layout = dbc.Card(
         [
-
 
             ## NAVBAR ##
             dbc.NavbarSimple(
@@ -264,7 +274,7 @@ def molecule_2d_view(request):
     def reset_selected_atoms(_):
         return []
 
-    return HttpResponseRedirect(f"/laboratuvarlar/bioinformatic-laboratuvari/app/molecule-2d-view")
+    return HttpResponseRedirect(f"/laboratuvar/bioinformatic/app/molecule-2d-view/")
 
 
 def single_molecule_view(request):
@@ -278,10 +288,21 @@ def single_molecule_view(request):
 
     external_stylesheets = [dbc.themes.BOOTSTRAP]
 
-    app = DjangoDash('single-molecule-3d-viewer', external_stylesheets=external_stylesheets,
+    app = DjangoDash(f'{request.user}-single-molecule-view', external_stylesheets=external_stylesheets,
                      title='3D MOLEKÜL GÖRÜNTÜLEME', add_bootstrap_links=True)
 
     form = SingleMoleculeViewForm(request.POST or None, request.FILES or None)
+
+    columns = [
+        {'name': 'Seri', 'id': 'serial'},
+        {'name': 'Adı', 'id': 'name'},
+        {'name': 'ELEMENT', 'id': 'elem'},
+        {'name': 'Pozisyon', 'id': 'positions'},
+        {'name': 'Kütle Büyüklüğü', 'id': 'mass_magnitude'},
+        {'name': 'İndex', 'id': 'residue_index'},
+        {'name': 'Bölge Adı', 'id': 'residue_name'},
+        {'name': 'Zincir', 'id': 'chain'},
+    ]
 
     if request.method == "POST":
 
@@ -339,25 +360,8 @@ def single_molecule_view(request):
 
                 return redirect('bioinformatic:single_molecule_3d_view')
 
-            columns = [
-                {'name': 'Seri', 'id': 'serial'},
-                {'name': 'Adı', 'id': 'name'},
-                {'name': 'ELEMENT', 'id': 'elem'},
-                {'name': 'Pozisyon', 'id': 'positions'},
-                {'name': 'Kütle Büyüklüğü', 'id': 'mass_magnitude'},
-                {'name': 'İndex', 'id': 'residue_index'},
-                {'name': 'Bölge Adı', 'id': 'residue_name'},
-                {'name': 'Zincir', 'id': 'chain'}
-            ]
-
             app.layout = dbc.Card(
                 [
-
-                    html.Meta(
-                        name='yazar',
-                        children=["Mehmet Erdem ÖZER, Phd student, Bioinformatic, ozer246@gmail.com"]
-                    ),
-
                     ## NAVBAR ##
                     dbc.NavbarSimple(
                         children=[
@@ -480,6 +484,7 @@ def single_molecule_view(request):
                                                             ),
 
                                                             html.Button("Su molekülünü kaldır", id="remove-water",
+                                                                        n_clicks=0,
                                                                         className='btn btn-sm btn-outline-primary mt-2'),
 
                                                             html.P(id="water-size", children=[]),
@@ -501,25 +506,31 @@ def single_molecule_view(request):
 
                                     dbc.Col(
                                         [
+                                            dbc.Tabs(
+                                                dbc.Tab(
+                                                    label="Tablo",
+                                                    children=[
+                                                        dash_table.DataTable(
+                                                            id="zooming-table",
+                                                            columns=columns,
+                                                            data=df.to_dict("records"),
+                                                            row_selectable="single",
+                                                            style_table={'overflowY': 'auto', 'overflowX': 'auto'},
+                                                            style_cell={'textAlign': 'center'},
+                                                            style_data={
+                                                                'whiteSpace': 'normal',
+                                                                'height': 'auto',
+                                                            },
+                                                            row_deletable=True,
+                                                            editable=False,
+                                                            page_action='native',
+                                                            page_size=8,
 
-                                            dash_table.DataTable(
-                                                id="zooming-table",
-                                                columns=columns,
-                                                data=df.to_dict("records"),
-                                                row_selectable="single",
-                                                style_table={'overflowY': 'auto', 'overflowX': 'auto'},
-                                                style_cell={'textAlign': 'center'},
-                                                style_data={
-                                                    'whiteSpace': 'normal',
-                                                    'height': 'auto',
-                                                },
-                                                row_deletable=True,
-                                                editable=False,
-                                                page_action='native',
-                                                page_size=8,
-
+                                                        ),
+                                                    ],
+                                                    className="mt-1",
+                                                )
                                             ),
-
                                         ], md=8, style={'maxWidth': '62%'}, className="mx-auto mb-3 p-2"
                                     )
                                 ],
@@ -534,7 +545,6 @@ def single_molecule_view(request):
                                             styles=styles,
                                             style={'marginRight': 'auto', 'marginLeft': 'auto'},
                                             selectionType='atom',
-                                            width="80%"
                                         ),
                                     ], md=12,
                                 ),
@@ -550,6 +560,7 @@ def single_molecule_view(request):
                 Input("visual-type", "value"),
                 Input("color-type", "value"),
                 Input("select-type", "value"),
+                prevent_initial_call=True,
             )
             def visual_update(visualization_type, color_element, select_type):
                 styles = create_mol3d_style(
@@ -558,15 +569,44 @@ def single_molecule_view(request):
                 return styles, select_type
 
             @app.callback(
+
+                Output("zooming-table", "data"),
+                Output("water-size", "children"),
+                Output("visual_output", "modelData"),
+
+                Input("remove-water", "n_clicks"),
+
+            )
+            def remove_water(n_clicks):
+
+                if n_clicks > 0:
+
+                    atoms = [i for i in data["atoms"] if not "HOH" in i.get("residue_name")]
+
+                    water_molecule = int(len(data["atoms"]) - len(atoms))
+
+                    data['atoms'] = atoms
+
+                    data['bonds'] = data['bonds'][:-water_molecule + 1]
+
+                    df = pd.DataFrame(atoms)
+
+                    df['positions'] = df['positions'].apply(lambda x: ', '.join(map(str, x)))
+
+                    children = f'{water_molecule} su molekülü kaldırıldı.'
+
+                    new_data = data
+
+                    return df.to_dict("records"), children, new_data
+
+            @app.callback(
                 Output("visual_output", "zoomTo"),
                 Output("visual_output", "labels"),
                 Input("zooming-table", "selected_rows"),
-                prevent_initial_call=True,
             )
             def residue_zoom(selected_row):
                 row = df.iloc[selected_row]
                 row['positions'] = row['positions'].apply(lambda x: [float(x) for x in x.split(',')])
-
                 return [
                     {
                         "sel": {"chain": row["chain"], "resi": row["residue_index"]},
@@ -588,36 +628,6 @@ def single_molecule_view(request):
                 ]
 
             @app.callback(
-                Output("zooming-table", "data"),
-                Output("water-size", "children"),
-                Output("visual_output", "modelData"),
-                Input("remove-water", "n_clicks"),
-                prevent_initial_call=True,
-            )
-            def remove_water(n_clicks):
-
-                if n_clicks:
-                    data_update = parser.mol3d_data()
-
-                    atoms = [i for i in data_update["atoms"] if not "HOH" in i.get("residue_name")]
-
-                    water_molecule = len(data_update["atoms"]) - len(atoms)
-
-                    data_update['atoms'] = atoms
-
-                    data_update['bonds'] = data_update['bonds'][:-water_molecule]
-
-                    modelData = data_update
-
-                    df = pd.DataFrame(atoms)
-
-                    df['positions'] = df['positions'].apply(lambda x: ', '.join(map(str, x)))
-
-                    children = f'{water_molecule} su molekülü kaldırıldı.'
-
-                    return df.to_dict("records"), children, modelData
-
-            @app.callback(
                 Output('select-atom-output', 'children'),
                 Input('visual_output', 'selectedAtomIds'),
             )
@@ -634,7 +644,7 @@ def single_molecule_view(request):
                     html.Br()
                 ]) for atm in atom_ids].pop()
 
-        return HttpResponseRedirect("/laboratuvarlar/bioinformatic-laboratuvari/app/single-molecule-3d-viewer/")
+        return HttpResponseRedirect(f"/laboratuvar/bioinformatic/app/{request.user}-single-molecule-view/")
 
     return render(request, 'bioinformatic/form.html', {'form': form, 'title': 'Tekli 3D MOLEKÜL GÖRÜNTÜLEME'})
 
@@ -650,9 +660,21 @@ def multi_molecule_view(request):
 
     external_stylesheets = [dbc.themes.BOOTSTRAP]
 
+    columns = [
+        {'name': 'Adı', 'id': 'name'},
+        {'name': 'ELEMENT', 'id': 'elem'},
+        {'name': 'Pozisyon', 'id': 'positions'},
+        {'name': 'Kütle Büyüklüğü', 'id': 'mass_magnitude'},
+        {'name': 'İndex', 'id': 'residue_index'},
+        {'name': 'Bölge Adı', 'id': 'residue_name'},
+        {'name': 'Zincir', 'id': 'chain'}
+    ]
+
     app = DjangoDash(f'{request.user}-ngl', external_stylesheets=external_stylesheets, add_bootstrap_links=True, )
 
     form = MultiMoleculeViewForm(request.POST or None, request.FILES or None)
+
+    data_path = os.path.join(BASE_DIR, "media", "laboratory", f"{request.user}\\").replace("\\", "/")
 
     if request.method == "POST":
 
@@ -674,6 +696,34 @@ def multi_molecule_view(request):
             for file in files:
                 obj.records_files.create(file=file)
                 file_name.append(str(file).upper().rsplit(".PDB")[0])
+
+            children = []
+
+            for rec in obj.records_files.all():
+                parser = PdbParser(rec.file.path).mol3d_data()
+
+                df = pd.DataFrame(parser['atoms'])
+
+                data = df.to_dict("records")
+
+                children.append(rec.file.name.split("/")[2].rsplit(".", 1)[0].upper() + " Molekülü")
+
+                children.append(
+                    dash_table.DataTable(
+                        id="molecule-table",
+                        data=data,
+                        columns=columns,
+                        style_table={'overflowY': 'auto', 'overflowX': 'auto'},
+                        style_cell={'textAlign': 'center'},
+                        style_data={
+                            'whiteSpace': 'normal',
+                            'height': 'auto',
+                        },
+                        editable=False,
+                        page_action='native',
+                        page_size=8,
+                    )
+                )
 
             dropdown_options = [{"label": i, "value": i} for i in file_name]
 
@@ -708,11 +758,6 @@ def multi_molecule_view(request):
 
             app.layout = dbc.Card(
                 [
-                    html.Meta(
-                        name='yazar',
-                        children=["Mehmet Erdem ÖZER, Phd student, Bioinformatic, ozer246@gmail.com"]
-
-                    ),
 
                     ## NAVBAR ##
                     dbc.NavbarSimple(
@@ -755,18 +800,24 @@ def multi_molecule_view(request):
 
                     dbc.Card(
                         [
+
                             dbc.Row(
                                 [
                                     dbc.Col(
                                         [
                                             dbc.Tabs(
-                                                id='mol3d-tabs', children=[
+                                                id='mol3d-tabs',
+
+                                                children=[
                                                     dbc.Tab(
+
                                                         label='AÇIKLAMA',
+
                                                         children=html.Div(
                                                             className='control-tab mt-2',
                                                             children=[
-                                                                html.H4(["YAPIYA İLİŞKİN BİLGİLER"], className="mt-2"),
+                                                                html.H4(["YAPIYA İLİŞKİN BİLGİLER".capitalize()],
+                                                                        className="mt-2"),
                                                                 html.Label(["İD : "]),
                                                                 html.Span(
                                                                     [f"{str(file).upper()}," for file in file_name],
@@ -846,18 +897,42 @@ def multi_molecule_view(request):
                                                     ),
 
                                                 ], className="mb-2"
+
                                             ),
 
-                                        ], md=3
+                                        ], md=4
                                     ),
 
                                     dbc.Col(
                                         [
-                                            dash_bio.NglMoleculeViewer(id="molecule-output", height=600, width=900),
-                                        ], md=9, className="mx-auto"
+                                            dbc.Tabs(
+                                                children=[
+                                                    dbc.Tab(
+                                                        label="Molekül",
+                                                        children=[
+                                                            dash_bio.NglMoleculeViewer(
+                                                                id="molecule-output",
+                                                                height=550,
+                                                                width=950
+                                                            ),
+                                                        ]
+                                                    ),
+
+                                                    dbc.Tab(
+                                                        label="Molekül Detay",
+                                                        id="table-tab",
+                                                        children=[
+
+                                                        ]
+                                                    ),
+                                                ]
+                                            )
+
+                                        ], md=8, className="mx-auto mr-2"
                                     ),
                                 ],
                             ),
+
                         ], className="shadow-lg p-3 bg-body rounded mr-1 ml-1"
                     ),
                 ],
@@ -870,6 +945,7 @@ def multi_molecule_view(request):
                 Output("molecule-output", "stageParameters"),
                 Output("molecule-output", "downloadImage"),
                 Output("molecule-output", "imageParameters"),
+                Output("table-tab", "children"),
 
                 Input("molecule-representation", "value"),
                 Input("nglstyle-radio", "value"),
@@ -878,11 +954,8 @@ def multi_molecule_view(request):
                 Input("ngl-stage-quality-dropdown", "value"),
                 Input("ngl-stage-camera-dropdown", "value"),
                 Input("save-img", "n_clicks"),
-
             )
             def return_molecule(style, sidebyside, value, color, quality, cameraType, n_clicks):
-
-                data_path = os.path.join(BASE_DIR, "media", "laboratory", f"{request.user}\\").replace("\\", "/")
 
                 sidebyside_bool = sidebyside == "True"
 
@@ -923,7 +996,7 @@ def multi_molecule_view(request):
                     for pdb_id in value
                 ]
 
-                return data_list, molstyles_dict, stage_params, downloadImage, imageParameters
+                return data_list, molstyles_dict, stage_params, downloadImage, imageParameters, children
 
         return HttpResponseRedirect(f"/laboratuvar/bioinformatic/app/{request.user}-ngl/")
 
