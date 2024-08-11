@@ -12,7 +12,7 @@ from Bio.SeqUtils import gc_fraction
 from bioinformatic.generate_tree import generate_elements
 import plotly.express as px
 from django_plotly_dash import DjangoDash
-from dash import dcc, html, dash_table, Input, Output, State
+from dash import dcc, html, dash_table, Input, Output, State, no_update
 import dash_bootstrap_components as dbc
 from pathlib import Path
 from Bio.Blast import NCBIWWW, NCBIXML
@@ -27,7 +27,6 @@ import dash_bio as dashbio
 from dash_bio.utils import PdbParser
 import pandas as pd
 import dash_daq as daq
-
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -1168,13 +1167,12 @@ def blast(request):
 
 
 def alignment_mapping(request):
-
     external_stylesheets = [dbc.themes.BOOTSTRAP]
 
     app = DjangoDash('alignment-mapping',
                      external_stylesheets=external_stylesheets,
                      add_bootstrap_links=True,
-                     title='Dizi Hizalama'
+                     title='Dizi Hizalama',
                      )
 
     app.layout = dbc.Card(
@@ -1239,6 +1237,7 @@ def alignment_mapping(request):
                                                             'Drag and Drop or ',
                                                             html.A('Select Files')
                                                         ]),
+                                                        className='mx-auto',
                                                         style={
                                                             'width': '100%',
                                                             'height': '60px',
@@ -1247,7 +1246,7 @@ def alignment_mapping(request):
                                                             'borderStyle': 'dashed',
                                                             'borderRadius': '5px',
                                                             'textAlign': 'center',
-                                                            'margin': '10px'
+                                                            'margin': '10px',
                                                         },
 
                                                     )
@@ -1364,15 +1363,15 @@ def alignment_mapping(request):
                                 children=[
 
                                     dcc.Loading(
-                                        children=html.Div(
-                                            [
-                                                dashbio.AlignmentChart(
-                                                    id="alignment-chart",
-                                                    tilewidth=30,
-                                                    height=900,
-                                                ),
-                                            ]
-                                        )
+                                        parent_className='dashbio-loading',
+
+                                        children=html.Div([
+                                            dashbio.AlignmentChart(
+                                                id='alignment-chart',
+                                                height=900,
+
+                                            ),
+                                        ])
                                     ),
 
                                     dcc.Store(id='alignment-data-store'),
@@ -1392,65 +1391,64 @@ def alignment_mapping(request):
         [
             Input('alignment-file-upload', 'contents'),
             Input('alignment-file-upload', 'filename')
-        ]
+        ],
+
+        prevent_initial_call=True
     )
     def update_storage(contents, filename):
         if (contents is not None) and ('fasta' in filename):
             content_type, content_string = contents.split(',')
-            data = base64.b64decode(content_string).decode('utf-8')
+            content = base64.b64decode(content_string).decode('utf-8')
         else:
-            data = None
-        return data
+            content = "yok"
+        return content
 
     @app.callback(
         Output('alignment-chart', 'data'),
-        [Input('alignment-data-store', 'data')],
-    )
-    def load_chart(data):
-        return data
-
-    @app.callback(
         Output('alignment-chart', 'overview'),
-        [Input('overview', 'value')],
-    )
-    def overview_update(overview):
-        return overview
-
-    @app.callback(
         Output("alignment-chart", "colorscale"),
-        [Input("colorscale", "value")],
+
+        [
+            Input('alignment-data-store', 'data'),
+            Input('overview', 'value'),
+            Input("colorscale", "value")
+        ],
     )
-    def colorscale_update(colorscale):
-        return colorscale
+    def load_chart(data, overview, colorscale):
+        return data, overview, colorscale
 
     @app.callback(
         Output("alignment-chart", "showconsensus"),
-        [Input('showconsensus', 'on')],
+        Input('showconsensus', 'on'),
     )
     def show_consensus_update(showconsensus):
         return showconsensus
 
     @app.callback(
         Output("alignment-chart", "showgap"),
-        [Input('showgap', 'on')],
+        Input('showgap', 'on'),
     )
     def show_gap_update(showgap):
         return showgap
 
     @app.callback(
-
         Output("alignment-chart", "showconservation"),
+        Input('showconservation', 'on'),
+    )
+    def show_update(showconservation):
+        return showconservation
+
+    @app.callback(
         Output("alignment-chart", "showlabel"),
         Output("alignment-chart", "showid"),
         Output("alignment-chart", "conservationcolorscale"),
 
-        Input('showconservation', 'on'),
         Input('showlabel', 'on'),
         Input('showid', 'on'),
         Input('conservationcolorscale', 'value')
-
     )
-    def alignment_update(showconservation, showlabel, showid, conservationcolorscale):
-        return showconservation, showlabel, showid, conservationcolorscale
+    def alignment_update(showlabel, showid, conservationcolorscale):
+        print(showlabel, showid, conservationcolorscale)
+        return showlabel, showid, conservationcolorscale
 
     return HttpResponseRedirect(f"/laboratuvar/bioinformatic/app/alignment-mapping/")
