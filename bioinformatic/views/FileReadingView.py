@@ -12,7 +12,7 @@ from Bio.SeqUtils import gc_fraction
 from bioinformatic.generate_tree import generate_elements
 import plotly.express as px
 from django_plotly_dash import DjangoDash
-from django_plotly_dash.models import StatelessApp, DashApp
+from django_plotly_dash import models
 from dash import dcc, html, dash_table, Input, Output, State, no_update
 import dash_bootstrap_components as dbc
 from pathlib import Path
@@ -1394,8 +1394,6 @@ def alignment_mapping(request):
             Input('alignment-file-upload', 'contents'),
             Input('alignment-file-upload', 'filename')
         ],
-
-        prevent_initial_call=True
     )
     def update_storage(contents, filename):
         if (contents is not None) and ('fasta' in filename):
