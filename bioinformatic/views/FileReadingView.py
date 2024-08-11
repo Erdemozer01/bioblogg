@@ -12,6 +12,7 @@ from Bio.SeqUtils import gc_fraction
 from bioinformatic.generate_tree import generate_elements
 import plotly.express as px
 from django_plotly_dash import DjangoDash
+from django_plotly_dash.models import StatelessApp, DashApp
 from dash import dcc, html, dash_table, Input, Output, State, no_update
 import dash_bootstrap_components as dbc
 from pathlib import Path
@@ -1169,11 +1170,12 @@ def blast(request):
 def alignment_mapping(request):
     external_stylesheets = [dbc.themes.BOOTSTRAP]
 
-    app = DjangoDash('alignment-mapping',
-                     external_stylesheets=external_stylesheets,
-                     add_bootstrap_links=True,
-                     title='Dizi Hizalama',
-                     )
+    app = DjangoDash(
+        name='AlignmentMapping',
+        external_stylesheets=external_stylesheets,
+        add_bootstrap_links=True,
+        title='Dizi Hizalama',
+    )
 
     app.layout = dbc.Card(
         [
@@ -1451,4 +1453,4 @@ def alignment_mapping(request):
         print(showlabel, showid, conservationcolorscale)
         return showlabel, showid, conservationcolorscale
 
-    return HttpResponseRedirect(f"/laboratuvar/bioinformatic/app/alignment-mapping/")
+    return HttpResponseRedirect(f"/laboratuvar/bioinformatic/app/AlignmentMapping/")
