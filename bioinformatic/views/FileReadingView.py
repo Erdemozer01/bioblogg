@@ -1,4 +1,5 @@
 ##### MEHMET ERDEM ÖZER, mozer232@posta.pau.edu.tr ######
+import base64
 import os, io, gzip, json
 import subprocess, sys
 from Bio.Application import ApplicationError
@@ -29,6 +30,26 @@ import dash_daq as daq
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
+
+CONSERVATION_COLORS_OPT = [
+    'Blackbody',
+    'Bluered',
+    'Blues',
+    'Earth',
+    'Electric',
+    'Greens',
+    'Greys',
+    'Hot',
+    'Jet',
+    'Picnic',
+    'Portland',
+    'Rainbow',
+    'RdBu',
+    'Reds',
+    'Viridis',
+    'YlGnBu',
+    'YlOrRd'
+]
 
 
 def PhylogeneticTree(request):
@@ -65,7 +86,7 @@ def PhylogeneticTree(request):
             tree_app = DjangoDash(f'filogeni-{tree_alg}',
                                   external_stylesheets=external_stylesheets,
                                   add_bootstrap_links=True,
-                                  title=f'{tree_alg} AĞACI OLUŞTRMA'.upper()
+                                  title=f'{tree_alg} AĞACI'.upper()
                                   )
             try:
 
@@ -82,7 +103,6 @@ def PhylogeneticTree(request):
                         muscle_cline,
                         input=in_file.file.path,
                         out=out_file.file.path,
-
                     )
 
                     if sys.platform.startswith('win32'):
@@ -251,33 +271,69 @@ def PhylogeneticTree(request):
                     dbc.Card(
                         [
                             dbc.CardBody(
+
                                 [
-                                    html.P(f"{tools} aracıyla {tree_alg} ağacı oluşturuldu".upper(),
-                                           className="text-primary fw-bolder mb-4 mt-3"),
+                                    dbc.Row(
+                                        [
+                                            dbc.Col(
+                                                [
+                                                    dbc.Tabs(
+                                                        dbc.Tab(
+                                                            label="Ağaç",
+                                                            children=[
 
-                                    cyto.Cytoscape(
-                                        id='cytoscape-usage-phylogeny',
-                                        elements=elements,
-                                        stylesheet=stylesheet,
-                                        layout=layout,
-                                        style={
-                                            'height': '80vh',
-                                            'width': '100%'
-                                        },
-                                        className="shadow-lg bg-body rounded mx-auto mb-2"
+                                                            ]
+                                                        )
+                                                    )
+
+                                                ], md=3, lg=3
+                                            ),
+
+                                            dbc.Col(
+                                                [
+                                                    dbc.Tabs(
+                                                        [
+                                                            dbc.Tab(
+
+                                                                label="Ağaç",
+
+                                                                children=[
+                                                                    html.P(f"{tools}-{tree_alg} ağacı".upper(),
+                                                                           className="text-primary fw-bolder mb-4 mt-3"),
+                                                                    cyto.Cytoscape(
+                                                                        id='cytoscape-usage-phylogeny',
+                                                                        elements=elements,
+                                                                        stylesheet=stylesheet,
+                                                                        layout=layout,
+                                                                        style={
+                                                                            'height': '80vh',
+                                                                            'width': '100%'
+                                                                        },
+                                                                        className="mx-auto mb-2"
+                                                                    ),
+                                                                ]
+                                                            ),
+
+                                                            dbc.Tab(
+                                                                label="Aligment Haritası",
+
+                                                                children=[
+                                                                    dashbio.AlignmentChart(
+                                                                        id='my-default-alignment-viewer',
+                                                                        data=data,
+                                                                        tilewidth=30,
+                                                                        width=1000,
+                                                                        height=1000,
+                                                                    ),
+                                                                ]
+                                                            )
+                                                        ],
+                                                    ),
+                                                ], md=9, lg=9
+                                            )
+                                        ]
                                     ),
 
-                                    html.Hr(),
-
-                                    html.P("Alignment Haritası", className="fw-bolder"),
-
-                                    dashbio.AlignmentChart(
-                                        id='my-default-alignment-viewer',
-                                        data=data,
-                                        height=1000,
-                                        tilewidth=30,
-
-                                    ),
                                 ], className="shadow-lg p-3 bg-body rounded mb-2"
                             )
                         ],
@@ -942,7 +998,8 @@ def file_reading(request):
                                                                  reverse("bioinformatic:home")).url,
                                                              external_link=True),
                                         dbc.DropdownMenuItem("Biyoistatislik",
-                                                             href=HttpResponseRedirect(reverse("biostatistic:home")).url,
+                                                             href=HttpResponseRedirect(
+                                                                 reverse("biostatistic:home")).url,
                                                              external_link=True),
                                         dbc.DropdownMenuItem("Coğrafi Bilgi sistemleri",
                                                              href=HttpResponseRedirect(reverse("cbs")).url,
@@ -1111,17 +1168,8 @@ def blast(request):
 
 
 def alignment_mapping(request):
-    if request.user.is_anonymous:
-        from django.conf import settings
-        messages.error(request, "Lütfen Giriş Yapınız")
-        return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
 
     external_stylesheets = [dbc.themes.BOOTSTRAP]
-
-    if BioinformaticModel.objects.filter(user=request.user, tool="Dizi Hizalama").exists():
-        BioinformaticModel.objects.filter(user=request.user, tool="Dizi Hizalama").delete()
-
-    form = FileReadingForm(request.POST or None, request.FILES or None)
 
     app = DjangoDash('alignment-mapping',
                      external_stylesheets=external_stylesheets,
@@ -1129,185 +1177,280 @@ def alignment_mapping(request):
                      title='Dizi Hizalama'
                      )
 
-    if request.method == "POST":
+    app.layout = dbc.Card(
+        [
 
-        if request.FILES['file'].size > 30 * 1024 * 1024:
-            messages.error(request, "Dosya boyutu en fazla 30 mb olmalıdır.")
-            return HttpResponseRedirect(request.path)
-
-        if form.is_valid():
-            file_format = form.cleaned_data["reading_file_format"]
-            file = form.cleaned_data["file"]
-            molecule = form.cleaned_data["molecule"]
-
-            obj = BioinformaticModel.objects.create(
-                user=request.user,
-                molecule=molecule,
-                reading_file_format=file_format,
-                tool="Dizi Hizalama"
-            )
-
-            file_obj = obj.records_files.create(file=file)
-
-            handle = open(file_obj.file.path, 'r', encoding='utf-8')
-
-            records = SeqIO.parse(handle, file_format)
-
-            data = handle.read()
-
-            app.layout = dbc.Card(
-                [
-
-                    ## NAVBAR ##
-                    dbc.NavbarSimple(
+            ## NAVBAR ##
+            dbc.NavbarSimple(
+                children=[
+                    dbc.NavItem(dbc.NavLink("Blog", href=HttpResponseRedirect(
+                        reverse("blog:anasayfa")).url, external_link=True)),
+                    dbc.DropdownMenu(
                         children=[
-                            dbc.NavItem(dbc.NavLink("Blog", href=HttpResponseRedirect(
-                                reverse("blog:anasayfa")).url, external_link=True)),
-                            dbc.DropdownMenu(
-                                children=[
-                                    dbc.DropdownMenuItem("Biyoinformatik",
-                                                         href=HttpResponseRedirect(
-                                                             reverse("bioinformatic:home")).url,
-                                                         external_link=True),
-                                    dbc.DropdownMenuItem("Biyoistatislik",
-                                                         href=HttpResponseRedirect(
-                                                             reverse("biostatistic:home")).url,
-                                                         external_link=True),
-                                    dbc.DropdownMenuItem("Coğrafi Bilgi sistemleri",
-                                                         href=HttpResponseRedirect(reverse("cbs")).url,
-                                                         external_link=True),
-                                    dbc.DropdownMenuItem("Laboratuvarlar",
-                                                         href=HttpResponseRedirect(
-                                                             reverse("lab_home")).url,
-                                                         external_link=True),
-                                ],
-                                nav=True,
-                                in_navbar=True,
-                                label="Laboratuvarlar",
-
-                            ),
+                            dbc.DropdownMenuItem("Biyoinformatik",
+                                                 href=HttpResponseRedirect(
+                                                     reverse("bioinformatic:home")).url,
+                                                 external_link=True),
+                            dbc.DropdownMenuItem("Biyoistatislik",
+                                                 href=HttpResponseRedirect(
+                                                     reverse("biostatistic:home")).url,
+                                                 external_link=True),
+                            dbc.DropdownMenuItem("Coğrafi Bilgi sistemleri",
+                                                 href=HttpResponseRedirect(reverse("cbs")).url,
+                                                 external_link=True),
+                            dbc.DropdownMenuItem("Laboratuvarlar",
+                                                 href=HttpResponseRedirect(
+                                                     reverse("lab_home")).url,
+                                                 external_link=True),
                         ],
-                        brand="Dizi Haritalama",
-                        brand_href=HttpResponseRedirect(reverse("bioinformatic:alignment_mapping")).url,
-                        color="primary",
-                        dark=True,
-                        brand_external_link=True,
-                        sticky='top',
-                        className="shadow-lg bg-body rounded mt-1 mb-1 mr-1 ml-1",
-                    ),
+                        nav=True,
+                        in_navbar=True,
+                        label="Laboratuvarlar",
 
-                    dbc.Card(
-                        [
-
-                            dbc.Row(
-                                [
-                                    dbc.Col(
-                                        [
-                                            dcc.Tabs(
-                                                id='mol3d-tabs', children=[
-                                                    dcc.Tab(
-                                                        label='AYARLAR',
-                                                        children=html.Div(
-                                                            className='control-tab mt-2',
-
-                                                            children=[
-
-                                                                html.Label("Görüntüleme", className="fw-bolder mt-2"),
-
-                                                                dcc.Dropdown(
-                                                                    id='colour-type',
-                                                                    options=[
-                                                                        {'label': 'Clustal2', 'value': 'clustal2'},
-                                                                        {'label': 'Clustal', 'value': 'clustal'},
-                                                                        {'label': 'Sinema', 'value': 'cinema'},
-                                                                        {'label': 'Buried', 'value': 'buried'},
-                                                                        {'label': 'helix', 'value': 'helix'},
-                                                                        {'label': 'hydrophobicity',
-                                                                         'value': 'hydrophobicity'},
-                                                                        {'label': 'lesk', 'value': 'lesk'},
-                                                                        {'label': 'mae', 'value': 'mae'},
-                                                                        {'label': 'nucleotide', 'value': 'nucleotide'},
-                                                                        {'label': 'purine', 'value': 'purine'},
-                                                                        {'label': 'strand', 'value': 'strand'},
-                                                                        {'label': 'taylor', 'value': 'taylor'},
-                                                                        {'label': 'turn', 'value': 'turn'},
-                                                                        {'label': 'zappo', 'value': 'zappo'},
-                                                                    ],
-                                                                    value='clustal2',
-                                                                ),
-
-                                                                html.Label("Kuyruk", className="fw-bolder mt-2"),
-
-                                                                dcc.Dropdown(
-                                                                    id='visual-type',
-                                                                    options=[
-                                                                        {'label': 'Harita', 'value': 'heatmap'},
-                                                                        {'label': 'Slayt', 'value': 'slider'},
-                                                                        {'label': 'Yok', 'value': 'none'},
-                                                                    ],
-                                                                    value='heatmap',
-                                                                ),
-
-                                                                daq.BooleanSwitch(
-                                                                    id='showgap',
-                                                                    label="Boşluk Haritası",
-                                                                    labelPosition="top",
-                                                                    className="float-left fw-bolder mt-2",
-                                                                    on=True
-                                                                ),
-
-                                                                daq.BooleanSwitch(
-                                                                    id='showconservation',
-                                                                    label="Koruma Bölgesi Haritası",
-                                                                    labelPosition="top",
-                                                                    className="fw-bolder mt-2",
-                                                                    on=True
-                                                                ),
-                                                            ]
-                                                        )
-                                                    ),
-
-                                                ], className="mb-2"
-                                            ),
-                                        ], md=3
-                                    ),
-
-                                    dbc.Col(
-                                        id="align-out",
-                                        children=[html.Div(id="output")], md=9,
-                                    ),
-                                ],
-                            ),
-
-                        ], className="shadow-lg p-3 bg-body rounded mr-1 ml-1 mb-2"
                     ),
                 ],
-            )
+                brand="Dizi Haritalama",
+                brand_href=HttpResponseRedirect(reverse("bioinformatic:alignment_mapping")).url,
+                color="primary",
+                dark=True,
+                brand_external_link=True,
+                sticky='top',
+                className="shadow-lg bg-body rounded mt-1 mb-1 mr-1 ml-1",
+            ),
 
-            @app.callback(
-                Output("output", "children"),
-                Input("visual-type", "value"),
-                Input("colour-type", "value"),
-                Input('showgap', 'on'),
-                Input('showconservation', 'on'),
-            )
-            def alignment_update(value, color, showgap, showconservation):
-                chart = dashbio.AlignmentChart(
-                    data=data,
-                    showconsensus=True,
-                    tilewidth=50,
-                    overview=value,
-                    height=900,
-                    colorscale=color,
-                    showgap=showgap,
-                    showconservation=showconservation
-                )
+            dbc.Card(
+                [
+                    dbc.Row(
+                        [
+                            dbc.Col(
+                                [
 
-                return chart
+                                    dbc.Tabs(
+                                        id='mol3d-tabs',
+                                        children=[
 
-            return HttpResponseRedirect(f"/laboratuvar/bioinformatic/app/alignment-mapping")
+                                            dcc.Tab(
+                                                label='Dosya',
+                                                children=[
 
-    return render(request, "bioinformatic/form.html", {'form': form, 'title': 'DİZİ HARİTALAMA'})
+                                                    dcc.Upload(
+                                                        id='alignment-file-upload',
+                                                        children=html.Div([
+                                                            'Drag and Drop or ',
+                                                            html.A('Select Files')
+                                                        ]),
+                                                        style={
+                                                            'width': '100%',
+                                                            'height': '60px',
+                                                            'lineHeight': '60px',
+                                                            'borderWidth': '1px',
+                                                            'borderStyle': 'dashed',
+                                                            'borderRadius': '5px',
+                                                            'textAlign': 'center',
+                                                            'margin': '10px'
+                                                        },
 
+                                                    )
+                                                ]
+                                            ),
 
+                                            dcc.Tab(
+                                                label='Ayarlar',
+                                                children=html.Div(
+                                                    className='control-tab mt-2',
+                                                    children=[
 
+                                                        html.Label("Görüntüleme", className="fw-bolder mt-2"),
+
+                                                        dcc.Dropdown(
+                                                            id='colorscale',
+                                                            placeholder='Seçiniz',
+                                                            options=[
+                                                                {'label': 'Clustal2', 'value': 'clustal2'},
+                                                                {'label': 'Clustal', 'value': 'clustal'},
+                                                                {'label': 'Sinema', 'value': 'cinema'},
+                                                                {'label': 'Buried', 'value': 'buried'},
+                                                                {'label': 'helix', 'value': 'helix'},
+                                                                {'label': 'hydrophobicity',
+                                                                 'value': 'hydrophobicity'},
+                                                                {'label': 'lesk', 'value': 'lesk'},
+                                                                {'label': 'mae', 'value': 'mae'},
+                                                                {'label': 'nucleotide', 'value': 'nucleotide'},
+                                                                {'label': 'purine', 'value': 'purine'},
+                                                                {'label': 'strand', 'value': 'strand'},
+                                                                {'label': 'taylor', 'value': 'taylor'},
+                                                                {'label': 'turn', 'value': 'turn'},
+                                                                {'label': 'zappo', 'value': 'zappo'},
+                                                            ],
+                                                            value='clustal2',
+                                                        ),
+
+                                                        html.Label("Kuyruk", className="fw-bolder mt-2"),
+
+                                                        dcc.Dropdown(
+                                                            id='overview',
+                                                            placeholder="Seçiniz",
+                                                            options=[
+                                                                {'label': 'Harita', 'value': 'heatmap'},
+                                                                {'label': 'Slayt', 'value': 'slider'},
+                                                                {'label': 'Yok', 'value': 'none'},
+                                                            ],
+                                                            value='heatmap',
+                                                        ),
+
+                                                        html.Label("Bar Renk", className="fw-bolder mt-2"),
+
+                                                        dcc.Dropdown(
+                                                            id='conservationcolorscale',
+
+                                                            options=[
+                                                                {'label': col_code, 'value': col_code}
+                                                                for col_code in CONSERVATION_COLORS_OPT
+                                                            ],
+                                                            value='Viridis',
+                                                        ),
+
+                                                        daq.BooleanSwitch(
+                                                            id='showgap',
+                                                            label="Boşluk",
+                                                            labelPosition="top",
+                                                            className="float-left fw-bolder mt-2",
+                                                            on=True
+                                                        ),
+
+                                                        daq.BooleanSwitch(
+                                                            id='showconservation',
+                                                            label="Bar",
+                                                            labelPosition="top",
+                                                            className="float-left fw-bolder mt-2",
+                                                            on=True
+                                                        ),
+
+                                                        daq.BooleanSwitch(
+                                                            id='showconsensus',
+                                                            label="Konsensus",
+                                                            labelPosition="top",
+                                                            className="float-left fw-bolder mt-2",
+                                                            on=True
+                                                        ),
+
+                                                        daq.BooleanSwitch(
+                                                            id='showlabel',
+                                                            label="Label",
+                                                            labelPosition="top",
+                                                            className="float-left fw-bolder mt-2",
+                                                            on=True
+                                                        ),
+
+                                                        daq.BooleanSwitch(
+                                                            id='showid',
+                                                            label="id",
+                                                            labelPosition="top",
+                                                            className="float-left fw-bolder mt-2",
+                                                            on=True
+                                                        ),
+
+                                                    ]
+                                                )
+                                            ),
+
+                                        ], className="mb-2"
+                                    ),
+                                ], md=3
+                            ),
+
+                            dbc.Col(
+
+                                children=[
+
+                                    dcc.Loading(
+                                        children=html.Div(
+                                            [
+                                                dashbio.AlignmentChart(
+                                                    id="alignment-chart",
+                                                    tilewidth=30,
+                                                    height=900,
+                                                ),
+                                            ]
+                                        )
+                                    ),
+
+                                    dcc.Store(id='alignment-data-store'),
+
+                                ], md=9,
+                            ),
+                        ],
+                    ),
+                ],
+                className="shadow-lg p-3 bg-body rounded mr-1 ml-1 mb-2"
+            ),
+        ],
+    )
+
+    @app.callback(
+        Output('alignment-data-store', 'data'),
+        [
+            Input('alignment-file-upload', 'contents'),
+            Input('alignment-file-upload', 'filename')
+        ]
+    )
+    def update_storage(contents, filename):
+        if (contents is not None) and ('fasta' in filename):
+            content_type, content_string = contents.split(',')
+            data = base64.b64decode(content_string).decode('utf-8')
+        else:
+            data = None
+        return data
+
+    @app.callback(
+        Output('alignment-chart', 'data'),
+        [Input('alignment-data-store', 'data')],
+    )
+    def load_chart(data):
+        return data
+
+    @app.callback(
+        Output('alignment-chart', 'overview'),
+        [Input('overview', 'value')],
+    )
+    def overview_update(overview):
+        return overview
+
+    @app.callback(
+        Output("alignment-chart", "colorscale"),
+        [Input("colorscale", "value")],
+    )
+    def colorscale_update(colorscale):
+        return colorscale
+
+    @app.callback(
+        Output("alignment-chart", "showconsensus"),
+        [Input('showconsensus', 'on')],
+    )
+    def show_consensus_update(showconsensus):
+        return showconsensus
+
+    @app.callback(
+        Output("alignment-chart", "showgap"),
+        [Input('showgap', 'on')],
+    )
+    def show_gap_update(showgap):
+        return showgap
+
+    @app.callback(
+
+        Output("alignment-chart", "showconservation"),
+        Output("alignment-chart", "showlabel"),
+        Output("alignment-chart", "showid"),
+        Output("alignment-chart", "conservationcolorscale"),
+
+        Input('showconservation', 'on'),
+        Input('showlabel', 'on'),
+        Input('showid', 'on'),
+        Input('conservationcolorscale', 'value')
+
+    )
+    def alignment_update(showconservation, showlabel, showid, conservationcolorscale):
+        return showconservation, showlabel, showid, conservationcolorscale
+
+    return HttpResponseRedirect(f"/laboratuvar/bioinformatic/app/alignment-mapping/")
