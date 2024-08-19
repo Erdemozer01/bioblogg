@@ -3,6 +3,13 @@ from bioinformatic.models import BioinformaticModel, FileModel
 from bioinformatic.choices import *
 
 
+class MultipleAlignmentForm(forms.Form):
+    file = forms.FileField(
+        label='Fasta Dosyası',
+        help_text="Not : Max. dosya boyutu 30 mb olmalıdır.",
+    )
+
+
 class FileReadingForm(forms.ModelForm):
     file = forms.FileField(
         label='Dosya',
