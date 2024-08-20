@@ -1,13 +1,18 @@
-{% load plotly_dash %}
-
+<!-- templates/base.html -->
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-    {% plotly_direct name="entrez" %}
-</body>
-{% plotly_footer %}
+<html>
+    <head>
+    
+    {% load plotly_dash%}
+    
+    {% plotly_header %}
+    
+    </head>
+    <body>
+    
+    {%plotly_direct name="entrez"%}
+    
+    </body>
+    
+    {% plotly_footer %}
 </html>

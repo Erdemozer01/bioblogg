@@ -14,13 +14,14 @@ class EntrezView(TemplateView):
 
     def get(self, request, *args, **kwargs):
 
-        external_stylesheets = [dbc.themes.MORPH]
+        external_stylesheets = [dbc.themes.BOOTSTRAP]
 
         app = DjangoDash(
             name='entrez',
             external_stylesheets=external_stylesheets,
             title='Entrez araçları',
             update_title="Aranıyor...",
+            add_bootstrap_links=True
         )
 
         app.layout = dbc.Card(
