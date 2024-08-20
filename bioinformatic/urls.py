@@ -44,4 +44,7 @@ urlpatterns = [
     path('multiple-3d-molekul-goruntuleme/', views.multi_molecule_view, name='multiple_molecule_3d_view'),
     path('molecule-2d-görüntüleme/', views.molecule_2d_view, name='molecule_2d_view'),
 
+
+    path('entrez/', views.EntrezView.as_view(), name='entrez_view'),
+
 ]

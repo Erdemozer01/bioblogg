@@ -28,7 +28,6 @@ import dash_bio as dashbio
 from dash_bio.utils import PdbParser
 import pandas as pd
 import dash_daq as daq
-import urllib.request as urlreq
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
