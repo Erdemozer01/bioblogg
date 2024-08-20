@@ -37,7 +37,7 @@ urlpatterns = [
     path('dosya-dönüştürme/', views.FileConvert, name='file_convert'),
 
     # Makale
-    path('entrez-araçlari/', views.EntrezToolsView, name='entrez_tools'),
+path('entrez/', views.EntrezView.as_view(), name='entrez_view'),
 
     # molecule_viewer
     path('single-3d-molekul-goruntuleme/', views.single_molecule_view, name='single_molecule_3d_view'),
@@ -45,6 +45,6 @@ urlpatterns = [
     path('molecule-2d-görüntüleme/', views.molecule_2d_view, name='molecule_2d_view'),
 
 
-    path('entrez/', views.EntrezView.as_view(), name='entrez_view'),
+
 
 ]
