@@ -59,7 +59,7 @@ class EntrezView(TemplateView):
                                 ),
                             ],
                             brand="Entrez Araçları",
-                            brand_href=HttpResponseRedirect(reverse("bioinformatic:entrez_tools")).url,
+                            brand_href=HttpResponseRedirect(reverse("bioinformatic:entrez_view")).url,
                             color="primary",
                             dark=True,
                             brand_external_link=True,

@@ -2,7 +2,6 @@
 import base64
 import os, io, gzip, json
 import subprocess, sys
-from Bio.Application import ApplicationError
 from django.shortcuts import *
 from django.contrib import messages
 from bioinformatic.forms import FileReadingForm, MultipleSeqAlignmentFileForm, BlastForm, MultipleAlignmentForm
@@ -28,6 +27,7 @@ import dash_bio as dashbio
 from dash_bio.utils import PdbParser
 import pandas as pd
 import dash_daq as daq
+from django.views import generic
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -90,7 +90,7 @@ def file_reading(request):
             records = SeqIO.parse(handle, file_format)
 
             file_reading_dash_app = DjangoDash(
-                name=f"{file_format}-dosya-sonuc",
+                name="file_reading",
                 external_stylesheets=external_stylesheets,
                 title=f"{file_format} dosyası okuması sonuçları".upper(),
                 add_bootstrap_links=True,
@@ -162,59 +162,64 @@ def file_reading(request):
                             className="shadow-lg bg-body rounded mt-2 mb-1",
                         ),
 
-                        dbc.Card([
-                            dbc.CardBody([
-                                dbc.Row([
-                                    dbc.Col(
-                                        [
-                                            dcc.Tabs([
-                                                dcc.Tab(
-                                                    label='AÇIKLAMA',
-                                                    children=html.Div(
-                                                        className='control-tab mt-2',
-                                                        children=[
-                                                            html.H6(["Dosya içeriği:"], className="mt-2"),
+                        dbc.Card(
+                            [
+                                dbc.CardBody(
+                                    [
+                                        dbc.Row(
+                                            [
+                                                dbc.Col(
+                                                    [
+                                                        dcc.Tabs([
+                                                            dcc.Tab(
+                                                                label='AÇIKLAMA',
+                                                                children=html.Div(
+                                                                    className='control-tab mt-2',
+                                                                    children=[
+                                                                        html.H6(["Dosya içeriği:"], className="mt-2"),
 
-                                                            html.Span(
-                                                                [
-                                                                    f"{len(df_TABLE['seq'])} adet sekans kaydı bulunmuştur."],
+                                                                        html.Span(
+                                                                            [
+                                                                                f"{len(df_TABLE['seq'])} adet sekans kaydı bulunmuştur."],
+                                                                        ),
+
+                                                                    ]
+                                                                )
                                                             ),
+                                                            dcc.Tab(
+                                                                label="İŞLEM",
+                                                                children=[
 
+                                                                    dcc.Dropdown(
+                                                                        id="fasta-select",
+                                                                        value='table',
+                                                                        className="mt-2",
+                                                                        placeholder="Seçim Yapınız",
+                                                                        options=[
+                                                                            {"label": "TABLO", "value": 'table'},
+                                                                            {"label": "SEKANS HİSTOGRAM GRAFİĞİ",
+                                                                             "value": 'seq_histogram'},
+                                                                            {"label": "%GC PLOT", "value": 'gc_plot'},
+                                                                            {"label": "DOSYA SEKANS İÇERİKLERİ",
+                                                                             "value": 'seq_pie'},
+                                                                        ]
+                                                                    ),
+                                                                ]
+                                                            ),
                                                         ]
-                                                    )
-                                                ),
-                                                dcc.Tab(
-                                                    label="İŞLEM",
-                                                    children=[
-
-                                                        dcc.Dropdown(
-                                                            id="fasta-select",
-                                                            value='table',
-                                                            className="mt-2",
-                                                            placeholder="Seçim Yapınız",
-                                                            options=[
-                                                                {"label": "TABLO", "value": 'table'},
-                                                                {"label": "SEKANS HİSTOGRAM GRAFİĞİ",
-                                                                 "value": 'seq_histogram'},
-                                                                {"label": "%GC PLOT", "value": 'gc_plot'},
-                                                                {"label": "DOSYA SEKANS İÇERİKLERİ",
-                                                                 "value": 'seq_pie'},
-                                                            ]
                                                         ),
-                                                    ]
-                                                ),
-                                            ]),
 
-                                        ], md=4
-                                    ),
-                                    dbc.Col(
-                                        [
-                                            html.Div(id="fasta-output"),
-                                        ], md=8, className="mt-2"
-                                    ),
-                                ])
-                            ])
-                        ], className="mt-1"),
+                                                    ], md=4
+                                                ),
+                                                dbc.Col(
+                                                    [
+                                                        html.Div(id="fasta-output"),
+                                                    ], md=8, className="mt-2"
+                                                ),
+                                            ])
+                                    ])
+                            ], className="mt-1"
+                        ),
 
                     ],
                     style={"margin": 30},
@@ -743,7 +748,7 @@ def file_reading(request):
                     fluid=True, className="shadow-lg p-3 mb-5 bg-body rounded",
                 )
 
-            return HttpResponseRedirect(f"/laboratuvar/bioinformatic/app/{file_format}-dosya-sonuc")
+            return render(request, 'bioinformatic/file_reading.html')
 
         else:
             form = FileReadingForm()
@@ -761,9 +766,12 @@ def blast(request):
     external_stylesheets = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css']
     external_scripts = ['https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js']
 
-    app = DjangoDash('blast', external_stylesheets=external_stylesheets,
+    app = DjangoDash('blast',
+                     external_stylesheets=external_stylesheets,
                      external_scripts=external_scripts,
-                     title='BLAST')
+                     add_bootstrap_links=True,
+                     title='BLAST',
+                     )
 
     if BioinformaticModel.objects.filter(user=request.user, tool="BLAST").exists():
         BioinformaticModel.objects.filter(user=request.user, tool="BLAST").delete()
@@ -845,7 +853,7 @@ def blast(request):
 
             blast_obj.delete()
 
-            return HttpResponseRedirect("/laboratuvar/bioinformatic/app/blast/")
+            return render(request, "bioinformatic/blast.html")
 
     return render(request, 'bioinformatic/form.html', {'form': form, 'title': 'BLAST'})
 
@@ -1071,7 +1079,6 @@ def alignment_mapping(request):
                                                                 value='nj',
                                                             ),
 
-
                                                         ]
                                                     )
 
@@ -1103,7 +1110,8 @@ def alignment_mapping(request):
                                                     dbc.Tab(
                                                         label="Filogenetik Ağaç",
                                                         children=[
-                                                            html.P(id="alignment-chart-name", className="fw-bolder mt-2"),
+                                                            html.P(id="alignment-chart-name",
+                                                                   className="fw-bolder mt-2"),
                                                             cyto.Cytoscape(
                                                                 id='cytoscape-phylogeny',
                                                                 style={
@@ -1349,6 +1357,6 @@ def alignment_mapping(request):
                 else:
                     return data
 
-        return HttpResponseRedirect(f"/laboratuvar/bioinformatic/app/AlignmentMapping/")
+        return render(request, 'bioinformatic/AlignmentMapping.html')
 
     return render(request, "bioinformatic/form.html", {'form': form, 'title': "Alignment Haritalama"})
