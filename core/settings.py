@@ -41,8 +41,6 @@ INSTALLED_APPS = [
     'hitcount',
     'django_ckeditor_5',
     'channels',
-    'dpd_components',
-    'dpd_static_support',
 ]
 
 MIDDLEWARE = [
