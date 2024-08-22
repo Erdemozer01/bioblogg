@@ -18,16 +18,6 @@ import pubchempy as pcp
 from dash_bio.utils.chem_structure_reader import read_chem_structure
 from Bio.PDB import PDBParser, PDBIO, Select
 
-
-class GlySelect(Select):
-    def accept_residue(self, residue):
-
-        if residue.get_name() == "GLY":
-            return True
-        else:
-            return False
-
-
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 
@@ -274,7 +264,7 @@ def molecule_2d_view(request):
     def reset_selected_atoms(_):
         return []
 
-    return HttpResponseRedirect(f"/laboratuvar/bioinformatic/app/molecule-2d-view/")
+    return render(request, "bioinformatic/molecule_2d_view.html")
 
 
 def single_molecule_view(request):
@@ -288,7 +278,7 @@ def single_molecule_view(request):
 
     external_stylesheets = [dbc.themes.BOOTSTRAP]
 
-    app = DjangoDash(f'{request.user}-single-molecule-view', external_stylesheets=external_stylesheets,
+    app = DjangoDash('single-molecule-view', external_stylesheets=external_stylesheets,
                      title='3D MOLEKÜL GÖRÜNTÜLEME', add_bootstrap_links=True)
 
     form = SingleMoleculeViewForm(request.POST or None, request.FILES or None)
@@ -643,7 +633,7 @@ def single_molecule_view(request):
                     html.Br()
                 ]) for atm in atom_ids].pop()
 
-        return HttpResponseRedirect(f"/laboratuvar/bioinformatic/app/{request.user}-single-molecule-view/")
+        return render(request, "bioinformatic/single_molecule_view.html")
 
     return render(request, 'bioinformatic/form.html', {'form': form, 'title': 'Tekli 3D MOLEKÜL GÖRÜNTÜLEME'})
 
@@ -669,7 +659,7 @@ def multi_molecule_view(request):
         {'name': 'Zincir', 'id': 'chain'}
     ]
 
-    app = DjangoDash(f'{request.user}-ngl', external_stylesheets=external_stylesheets, add_bootstrap_links=True,
+    app = DjangoDash("NglMoleculeView", external_stylesheets=external_stylesheets, add_bootstrap_links=True,
                      title='Multi MOLEKÜL GÖRÜNTÜLEME')
 
     form = MultiMoleculeViewForm(request.POST or None, request.FILES or None)
@@ -998,6 +988,6 @@ def multi_molecule_view(request):
 
                 return data_list, molstyles_dict, stage_params, downloadImage, imageParameters, children
 
-        return HttpResponseRedirect(f"/laboratuvar/bioinformatic/app/{request.user}-ngl/")
+        return render(request, "bioinformatic/multi_molecule_view.html")
 
     return render(request, 'bioinformatic/form.html', {'form': form, 'title': 'Çoklu 3D MOLEKÜL GÖRÜNTÜLEME'})
