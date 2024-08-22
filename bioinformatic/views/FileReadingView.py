@@ -4,7 +4,7 @@ import os, io, gzip, json
 import subprocess, sys
 from django.shortcuts import *
 from django.contrib import messages
-from bioinformatic.forms import FileReadingForm, MultipleSeqAlignmentFileForm, BlastForm, MultipleAlignmentForm
+from bioinformatic.forms import FileReadingForm, BlastForm, MultipleAlignmentForm
 from bioinformatic.models import BioinformaticModel
 from Bio import SeqIO, SearchIO
 from Bio.SeqUtils import gc_fraction
@@ -12,7 +12,7 @@ from bioinformatic.generate_tree import generate_elements
 import plotly.express as px
 from django_plotly_dash import DjangoDash
 
-from dash import dcc, html, dash_table, Input, Output, State, no_update, Dash, ctx
+from dash import dcc, html, dash_table, Input, Output
 import dash_bootstrap_components as dbc
 from pathlib import Path
 from Bio.Blast import NCBIWWW, NCBIXML
@@ -27,7 +27,6 @@ import dash_bio as dashbio
 from dash_bio.utils import PdbParser
 import pandas as pd
 import dash_daq as daq
-from django.views import generic
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
