@@ -1338,20 +1338,12 @@ def alignment_mapping(request):
                 Output('alignment-chart', 'data'),
 
                 Input('using-tools-data', 'data'),
-                Input('alignment-data-store', 'data'),
+
                 Input('align-tools', 'value'),
             )
-            def update_chart(tools_data, aligned_store, tools):
+            def update_chart(tools_data, tools):
 
                 if tools_data and tools:
-
-                    return tools_data
-
-                elif aligned_store and tools:
-                    return tools_data
-
-                elif aligned_store and tools is None:
-
                     return tools_data
 
                 else:
