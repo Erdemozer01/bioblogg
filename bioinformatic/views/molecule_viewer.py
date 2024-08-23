@@ -278,8 +278,12 @@ def single_molecule_view(request):
 
     external_stylesheets = [dbc.themes.BOOTSTRAP]
 
-    app = DjangoDash('single-molecule-view', external_stylesheets=external_stylesheets,
-                     title='3D MOLEKÜL GÖRÜNTÜLEME', add_bootstrap_links=True)
+    app = DjangoDash(
+        name=f'Molecule3dViewer-{request.user}',
+        external_stylesheets=external_stylesheets,
+        title='3D MOLEKÜL GÖRÜNTÜLEME',
+        add_bootstrap_links=True
+    )
 
     form = SingleMoleculeViewForm(request.POST or None, request.FILES or None)
 
@@ -633,7 +637,7 @@ def single_molecule_view(request):
                     html.Br()
                 ]) for atm in atom_ids].pop()
 
-        return render(request, "bioinformatic/single_molecule_view.html")
+        return HttpResponseRedirect(f"/laboratuvar/bioinformatic/app/Molecule3dViewer-{request.user}/")
 
     return render(request, 'bioinformatic/form.html', {'form': form, 'title': 'Tekli 3D MOLEKÜL GÖRÜNTÜLEME'})
 
@@ -659,7 +663,7 @@ def multi_molecule_view(request):
         {'name': 'Zincir', 'id': 'chain'}
     ]
 
-    app = DjangoDash(f'{request.user}-ngl', external_stylesheets=external_stylesheets, add_bootstrap_links=True,
+    app = DjangoDash(f'NglMoleculeViewer-{request.user}', external_stylesheets=external_stylesheets, add_bootstrap_links=True,
                      title='Multi MOLEKÜL GÖRÜNTÜLEME')
 
     form = MultiMoleculeViewForm(request.POST or None, request.FILES or None)
@@ -988,6 +992,6 @@ def multi_molecule_view(request):
 
                 return data_list, molstyles_dict, stage_params, downloadImage, imageParameters, children
 
-        return HttpResponseRedirect(f"/laboratuvar/bioinformatic/app/{request.user}-ngl/")
+        return HttpResponseRedirect(f"/laboratuvar/bioinformatic/app/NglMoleculeViewer-{request.user}/")
 
     return render(request, 'bioinformatic/form.html', {'form': form, 'title': 'Çoklu 3D MOLEKÜL GÖRÜNTÜLEME'})
