@@ -992,6 +992,6 @@ def multi_molecule_view(request):
 
                 return data_list, molstyles_dict, stage_params, downloadImage, imageParameters, children
 
-        return HttpResponseRedirect(f"/laboratuvar/bioinformatic/app/NglMoleculeViewer-{request.user}/".lower())
+        return HttpResponseRedirect(f"/laboratuvar/bioinformatic/app/NglMoleculeViewer-{request.user}/")
 
     return render(request, 'bioinformatic/form.html', {'form': form, 'title': 'Çoklu 3D MOLEKÜL GÖRÜNTÜLEME'})
