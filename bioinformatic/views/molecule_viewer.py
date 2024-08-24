@@ -548,6 +548,8 @@ def single_molecule_view(request):
                 ],
             )
 
+            app.handle_current_state()
+
             @app.callback(
                 Output("visual_output", "styles"),
                 Output("visual_output", "selectionType"),
@@ -574,6 +576,7 @@ def single_molecule_view(request):
             def remove_water(n_clicks):
 
                 if n_clicks > 0:
+
                     atoms = [i for i in data["atoms"] if not "HOH" in i.get("residue_name")]
 
                     water_molecule = int(len(data["atoms"]) - len(atoms))
