@@ -24,12 +24,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 def molecule_2d_view(request):
     external_stylesheets = [dbc.themes.BOOTSTRAP]
-    external_scripts = ["https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"]
 
     app = DjangoDash(
-        'molecule-2d-view',
+        name=f'molecule-2d-view-{request.COOKIES.get('sessionid')}',
         external_stylesheets=external_stylesheets,
-        external_scripts=external_scripts,
         add_bootstrap_links=True,
         title='2D MOLEKÜL İNCELEME'
     )
@@ -265,7 +263,7 @@ def molecule_2d_view(request):
     def reset_selected_atoms(_):
         return []
 
-    return render(request, "bioinformatic/molecule_2d_view.html")
+    return HttpResponseRedirect(f"/laboratuvar/bioinformatic/app/molecule-2d-view-{request.COOKIES.get("sessionid")}/")
 
 
 def single_molecule_view(request):
