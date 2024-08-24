@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'hitcount',
     'django_ckeditor_5',
     'channels',
+    'channels_redis'
 ]
 
 MIDDLEWARE = [
@@ -171,19 +172,28 @@ PLOTLY_COMPONENTS = [
     'dash_bootstrap_components',
 ]
 
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [('127.0.0.1', 6379), ],
+        },
+    },
+}
+
 PLOTLY_DASH = {
 
     # Route used for the message pipe websocket connection
-    "ws_route" :   "dpd/ws/channel",
+    "ws_route": "dpd/ws/channel",
 
     # Route used for direct http insertion of pipe messages
-    "http_route" : "dpd/views",
+    "http_route": "dpd/views",
 
     # Flag controlling existince of http poke endpoint
-    "http_poke_enabled" : True,
+    "http_poke_enabled": True,
 
     # Insert data for the demo when migrating
-    "insert_demo_migrations" : False,
+    "insert_demo_migrations": False,
 
     # Timeout for caching of initial arguments in seconds
     "cache_timeout_initial_arguments": 60,

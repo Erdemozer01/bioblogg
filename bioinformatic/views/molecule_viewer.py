@@ -17,6 +17,7 @@ from pathlib import Path
 import pubchempy as pcp
 from dash_bio.utils.chem_structure_reader import read_chem_structure
 from Bio.PDB import PDBParser, PDBIO, Select
+from django_plotly_dash.models import DashApp
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -547,8 +548,6 @@ def single_molecule_view(request):
                     ),
                 ],
             )
-
-            app.handle_current_state()
 
             @app.callback(
                 Output("visual_output", "styles"),
