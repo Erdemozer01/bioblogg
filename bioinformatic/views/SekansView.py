@@ -14,6 +14,8 @@ import plotly.figure_factory as ff
 from Bio import Align
 from Bio.Align import substitution_matrices
 import dash_bootstrap_components as dbc
+import dash_daq as daq
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -340,7 +342,6 @@ def sequence_analiz(request):
     def update_output(sequence, nuc_type, grap_type):
         if sequence:
             if nuc_type == "dna":
-
                 sequence = sequence.upper()
                 ig = []
 
@@ -411,7 +412,7 @@ def translation(request):
     translate_app = DjangoDash("translate_dna", external_stylesheets=external_stylesheets,
                                add_bootstrap_links=True, title='PROTEİN SENTEZİ')
 
-    translate_app.layout = dbc.Container(
+    translate_app.layout = dbc.Card(
 
         [
 
@@ -450,145 +451,206 @@ def translation(request):
                 className="shadow-lg p-3 bg-body rounded"
             ),
 
-            dcc.Textarea(id="sekans", placeholder="Sekans Giriniz",
-                         className="form-control mb-1 mt-3", style={'height': 200}),
+            dbc.CardBody([
+                dbc.Row([
+                    dbc.Col(
 
-            dcc.Input(id="start", type="number", placeholder="Sekans başlangıcı", min=0, className="mr-1"),
+                        [
 
-            dcc.Input(id="stop", type="number", placeholder="Sekans bitişi", min=0, className="mr-1"),
+                            dbc.Tabs([
+                                dbc.Tab(
+                                    label="Sekans",
 
-            dcc.Input(id="discard", type="text", placeholder="İstenmeyen sekans dizisi", className="mr-1"),
+                                    children=[
 
-            html.P("Dönüşüm Tablosu", className="fw-bold mt-2 text-primary"),
+                                        dcc.Textarea(id="seq", placeholder="Sekans Giriniz",
+                                                     className="form-control mb-1 mt-3", style={'height': 200}),
 
-            dcc.Dropdown(id="table", options={
-                "1": "Standart Kod",
-                "2": "Omurgalı Mitokondri Kodu",
-                "3": "Maya Mitokondri Kodu",
-                "4": "Küf, Protozoon ve Kölenterat Mitokondri Kodu ve Mikoplazma/Spiroplasma Kodu",
-                "5": "Omurgasız Mitokondri Kodu",
-                "6": "Siliat, Dasikladas ve Heksamita Nükleer Kodu",
-                "9": "Ekinoderm ve Yassı Solucan Mitokondri Kodu",
-                "10": "Euplotid Nükleer Kodu",
-                "11": "Bakteriyel, Arkeal ve Bitki Plastid Kodu, prokaryotik virüsler",
-                "12": "Alternatif Maya Nükleer Kodu",
-                "13": "Ascidian Mitokondri Kodu",
-                "14": "Alternatif Yassı Solucan Mitokondri Kodu",
-                "16": "Klorofis Mitokondri Kodu",
-                "21": "Trematod Mitokondriyal Kodu",
-                "22": "Scenedesmus obliquus Mitokondri Kodu",
-                "23": "Thraustochytrium Mitokondri Kodu",
-                "24": "Rhabdopleuridae Mitokondri Kodu",
-                "25": "Aday Bölüm SR1 ve Gracilibacteria Kodu",
-                "26": "Pachysolen tannophilus Nükleer Kodu",
-                "27": "Karyorelict Nükleer Kodu",
-                "28": "Kondilostoma Nükleer Kodu",
-                "29": "Mezodinyum Nükleer Kodu",
-                "30": "Peritrich Nükleer Kodu",
-                "31": "Blastocrithidia Nükleer Kodu",
-                "33": "Cephalodiscidae Mitokondriyal UAA-Tyr Kodu"
-            }, value="1", searchable=True, style={'marginTop': -5}),
+                                        html.Label("Sekans başlangıcı", className="fw-bolder mt-2"),
 
-            html.Small(" ***Dönüşüm tablosu verileri ", className='txt-bold'),
+                                        dbc.Input(id="start", type="number", placeholder="Sekans başlangıcı", min=0,
+                                                  className="mr-1"),
 
-            html.A(' NCBI ', href="https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi", target="_blank",
-                   style={'text-decoration': 'none'}),
+                                        html.Label("Sekans bitişi", className="fw-bolder mt-2"),
 
-            html.Small(' sitesiden alınmıştır.'),
+                                        dbc.Input(id="stop", type="number", placeholder="Sekans bitişi", min=0,
+                                                  className="mr-1"),
 
-            dcc.Checklist(id="to_stop", options={'evet': ' Stop Kodonlarını dahil et.'}),
+                                        html.Label("İstenmeyen sekans dizisi", className="fw-bolder mt-2"),
 
-            html.Div(id="output"),
+                                        dbc.Input(id="discard", type="text", placeholder="İstenmeyen sekans dizisi",
+                                                  className="mr-1"),
+                                    ]
+                                ),
 
-        ], className="shadow-lg p-3 mb-5 bg-body rounded mt-5", fluid=False
+                                dbc.Tab(
+                                    label="Dönüşüm tablosu",
+
+                                    children=[
+                                        html.Label("Dönüşüm Tablosu", className="fw-bolder mt-2"),
+
+                                        dcc.Dropdown(id="table", options={
+                                            "1": "Standart Kod",
+                                            "2": "Omurgalı Mitokondri Kodu",
+                                            "3": "Maya Mitokondri Kodu",
+                                            "4": "Küf, Protozoon ve Kölenterat Mitokondri Kodu ve Mikoplazma/Spiroplasma Kodu",
+                                            "5": "Omurgasız Mitokondri Kodu",
+                                            "6": "Siliat, Dasikladas ve Heksamita Nükleer Kodu",
+                                            "9": "Ekinoderm ve Yassı Solucan Mitokondri Kodu",
+                                            "10": "Euplotid Nükleer Kodu",
+                                            "11": "Bakteriyel, Arkeal ve Bitki Plastid Kodu, prokaryotik virüsler",
+                                            "12": "Alternatif Maya Nükleer Kodu",
+                                            "13": "Ascidian Mitokondri Kodu",
+                                            "14": "Alternatif Yassı Solucan Mitokondri Kodu",
+                                            "16": "Klorofis Mitokondri Kodu",
+                                            "21": "Trematod Mitokondriyal Kodu",
+                                            "22": "Scenedesmus obliquus Mitokondri Kodu",
+                                            "23": "Thraustochytrium Mitokondri Kodu",
+                                            "24": "Rhabdopleuridae Mitokondri Kodu",
+                                            "25": "Aday Bölüm SR1 ve Gracilibacteria Kodu",
+                                            "26": "Pachysolen tannophilus Nükleer Kodu",
+                                            "27": "Karyorelict Nükleer Kodu",
+                                            "28": "Kondilostoma Nükleer Kodu",
+                                            "29": "Mezodinyum Nükleer Kodu",
+                                            "30": "Peritrich Nükleer Kodu",
+                                            "31": "Blastocrithidia Nükleer Kodu",
+                                            "33": "Cephalodiscidae Mitokondriyal UAA-Tyr Kodu"
+                                        }, value="1", searchable=True),
+
+                                        html.Small(" ***Dönüşüm tablosu verileri ", className='txt-bold'),
+
+                                        html.A(' NCBI ',
+                                               href="https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+                                               target="_blank",
+                                               style={'text-decoration': 'none'}),
+
+                                        html.Small(' sitesiden alınmıştır.'),
+
+                                        html.Div([
+                                            daq.BooleanSwitch(
+                                                id="to_stop",
+                                                on=False,
+                                                label="Stop Kodonları",
+                                                labelPosition="top",
+                                                className="fw-bolder float-left mt-2",
+                                            )
+                                        ]),
+
+                                    ]
+                                )
+                            ])
+
+                        ], md=4, className="mt-3"
+                    ),
+
+                    dbc.Col(
+                        [
+
+                            dbc.Tabs([
+                                dbc.Tab(
+                                    label="Sonuçlar",
+
+                                    children=[
+
+                                        html.P(id="seq_inf", className="mt-2"),
+
+                                        html.P(id="protein_inf"),
+
+                                        html.Label("Komplement", style={'font-weight': 'bold'}),
+
+                                        dcc.Textarea(
+                                            id="complement",
+                                            className="form-control",
+                                            readOnly=True
+                                        ),
+
+                                        html.Label("Reverse Komplement", style={'font-weight': 'bold'}),
+
+                                        dcc.Textarea(
+                                            id="reverse_complement",
+                                            className="form-control",
+                                            readOnly=True
+                                        ),
+
+                                        html.Label("Transcribe", style={'font-weight': 'bold'}),
+
+                                        dcc.Textarea(
+                                            id="transcribe",
+                                            className="form-control",
+                                            readOnly=True
+                                        ),
+
+                                        html.Label(f"Protein Sekansı", style={'font-weight': 'bold'}),
+
+                                        dcc.Textarea(
+                                            id="protein",
+                                            className="form-control",
+                                            readOnly=True
+                                        ),
+                                    ]
+                                )
+                            ]),
+                        ], md=8, className="mt-3"
+                    )
+                ]),
+            ]),
+
+        ], className="shadow-lg p-3 mb-5 bg-body rounded mt-2 mr-2 ml-2"
     )
 
     @translate_app.callback(
-        Output("output", "children"),
-        Input("sekans", "value"),
+        Output("seq_inf", "children"),
+        Output("protein_inf", "children"),
+        Output("complement", "value"),
+        Output("reverse_complement", "value"),
+        Output("transcribe", "value"),
+        Output("protein", "value"),
+
+        Input("seq", "value"),
         Input("start", "value"),
         Input("stop", "value"),
         Input("discard", "value"),
         Input("table", "value"),
-        Input("to_stop", "value"),
+        Input("to_stop", "on"),
     )
-    def update_output(sekans, start, stop, discard, table, to_stop):
-        sekans = str(sekans).replace(" ", "")
-        sekans = str(sekans).replace("\n", "")
-        sekans = str(sekans).replace("\t", "")
-        sekans = str(sekans).replace("\r", "")
-        sekans = str(sekans).replace("0", "")
-        sekans = str(sekans).replace("1", "")
-        sekans = str(sekans).replace("2", "")
-        sekans = str(sekans).replace("3", "")
-        sekans = str(sekans).replace("4", "")
-        sekans = str(sekans).replace("5", "")
-        sekans = str(sekans).replace("6", "")
-        sekans = str(sekans).replace("7", "")
-        sekans = str(sekans).replace("8", "")
-        sekans = str(sekans).replace("9", "")
-        sekans = str(sekans).upper().replace("NONE", "")
+    def update_seq(seq, start, stop, discard, table, to_stop):
+
+        sequence = str(seq).upper()
+        ig = []
+
+        for i in sequence:
+            if not i in ['A', 'C', 'G', 'T']:
+                ig.append(i)
+
+        for i in ig:
+            if i in sequence:
+                sequence = sequence.replace(i, "")
 
         if discard:
-            sekans = sekans.replace(str(discard).upper(), "")
+            sequence = sequence.replace(str(discard).upper(), "")
 
         if start or stop:
-            sekans = sekans[start:stop]
+            sequence = sequence[start:stop]
 
-        if to_stop:
-            trans_seq = Seq(sekans).translate(table=int(table))
+        if to_stop is True:
+            trans_seq = Seq(sequence).translate(table=int(table))
         else:
-            trans_seq = Seq(sekans).translate(table=int(table)).replace("*", "")
+            trans_seq = Seq(sequence).translate(table=int(table)).replace("*", "")
 
-        if trans_seq:
-            return html.Div([
+        seq_inf = (f"Girilen sekans uzunluğu: {len(sequence)}, %GC: {gc_fraction(sequence)}, A: {sequence.count('A')} "
+                   f"T: {sequence.count('T')}, G: {sequence.count('G')}, C: {sequence.count('C')} \n"
+                   )
+        protein_inf = f"Protein Sekans Uzunluğu: {len(trans_seq)}, Stop kodonları sayısı: {trans_seq.count('*')}"
 
-                html.Hr(),
+        complement = str(Seq(sequence).complement())
 
-                html.H4("SONUÇLAR"),
+        reverse_complement = str(Seq(sequence).reverse_complement())
 
-                html.Hr(),
+        transcribe = str(Seq(sequence).transcribe())
 
-                html.P(
-                    f" Girilen sekans uzunluğu: {len(sekans)}, %GC: {gc_fraction(sekans)}," +
-                    f"  A: {sekans.count('A')}, T: {sekans.count('T')}, G: {sekans.count('G')}, C: {sekans.count('C')},"
-                    f"  Protein Sekans Uzunluğu: {len(trans_seq)}, Stop kodonları sayısı: {trans_seq.count('*')}",
-                    style={'marginTop': '20px'}, className="fw-bolder"
-                ),
+        return seq_inf, protein_inf, complement, reverse_complement, transcribe, str(trans_seq)
 
-                html.Hr(),
 
-                html.Label("Komplement", style={'font-weight': 'bold'}),
-
-                dcc.Textarea(
-                    value=str(Seq(sekans).complement()),
-                    className="form-control"
-                ),
-
-                html.Label("Reverse Komplement", style={'font-weight': 'bold'}),
-
-                dcc.Textarea(
-                    value=str(Seq(sekans).reverse_complement()),
-                    className="form-control"
-                ),
-
-                html.Label("Transcribe", style={'font-weight': 'bold'}),
-
-                dcc.Textarea(
-                    value=str(Seq(sekans).transcribe()),
-                    className="form-control"
-                ),
-
-                html.Label(f"Protein Sekansı", style={'font-weight': 'bold'}),
-
-                dcc.Textarea(
-                    value=str(trans_seq),
-                    className="form-control"
-                ),
-
-                html.Hr(),
-
-            ])
 
     return HttpResponseRedirect("/laboratuvar/bioinformatic/app/translate_dna/")
 
@@ -924,7 +986,7 @@ def create_frame_seq(request):
                 'seq_len': [len(sequence[:50] + str(nuc_position) + sequence[50:frame_len]) for frame_len in
                             range(50, frame_seq_len)],
                 'seq_frame': [sequence[:50] + ' ' + str(nuc_position) + ' ' + sequence[50:frame_len] for frame_len in
-                        range(50, frame_seq_len)]
+                              range(50, frame_seq_len)]
             }
         )
 

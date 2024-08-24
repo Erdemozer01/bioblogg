@@ -169,6 +169,7 @@ def file_reading(request):
                                             [
                                                 dbc.Col(
                                                     [
+
                                                         dcc.Tabs([
                                                             dcc.Tab(
                                                                 label='AÇIKLAMA',
@@ -210,6 +211,7 @@ def file_reading(request):
 
                                                     ], md=4
                                                 ),
+
                                                 dbc.Col(
                                                     [
                                                         html.Div(id="fasta-output"),
@@ -747,7 +749,7 @@ def file_reading(request):
                     fluid=True, className="shadow-lg p-3 mb-5 bg-body rounded",
                 )
 
-            return render(request, 'bioinformatic/file_reading.html')
+            return HttpResponseRedirect(f"/laboratuvar/bioinformatic/app/file_reading/")
 
         else:
             form = FileReadingForm()
@@ -852,7 +854,7 @@ def blast(request):
 
             blast_obj.delete()
 
-            return render(request, "bioinformatic/blast.html")
+            return HttpResponseRedirect(f"/laboratuvar/bioinformatic/app/blast/")
 
     return render(request, 'bioinformatic/form.html', {'form': form, 'title': 'BLAST'})
 
@@ -1348,6 +1350,6 @@ def alignment_mapping(request):
                 else:
                     return data
 
-        return render(request, 'bioinformatic/AlignmentMapping.html')
+        return HttpResponseRedirect(f"/laboratuvar/bioinformatic/app/AlignmentMapping/")
 
     return render(request, "bioinformatic/form.html", {'form': form, 'title': "Alignment Haritalama"})

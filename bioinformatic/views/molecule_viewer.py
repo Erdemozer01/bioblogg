@@ -935,6 +935,7 @@ def multi_molecule_view(request):
             @app.callback(
 
                 Output("molecule-output", 'data'),
+
                 Output("molecule-output", "molStyles"),
                 Output("molecule-output", "stageParameters"),
                 Output("molecule-output", "downloadImage"),
@@ -948,6 +949,7 @@ def multi_molecule_view(request):
                 Input("ngl-stage-quality-dropdown", "value"),
                 Input("ngl-stage-camera-dropdown", "value"),
                 Input("save-img", "n_clicks"),
+
             )
             def return_molecule(style, sidebyside, value, color, quality, cameraType, n_clicks):
 
