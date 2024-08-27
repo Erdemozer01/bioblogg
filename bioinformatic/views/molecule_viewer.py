@@ -37,6 +37,8 @@ def molecule_2d_view(request):
         title='2D MOLEKÜL İNCELEME'
     )
 
+    app.s
+
     app.layout = dbc.Card(
         [
 
