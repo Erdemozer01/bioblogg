@@ -1,7 +1,7 @@
 import pandas as pd
 from dash import html, dcc, Input, Output, dash_table, State
 from django.shortcuts import *
-from django_plotly_dash import DjangoDash
+from django_plotly_dash import DjangoDash, app_name
 import dash_bootstrap_components as dbc
 import plotly.express as px
 import io, base64, os
@@ -520,6 +520,8 @@ def files_table(request):
 
         ], className="shadow-lg p-4 bg-body rounded"
     )
+
+    app_name.app_name = 'files-stats'
 
     @app.callback(
         Output('datatable-upload-container', 'data'),
