@@ -43,7 +43,7 @@ def parse_contents(contents, filename):
 def files_table(request):
     external_stylesheets = [dbc.themes.BOOTSTRAP]
 
-    app = DjangoDash('files-stats', external_stylesheets=external_stylesheets,
+    app = DjangoDash(name='files-stats', external_stylesheets=external_stylesheets,
                      title="Dosya ve Grafik", add_bootstrap_links=True, update_title="Güncelleniyor...")
 
     app.layout = dbc.Card(
@@ -520,8 +520,6 @@ def files_table(request):
 
         ], className="shadow-lg p-4 bg-body rounded"
     )
-
-    app_name.app_name = 'files-stats'
 
     @app.callback(
         Output('datatable-upload-container', 'data'),
