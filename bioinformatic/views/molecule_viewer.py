@@ -678,7 +678,7 @@ def multi_molecule_view(request):
 
     form = MultiMoleculeViewForm(request.POST or None, request.FILES or None)
 
-    data_path = os.path.join(BASE_DIR, "media", "laboratory", f"{request.user}\\")
+    data_path = os.path.join(BASE_DIR, "media", "laboratory", f"{request.user}\\").replace("\\", "/")
 
     print(data_path)
 
