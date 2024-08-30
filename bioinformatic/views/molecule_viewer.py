@@ -580,7 +580,6 @@ def single_molecule_view(request):
             def remove_water(n_clicks):
 
                 if n_clicks > 0:
-
                     atoms = [i for i in data["atoms"] if not "HOH" in i.get("residue_name")]
 
                     water_molecule = int(len(data["atoms"]) - len(atoms))
@@ -670,12 +669,18 @@ def multi_molecule_view(request):
         {'name': 'Zincir', 'id': 'chain'}
     ]
 
-    app = DjangoDash(f'NglMoleculeViewer-{request.user}', external_stylesheets=external_stylesheets, add_bootstrap_links=True,
-                     title='Multi MOLEKÜL GÖRÜNTÜLEME')
+    app = DjangoDash(
+        name=f'NglMoleculeViewer-{request.user}',
+        external_stylesheets=external_stylesheets,
+        add_bootstrap_links=True,
+        title='Multi MOLEKÜL GÖRÜNTÜLEME'
+    )
 
     form = MultiMoleculeViewForm(request.POST or None, request.FILES or None)
 
-    data_path = os.path.join(BASE_DIR, "media", "laboratory", f"{request.user}\\").replace("\\", "/")
+    data_path = os.path.join(BASE_DIR, "media", "laboratory", f"{request.user}\\")
+
+    print(data_path)
 
     if request.method == "POST":
 

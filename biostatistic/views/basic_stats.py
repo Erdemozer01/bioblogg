@@ -1,7 +1,8 @@
 import pandas as pd
 from dash import html, dcc, Input, Output, dash_table, State
 from django.shortcuts import *
-from django_plotly_dash import DjangoDash, app_name
+from django_plotly_dash import DjangoDash
+from django_plotly_dash.models import DashApp
 import dash_bootstrap_components as dbc
 import plotly.express as px
 import io, base64, os
@@ -920,7 +921,7 @@ def files_table(request):
         df = pd.DataFrame(content)
         if n_clicks > 0:
             return dcc.send_data_frame(
-                df.to_excel,f"{test.capitalize()} Tablosu.xlsx"
+                df.to_excel, f"{test.capitalize()} Tablosu.xlsx"
             )
 
     @app.callback(
