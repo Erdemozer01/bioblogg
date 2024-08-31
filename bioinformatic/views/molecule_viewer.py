@@ -695,7 +695,7 @@ def multi_molecule_view(request):
 
     form = MultiMoleculeViewForm(request.POST or None, request.FILES or None)
 
-    data_path = os.path.join(BASE_DIR, "media", "laboratory")
+    data_path = os.path.join(BASE_DIR, "media", "laboratory", f"{request.user}\\")
 
     if request.method == "POST":
 
@@ -982,8 +982,6 @@ def multi_molecule_view(request):
             )
             def return_molecule(style, sidebyside, value, color, quality, cameraType, n_clicks):
 
-
-
                 sidebyside_bool = sidebyside == "True"
 
                 molstyles_dict = {
@@ -1014,7 +1012,7 @@ def multi_molecule_view(request):
 
                 data_list = [
                     ngl_parser.get_data(
-                        data_path=data_path,
+                        data_path=rec.file.path,
                         pdb_id=pdb_id,
                         color='red',
                         reset_view=True,
