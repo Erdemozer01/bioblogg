@@ -360,198 +360,215 @@ def single_molecule_view(request):
 
                 return redirect('bioinformatic:single_molecule_3d_view')
 
-            app.layout = dbc.Card(
+            app.layout = html.Div(
                 [
-                    ## NAVBAR ##
-                    dbc.NavbarSimple(
-                        children=[
-                            dbc.NavItem(dbc.NavLink("Blog", href=HttpResponseRedirect(
-                                reverse("blog:anasayfa")).url, external_link=True)),
-                            dbc.DropdownMenu(
-                                children=[
-                                    dbc.DropdownMenuItem("Biyoinformatik",
-                                                         href=HttpResponseRedirect(
-                                                             reverse("bioinformatic:home")).url,
-                                                         external_link=True),
-                                    dbc.DropdownMenuItem("Biyoistatislik",
-                                                         href=HttpResponseRedirect(
-                                                             reverse("biostatistic:home")).url,
-                                                         external_link=True),
-                                    dbc.DropdownMenuItem("Coğrafi Bilgi sistemleri",
-                                                         href=HttpResponseRedirect(reverse("cbs")).url,
-                                                         external_link=True),
-                                    dbc.DropdownMenuItem("Laboratuvarlar",
-                                                         href=HttpResponseRedirect(
-                                                             reverse("lab_home")).url,
-                                                         external_link=True),
-                                ],
-                                nav=True,
-                                in_navbar=True,
-                                label="Laboratuvarlar",
-
-                            ),
-                        ],
-                        brand="3D MOLEKÜL GÖRÜNTÜLEME",
-                        brand_href=HttpResponseRedirect(reverse("bioinformatic:single_molecule_3d_view")).url,
-                        color="primary",
-                        dark=True,
-                        brand_external_link=True,
-                        sticky='top',
-                        className="shadow-lg bg-body rounded mt-1 mb-1 mr-1 ml-1",
-                    ),
-
                     dbc.Card(
-                        [
-                            dbc.Row(
-                                [
-                                    dbc.Col(
-                                        [
-                                            dbc.Tabs(
-                                                id='mol3d-tabs',
-                                                children=[
+                        dbc.CardBody(
+                            [
+                                ## NAVBAR ##
+                                dbc.NavbarSimple(
+                                    children=[
+                                        dbc.NavItem(dbc.NavLink("Blog", href=HttpResponseRedirect(
+                                            reverse("blog:anasayfa")).url, external_link=True)),
+                                        dbc.DropdownMenu(
+                                            children=[
+                                                dbc.DropdownMenuItem("Biyoinformatik",
+                                                                     href=HttpResponseRedirect(
+                                                                         reverse("bioinformatic:home")).url,
+                                                                     external_link=True),
+                                                dbc.DropdownMenuItem("Biyoistatislik",
+                                                                     href=HttpResponseRedirect(
+                                                                         reverse("biostatistic:home")).url,
+                                                                     external_link=True),
+                                                dbc.DropdownMenuItem("Coğrafi Bilgi sistemleri",
+                                                                     href=HttpResponseRedirect(reverse("cbs")).url,
+                                                                     external_link=True),
+                                                dbc.DropdownMenuItem("Laboratuvarlar",
+                                                                     href=HttpResponseRedirect(
+                                                                         reverse("lab_home")).url,
+                                                                     external_link=True),
+                                            ],
+                                            nav=True,
+                                            in_navbar=True,
+                                            label="Laboratuvarlar",
 
-                                                    dbc.Tab(
-                                                        label='AÇIKLAMA',
-                                                        children=[
-
-                                                            html.H4(["YAPIYA İLİŞKİN BİLGİLER"], className="mt-2"),
-                                                            html.P(
-                                                                f"İD : {str(file.name[:4]).upper()}"),
-
-                                                            html.P(
-                                                                f"ADI : {structure.get('name')}"
-                                                            ),
-
-                                                            html.P(
-                                                                f"Yayınlanma Tarihi : {structure.get('release_date')}"
-                                                            ),
-
-                                                            html.P(
-                                                                f"Metod : {structure.get('structure_method')}"
-                                                            ),
-
-                                                            html.P(
-                                                                f"Referans : {structure.get('journal')}",
-                                                                className="text-align-justify",
-                                                            ),
-
-                                                            html.A(['Protein Databankta Görüntüle'],
-                                                                   href=f'https://www.rcsb.org/structure/{str(file.name[:4]).lower()}',
-                                                                   target="_blank"),
-
-                                                        ]
-                                                    ),
-
-                                                    dbc.Tab(
-                                                        label='ARAÇLAR',
-                                                        children=[
-
-                                                            html.Label("Görünüm", className="fw-bolder mt-2"),
-
-                                                            dcc.Dropdown(
-                                                                id='visual-type',
-                                                                options=[
-                                                                    {'label': 'Çubuk', 'value': 'stick'},
-                                                                    {'label': 'Şerit', 'value': 'cartoon'},
-                                                                    {'label': 'Küre', 'value': 'sphere'},
-                                                                ],
-                                                                value='cartoon',
-                                                            ),
-
-                                                            html.Label("Renklendirme Türü", className="fw-bolder mt-2"),
-
-                                                            dcc.Dropdown(
-                                                                id='color-type',
-                                                                options=[
-                                                                    {'label': 'Atom', 'value': 'atom'},
-                                                                    {'label': 'Bölge', 'value': 'residue'},
-                                                                    {'label': 'Bölge türü', 'value': 'residue_type'},
-                                                                    {'label': 'Zincir', 'value': 'chain'},
-                                                                ],
-                                                                value='residue', className="mt-2"
-                                                            ),
-
-                                                            html.Label("Seçme Türü", className="fw-bolder mt-2"),
-
-                                                            dcc.Dropdown(
-                                                                id='select-type',
-                                                                options=[
-                                                                    {'label': 'Atom', 'value': 'atom'},
-                                                                    {'label': 'Bölge', 'value': 'residue'},
-                                                                    {'label': 'Zincir', 'value': 'chain'},
-                                                                ],
-                                                                value='atom', className="mt-2"
-                                                            ),
-
-                                                            html.Button("Su molekülünü kaldır", id="remove-water",
-                                                                        n_clicks=0,
-                                                                        className='btn btn-sm btn-outline-primary mt-2'),
-
-                                                            html.P(id="water-size", children=[]),
-
-                                                            html.P(["Seçtiğiniz Bölge"], className="fw-bolder mt-2"),
-
-                                                            html.Div(
-                                                                id='select-atom-output',
-                                                                className="mx-auto",
-                                                                children=[]
-                                                            ),
-                                                        ]
-                                                    ),
-
-                                                ], className="mb-2"
-                                            ),
-                                        ], md=4
-                                    ),
-
-                                    dbc.Col(
-                                        [
-                                            dbc.Tabs(
-                                                dbc.Tab(
-                                                    label="Tablo",
-                                                    children=[
-                                                        dash_table.DataTable(
-                                                            id="zooming-table",
-                                                            columns=columns,
-                                                            data=df.to_dict("records"),
-                                                            row_selectable="single",
-                                                            style_table={'overflowY': 'auto', 'overflowX': 'auto'},
-                                                            style_cell={'textAlign': 'center'},
-                                                            style_data={
-                                                                'whiteSpace': 'normal',
-                                                                'height': 'auto',
-                                                            },
-                                                            row_deletable=True,
-                                                            editable=False,
-                                                            page_action='native',
-                                                            page_size=8,
-
-                                                        ),
-                                                    ],
-                                                    className="mt-1",
-                                                )
-                                            ),
-                                        ], md=8, style={'maxWidth': '62%'}, className="mx-auto mb-3 p-2"
-                                    )
-                                ],
-                            ),
-
-                            dbc.Row([
-                                dbc.Col(
-                                    [
-                                        dash_bio.Molecule3dViewer(
-                                            id="visual_output",
-                                            modelData=data,
-                                            styles=styles,
-                                            style={'marginRight': 'auto', 'marginLeft': 'auto'},
-                                            selectionType='atom',
                                         ),
-                                    ], md=12,
+                                    ],
+                                    brand="3D MOLEKÜL GÖRÜNTÜLEME",
+                                    brand_href=HttpResponseRedirect(
+                                        reverse("bioinformatic:single_molecule_3d_view")).url,
+                                    color="primary",
+                                    dark=True,
+                                    brand_external_link=True,
+                                    sticky='top',
+                                    className="shadow-lg bg-body rounded mt-1 mb-1 mr-1 ml-1",
                                 ),
-                            ])
-                        ], className="shadow-lg p-3 bg-body rounded mr-1 ml-1 mb-2"
-                    ),
-                ],
+
+                                dbc.Card(
+                                    [
+                                        dbc.Row(
+                                            [
+                                                dbc.Col(
+                                                    [
+                                                        dbc.Tabs(
+                                                            id='mol3d-tabs',
+                                                            children=[
+
+                                                                dbc.Tab(
+                                                                    label='AÇIKLAMA',
+                                                                    children=[
+
+                                                                        html.H4(["YAPIYA İLİŞKİN BİLGİLER"],
+                                                                                className="mt-2"),
+                                                                        html.P(
+                                                                            f"İD : {str(file.name[:4]).upper()}"),
+
+                                                                        html.P(
+                                                                            f"ADI : {structure.get('name')}"
+                                                                        ),
+
+                                                                        html.P(
+                                                                            f"Yayınlanma Tarihi : {structure.get('release_date')}"
+                                                                        ),
+
+                                                                        html.P(
+                                                                            f"Metod : {structure.get('structure_method')}"
+                                                                        ),
+
+                                                                        html.P(
+                                                                            f"Referans : {structure.get('journal')}",
+                                                                            className="text-align-justify",
+                                                                        ),
+
+                                                                        html.A(['Protein Databankta Görüntüle'],
+                                                                               href=f'https://www.rcsb.org/structure/{str(file.name[:4]).lower()}',
+                                                                               target="_blank"),
+
+                                                                    ]
+                                                                ),
+
+                                                                dbc.Tab(
+                                                                    label='ARAÇLAR',
+                                                                    children=[
+
+                                                                        html.Label("Görünüm",
+                                                                                   className="fw-bolder mt-2"),
+
+                                                                        dcc.Dropdown(
+                                                                            id='visual-type',
+                                                                            options=[
+                                                                                {'label': 'Çubuk', 'value': 'stick'},
+                                                                                {'label': 'Şerit', 'value': 'cartoon'},
+                                                                                {'label': 'Küre', 'value': 'sphere'},
+                                                                            ],
+                                                                            value='cartoon',
+                                                                        ),
+
+                                                                        html.Label("Renklendirme Türü",
+                                                                                   className="fw-bolder mt-2"),
+
+                                                                        dcc.Dropdown(
+                                                                            id='color-type',
+                                                                            options=[
+                                                                                {'label': 'Atom', 'value': 'atom'},
+                                                                                {'label': 'Bölge', 'value': 'residue'},
+                                                                                {'label': 'Bölge türü',
+                                                                                 'value': 'residue_type'},
+                                                                                {'label': 'Zincir', 'value': 'chain'},
+                                                                            ],
+                                                                            value='residue', className="mt-2"
+                                                                        ),
+
+                                                                        html.Label("Seçme Türü",
+                                                                                   className="fw-bolder mt-2"),
+
+                                                                        dcc.Dropdown(
+                                                                            id='select-type',
+                                                                            options=[
+                                                                                {'label': 'Atom', 'value': 'atom'},
+                                                                                {'label': 'Bölge', 'value': 'residue'},
+                                                                                {'label': 'Zincir', 'value': 'chain'},
+                                                                            ],
+                                                                            value='atom', className="mt-2"
+                                                                        ),
+
+                                                                        html.Button("Su molekülünü kaldır",
+                                                                                    id="remove-water",
+                                                                                    n_clicks=0,
+                                                                                    className='btn btn-sm btn-outline-primary mt-2'),
+
+                                                                        html.P(id="water-size", children=[]),
+
+                                                                        html.P(["Seçtiğiniz Bölge"],
+                                                                               className="fw-bolder mt-2"),
+
+                                                                        html.Div(
+                                                                            id='select-atom-output',
+                                                                            className="mx-auto",
+                                                                            children=[]
+                                                                        ),
+                                                                    ]
+                                                                ),
+
+                                                            ], className="mb-2"
+                                                        ),
+                                                    ], md=4
+                                                ),
+
+                                                dbc.Col(
+                                                    [
+                                                        dbc.Tabs(
+                                                            dbc.Tab(
+                                                                label="Tablo",
+                                                                children=[
+                                                                    dash_table.DataTable(
+                                                                        id="zooming-table",
+                                                                        columns=columns,
+                                                                        data=df.to_dict("records"),
+                                                                        row_selectable="single",
+                                                                        style_table={'overflowY': 'auto',
+                                                                                     'overflowX': 'auto'},
+                                                                        style_cell={'textAlign': 'center'},
+                                                                        style_data={
+                                                                            'whiteSpace': 'normal',
+                                                                            'height': 'auto',
+                                                                        },
+                                                                        row_deletable=True,
+                                                                        editable=False,
+                                                                        page_action='native',
+                                                                        page_size=8,
+
+                                                                    ),
+                                                                ],
+                                                                className="mt-1",
+                                                            )
+                                                        ),
+                                                    ], md=8, style={'maxWidth': '62%'}, className="mx-auto mb-3 p-2"
+                                                )
+                                            ],
+                                        ),
+
+                                        dbc.Row([
+                                            dbc.Col(
+                                                [
+                                                    dash_bio.Molecule3dViewer(
+                                                        id="visual_output",
+                                                        modelData=data,
+                                                        styles=styles,
+                                                        style={'marginRight': 'auto', 'marginLeft': 'auto'},
+                                                        selectionType='atom',
+                                                    ),
+                                                ], md=12,
+                                            ),
+                                        ])
+                                    ], className="shadow-lg p-3 bg-body rounded mr-1 ml-1 mb-2"
+                                ),
+                            ],
+                        ),
+
+                    )
+                ]
+
             )
 
             @app.callback(
@@ -679,8 +696,6 @@ def multi_molecule_view(request):
     form = MultiMoleculeViewForm(request.POST or None, request.FILES or None)
 
     data_path = os.path.join(BASE_DIR, "media", "laboratory", f"{request.user}\\").replace("\\", "/")
-
-    print(data_path)
 
     if request.method == "POST":
 
@@ -961,6 +976,8 @@ def multi_molecule_view(request):
                 Input("ngl-stage-quality-dropdown", "value"),
                 Input("ngl-stage-camera-dropdown", "value"),
                 Input("save-img", "n_clicks"),
+
+                prevent_initial_call=True,
 
             )
             def return_molecule(style, sidebyside, value, color, quality, cameraType, n_clicks):
