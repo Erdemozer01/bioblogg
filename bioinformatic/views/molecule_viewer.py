@@ -695,7 +695,7 @@ def multi_molecule_view(request):
 
     form = MultiMoleculeViewForm(request.POST or None, request.FILES or None)
 
-    data_path = os.path.join(BASE_DIR, "media", "laboratory", f"{request.user}\\")
+    data_path = os.path.join(BASE_DIR, "media", "laboratory", f"{request.user}\\").replace("\\", "/")
 
     if request.method == "POST":
 
@@ -1012,7 +1012,7 @@ def multi_molecule_view(request):
 
                 data_list = [
                     ngl_parser.get_data(
-                        data_path=rec.file.path,
+                        data_path=data_path,
                         pdb_id=pdb_id,
                         color='red',
                         reset_view=True,
