@@ -939,9 +939,7 @@ def multi_molecule_view(request):
                                                     dbc.Tab(
                                                         label="Molekül Detay",
                                                         id="table-tab",
-                                                        children=[
 
-                                                        ]
                                                     ),
                                                 ]
                                             )
