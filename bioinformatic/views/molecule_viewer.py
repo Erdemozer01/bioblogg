@@ -1013,7 +1013,7 @@ def multi_molecule_view(request):
                 data_list = [
                     ngl_parser.get_data(
                         data_path=data_path,
-                        pdb_id=str(pdb_id).upper(),
+                        pdb_id=pdb_id,
                         color='red',
                         reset_view=True,
                         local=True
