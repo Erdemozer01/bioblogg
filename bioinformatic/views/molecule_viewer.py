@@ -16,8 +16,7 @@ from Bio.PDB import parse_pdb_header
 from pathlib import Path
 import pubchempy as pcp
 from dash_bio.utils.chem_structure_reader import read_chem_structure
-from Bio.PDB import PDBParser, PDBIO, Select
-from django_plotly_dash.models import DashApp
+from dash.exceptions import PreventUpdate
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -975,10 +974,10 @@ def multi_molecule_view(request):
                 Input("ngl-stage-camera-dropdown", "value"),
                 Input("save-img", "n_clicks"),
 
-                prevent_initial_call=True,
-
             )
             def return_molecule(style, sidebyside, value, color, quality, cameraType, n_clicks):
+                if (value is None):
+                    raise PreventUpdate
 
                 sidebyside_bool = sidebyside == "True"
 
