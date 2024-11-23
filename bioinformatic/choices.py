@@ -114,6 +114,7 @@ ALIGNMENT_MODE = (
     ('', '------------'),
     ('local', 'LOCAL'),
     ('global', 'GLOBAL'),
+    ('fogsaa', 'Fast Optimal Global Alignment Algorithm'),
 )
 
 MATRIS = (

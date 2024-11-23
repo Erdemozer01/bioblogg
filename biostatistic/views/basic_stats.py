@@ -936,4 +936,6 @@ def files_table(request):
         if n_clicks > 0:
             return dict(content=content, filename=f"{test.capitalize()}-sonuçları.txt")
 
+
+
     return HttpResponseRedirect(f"/laboratuvar/biostatistic/app/files-stats/")

@@ -12,6 +12,7 @@ urlpatterns = [
     path('frame-seq/', views.create_frame_seq, name="create_frame_seq"),
     path('alignment-score/', views.SekansView.alignment_score, name="alignment_score"),
     path('temperature-melting/', views.SekansView.TemperatureMeltingView, name="temp_melt"),
+    path('primer-design/', views.SekansView.PrimerDesign, name="primer_design"),
 
     # Reading
     path('file-reading/', views.FileReadingView.file_reading, name="file_reading"),

@@ -6,7 +6,7 @@ import pandas as pd
 import plotly.express as px
 from Bio.Seq import Seq
 from Bio.SeqUtils import gc_fraction
-from dash import html, dcc, Input, Output
+from dash import html, dcc, Input, Output, State, Patch
 from django.shortcuts import *
 from django_plotly_dash import DjangoDash
 import dash_ag_grid as dag
@@ -15,7 +15,8 @@ from Bio import Align
 from Bio.Align import substitution_matrices
 import dash_bootstrap_components as dbc
 import dash_daq as daq
-
+from Bio.Emboss.Applications import Primer3Commandline
+from bioinformatic.primer_design import design_primers
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -79,6 +80,7 @@ def alignment_score(request):
                                                 options=[
                                                     {'label': 'LOCAL', 'value': 'local'},
                                                     {'label': 'GLOBAL', 'value': 'global'},
+
                                                 ], value='local',
                                             ),
 
@@ -206,9 +208,9 @@ def alignment_score(request):
                 dcc.Textarea(
                     id='align-textarea',
                     value=f"Hedef sekans uzunluğu: {len(target_seq)}, "
-                          f"%GC: {gc_fraction(target_seq)}, "
+                          f"%GC: {gc_fraction(target_seq) * 100}, "
                           f"Sorgu sekans uzunluğu: {len(query_seq)}, "
-                          f"%GC: {gc_fraction(query_seq)}\n\n" + values,
+                          f"%GC: {gc_fraction(query_seq) * 100}\n\n" + values,
 
                     readOnly=True,
                     style={'width': '100%', 'height': '400px'},
@@ -649,8 +651,6 @@ def translation(request):
         transcribe = str(Seq(sequence).transcribe())
 
         return seq_inf, protein_inf, complement, reverse_complement, transcribe, str(trans_seq)
-
-
 
     return HttpResponseRedirect("/laboratuvar/bioinformatic/app/translate_dna/")
 
@@ -1240,3 +1240,282 @@ def TemperatureMeltingView(request):
             return html.P(["Sekans girilmedi"], className="text-danger")
 
     return HttpResponseRedirect("/laboratuvar/bioinformatic/app/temp-melt/")
+
+
+def PrimerDesign(request):
+    external_stylesheets = [dbc.themes.BOOTSTRAP]
+    app = DjangoDash('primer-design', external_stylesheets=external_stylesheets,
+                     title="Primer Dizaynı", add_bootstrap_links=True)
+
+    app.layout = html.Div(
+        [
+            dbc.NavbarSimple(
+                children=[
+                    dbc.NavItem(dbc.NavLink("Blog", href=HttpResponseRedirect(
+                        reverse("blog:anasayfa")).url, external_link=True)),
+                    dbc.DropdownMenu(
+                        children=[
+                            dbc.DropdownMenuItem("Biyoinformatik",
+                                                 href=HttpResponseRedirect(reverse("bioinformatic:home")).url,
+                                                 external_link=True),
+                            dbc.DropdownMenuItem("Biyoistatislik",
+                                                 href=HttpResponseRedirect(reverse("biostatistic:home")).url,
+                                                 external_link=True),
+                            dbc.DropdownMenuItem("Coğrafi Bilgi sistemleri",
+                                                 href=HttpResponseRedirect(reverse("cbs")).url,
+                                                 external_link=True),
+                            dbc.DropdownMenuItem("Laboratuvarlar",
+                                                 href=HttpResponseRedirect(reverse("lab_home")).url,
+                                                 external_link=True),
+                        ],
+                        nav=True,
+                        in_navbar=True,
+                        label="Laboratuvarlar",
+
+                    ),
+                ],
+                brand="Primer Dizaynı",
+                brand_href=HttpResponseRedirect(reverse("bioinformatic:primer_design")).url,
+                color="primary",
+                dark=True,
+                brand_external_link=True,
+                sticky='top',
+                className="shadow-lg p-3 bg-body rounded-2 container"
+            ),
+
+            html.Div(
+                [
+                    dbc.Container(
+
+                        [
+
+                            dbc.Row(
+                                [
+                                    dbc.Col(
+                                        [
+                                            dbc.Tabs(
+                                                id='primer-design',
+                                                children=[
+                                                    dcc.Tab(
+                                                        label='Sekans',
+                                                        children=html.Div(
+                                                            className='control-tab mt-2',
+                                                            children=[
+
+                                                                dbc.Label("Sekans Türü", className="fw-bolder mt-1"),
+
+                                                                dcc.Dropdown(
+                                                                    id="mod",
+                                                                    options=[
+                                                                        {'label': 'DNA', 'value': 'DNA'},
+                                                                        {'label': 'RNA', 'value': 'RNA'},
+                                                                    ], value='DNA',
+                                                                ),
+
+                                                                dbc.Label("Sekans", className="fw-bolder mt-1"),
+                                                                dcc.Textarea(id="seq",
+                                                                             style={'height': 200},
+                                                                             className="form-control"),
+
+                                                                html.Div(id="seq_len"),
+
+                                                                html.Small(
+                                                                    "*Aradığınız yada ekleme çıkarma yapmak istediğiniz bölgeyi CTRL + F ile tarayıcıdan arayıp sekans alanından silebilirsiniz. Sonuçlarınız otomatik olarak değişecektir.",
+                                                                    className="text-danger fst-italic ")
+
+                                                            ]
+                                                        )
+                                                    ),
+
+
+
+                                                    dcc.Tab(
+                                                        label='Primer',
+                                                        children=[
+                                                            html.Div(
+                                                                [
+
+                                                                    dbc.Label("Primer Uzunluğu",
+                                                                              className="fw-bolder mt-1"),
+                                                                    dbc.Input(type="number",
+                                                                              id="primer_length", value=20, min=0,
+                                                                              className="form-control"),
+
+                                                                    dbc.Label("Min %GC",
+                                                                              className="fw-bolder mt-1"),
+                                                                    dbc.Input(type="number",
+                                                                              id="gc_min", min=0, value=40,
+                                                                              className="form-control"),
+
+                                                                    dbc.Label("Max %GC", className="fw-bolder mt-1"),
+                                                                    dbc.Input(type="number",
+                                                                              id="gc_max", value=60, min=0,
+                                                                              className="form-control"),
+
+                                                                    dbc.Label("Min Erime Sıcaklığı (°C)",
+                                                                              className="fw-bolder mt-1"),
+                                                                    dbc.Input(type="number",
+                                                                              id="tm_min", value=50, min=0,
+                                                                              className="form-control"),
+
+                                                                    dbc.Label("Max Erime Sıcaklığı (°C)",
+                                                                              className="fw-bolder mt-1"),
+                                                                    dbc.Input(type="number",
+                                                                              id="tm_max", value=60, min=0,
+                                                                              className="form-control"),
+
+                                                                ],
+                                                                className="mx-auto"
+                                                            ),
+                                                        ]
+                                                    ),
+
+                                                ],
+
+
+                                            ),
+
+                                        ], md=4,
+                                    ),
+
+                                    dbc.Col(
+                                        [
+
+                                            dbc.Tabs(
+                                                dbc.Tab(
+                                                    label="Sonuçlar",
+                                                    children=[
+                                                        html.Div(id="filter_div"),
+                                                        html.Div(id="results_div"),
+                                                        html.Div(id="primer_results_len", className="mt-5 mb-2"),
+                                                        html.Div(id="uyarı")
+                                                    ]
+                                                )
+                                            ),
+
+                                        ], md=8
+                                    )
+                                ])
+
+                        ], className="shadow-lg p-4 bg-body rounded-2 mt-2", fluid=False
+                    ),
+                ],
+            ),
+
+        ], style={'marginTop': "1%"}
+    )
+
+    @app.callback(
+        Output("seq", "placeholder"),
+        Input("mod", "value"),
+    )
+    def nuc_type(type):
+        return f"{type} Sekansı Giriniz"
+
+    @app.callback(
+        Output("seq_len", "children"),
+        Output("filter_div", "children"),
+        Output("results_div", "children"),
+        Output("primer_results_len", "children"),
+        Output("uyarı", "children"),
+
+        Input("seq", "value"),
+        Input("primer_length", "value"),
+        Input("gc_min", "value"),
+        Input("gc_max", "value"),
+        Input("tm_min", "value"),
+        Input("tm_max", "value"),
+        Input("mod", "value"),
+    )
+    def primer_design(seq, primer_length, gc_min, gc_max, tm_min, tm_max, mod):
+        aligner = Align.PairwiseAligner()
+        if seq:
+            seq = seq.upper()
+            ig = []
+
+            for i in seq:
+                if not i in ['A', 'C', 'G', 'T']:
+                    ig.append(i)
+
+            for i in ig:
+                if i in seq:
+                    seq = seq.replace(i, "")
+
+
+            seq_len = html.Small(f"Sekans Uzunluğu : {len(seq)}nt", className="fw-bold fst-italic")
+
+            forward_primers = []
+            reverse_primers = []
+
+
+            for s in range(len(seq)):
+                if primer_length == len(seq[s:s + primer_length]):
+                    forward_primers.append(seq[s:s + primer_length])
+
+
+            for r in forward_primers[::-1]:
+                if mod == "DNA":
+                    reverse_primers.append(Seq(r).reverse_complement())
+                elif mod == "RNA":
+                    reverse_primers.append(Seq(r).reverse_complement_rna())
+
+            last_fp = []
+            last_rp = []
+
+            for fp in forward_primers:
+                if gc_min <= gc_fraction(fp) * 100 <= gc_max and tm_min <= mt.Tm_Wallace(fp) <= tm_max:
+                    last_fp.append(fp)
+
+            for rp in reverse_primers:
+                if gc_min <= gc_fraction(rp) * 100 <= gc_max and tm_min <= mt.Tm_Wallace(rp) <= tm_max:
+                    last_rp.append(rp)
+
+            df = pd.DataFrame(
+                {
+                    'İleri Primer': [str(i) for i in last_fp],
+                    'İleri Primer %GC': [gc_fraction(str(i)) * 100 for i in last_fp],
+                    'İleri Primer TM(°C)': [mt.Tm_Wallace(str(i)) for i in last_fp],
+
+                    'Geri primer': [str(i) for i in last_rp],
+                    'Geri Primer %GC': [gc_fraction(str(i)) * 100 for i in last_rp],
+                    'Geri Primer TM(°C)': [mt.Tm_Wallace(str(i)) for i in last_rp],
+                    'Hit score': [aligner.align(Seq(f), Seq(r)).score for f, r in zip(last_fp, last_rp)],
+                }
+            )
+
+            filter = dbc.Input(id="quick-filter-input", placeholder="Tabloda Ara...",
+                               className="form-control float-right mb-1 mt-2")
+
+            results = dag.AgGrid(
+                id="results_table",
+                columnDefs=[{"field": i, 'editable': True} for i in df.columns],
+                rowData=df.to_dict("records"),
+                columnSize="sizeToFit",
+                dashGridOptions={"animateRows": True},
+            )
+
+            created_primer = html.P(f"{len(df["İleri Primer"])} primer oluşturuldu.")
+
+            uyarı = html.Small("*Hit puanı primerlerin eşleşme scorudur.")
+
+            return seq_len, filter, results, created_primer, uyarı
+
+        else:
+
+            seq_len = html.P(f"Henüz sekans girmediniz!", className="text-danger fst-italic")
+
+            return seq_len, None, None, None, None
+
+    @app.callback(
+        Output("results_table", "dashGridOptions"),
+        Input("quick-filter-input", "value"),
+        prevent_initial_call=True
+    )
+    def update_filter(filter_value):
+        newFilter = Patch()
+        newFilter['quickFilterText'] = filter_value
+        return newFilter
+
+
+
+    return HttpResponseRedirect("/laboratuvar/bioinformatic/app/primer-design/")
