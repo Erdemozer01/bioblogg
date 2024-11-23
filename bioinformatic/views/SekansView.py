@@ -1494,7 +1494,7 @@ def PrimerDesign(request):
                 dashGridOptions={"animateRows": True},
             )
 
-            created_primer = html.P(f"{len(df["İleri Primer"])} primer oluşturuldu.")
+            created_primer = html.P(f"{len(last_fp)} primer oluşturuldu.")
 
             uyarı = html.Small("*Hit puanı primerlerin eşleşme scorudur.")
 
