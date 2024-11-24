@@ -1,4 +1,6 @@
 ##### MEHMET ERDEM ÖZER, mozer232@posta.pau.edu.tr ######
+import base64
+import io
 from pathlib import Path
 from Bio.SeqUtils import MeltingTemp as mt
 from Bio.SeqUtils import xGC_skew
@@ -11,7 +13,7 @@ from django.shortcuts import *
 from django_plotly_dash import DjangoDash
 import dash_ag_grid as dag
 import plotly.figure_factory as ff
-from Bio import Align
+from Bio import Align, SeqIO
 from Bio.Align import substitution_matrices
 import dash_bootstrap_components as dbc
 import dash_daq as daq
@@ -1319,6 +1321,23 @@ def PrimerDesign(request):
 
                                                                 html.Div(id="seq_len"),
 
+                                                                dcc.Upload(
+                                                                    id='datatable-upload',
+                                                                    children=html.Div(
+                                                                        [
+                                                                            'Fasta dosyası seçin yada sürükleyin...',
+                                                                        ],),
+                                                                    style={
+                                                                        'width': '100%', 'height': '50px',
+                                                                        'lineHeight': '50px',
+                                                                        'borderWidth': '1px', 'borderStyle': 'dashed',
+                                                                        'borderRadius': '5px', 'textAlign': 'center',
+                                                                        'margin': '10px', 'marginLeft': 3
+                                                                    },
+                                                                ),
+
+                                                                html.P(id="upload_err", className="text-danger fst-italic"),
+
                                                                 html.Small(
                                                                     "*Aradığınız yada ekleme çıkarma yapmak istediğiniz bölgeyi CTRL + F ile tarayıcıdan arayıp sekans alanından silebilirsiniz. Sonuçlarınız otomatik olarak değişecektir.",
                                                                     className="text-danger fst-italic ")
@@ -1326,8 +1345,6 @@ def PrimerDesign(request):
                                                             ]
                                                         )
                                                     ),
-
-
 
                                                     dcc.Tab(
                                                         label='Primer',
@@ -1372,7 +1389,6 @@ def PrimerDesign(request):
 
                                                 ],
 
-
                                             ),
 
                                         ], md=4,
@@ -1413,6 +1429,29 @@ def PrimerDesign(request):
         return f"{type} Sekansı Giriniz"
 
     @app.callback(
+        Output("seq", "value"),
+        Output("upload_err", "children"),
+        Input('datatable-upload', 'contents'),
+        Input('datatable-upload', 'filename'),
+    )
+    def file_upload(contents, filename):
+        if contents is not None:
+            content_type, content_string = contents.split(',')
+
+            decoded = base64.b64decode(content_string).decode('utf-8')
+
+            try:
+
+                fasta_sequences = SeqIO.read(io.StringIO(decoded), 'fasta')
+
+                return str(fasta_sequences.seq), f"{filename} adlı dosyayı seçtiniz"
+
+            except Exception:
+                return None, "Hata! Lütfen tekli fasta kaydı girin!"
+
+        return None, "Not: Tekli dosya kaydı giriniz."
+
+    @app.callback(
         Output("seq_len", "children"),
         Output("filter_div", "children"),
         Output("results_div", "children"),
@@ -1426,9 +1465,11 @@ def PrimerDesign(request):
         Input("tm_min", "value"),
         Input("tm_max", "value"),
         Input("mod", "value"),
+        prevent_initial_call=True,
     )
     def primer_design(seq, primer_length, gc_min, gc_max, tm_min, tm_max, mod):
         aligner = Align.PairwiseAligner()
+
         if seq:
             seq = seq.upper()
             ig = []
@@ -1441,45 +1482,58 @@ def PrimerDesign(request):
                 if i in seq:
                     seq = seq.replace(i, "")
 
-
             seq_len = html.Small(f"Sekans Uzunluğu : {len(seq)}nt", className="fw-bold fst-italic")
 
             forward_primers = []
             reverse_primers = []
+            seq_region = []
 
 
             for s in range(len(seq)):
                 if primer_length == len(seq[s:s + primer_length]):
                     forward_primers.append(seq[s:s + primer_length])
+                    seq_region.append(f"{s}-{s + primer_length}")
 
+            seq_dict = {
+                'Bölge': seq_region,
+                'Forward' : forward_primers,
+            }
 
-            for r in forward_primers[::-1]:
+            for r in seq_dict['Forward'][::-1]:
                 if mod == "DNA":
                     reverse_primers.append(Seq(r).reverse_complement())
                 elif mod == "RNA":
                     reverse_primers.append(Seq(r).reverse_complement_rna())
 
+            seq_dict.update({'Reverse': reverse_primers})
+
+            last_region = []
             last_fp = []
             last_rp = []
 
-            for fp in forward_primers:
+            for reg, fp in zip(seq_dict['Bölge'], seq_dict['Forward']):
                 if gc_min <= gc_fraction(fp) * 100 <= gc_max and tm_min <= mt.Tm_Wallace(fp) <= tm_max:
+                    last_region.append(reg)
                     last_fp.append(fp)
 
-            for rp in reverse_primers:
+
+            for rp in seq_dict['Reverse']:
                 if gc_min <= gc_fraction(rp) * 100 <= gc_max and tm_min <= mt.Tm_Wallace(rp) <= tm_max:
                     last_rp.append(rp)
 
+            seq_dict.update({'Bölge': last_region, 'Forward': last_fp, 'Reverse': last_rp})
+
             df = pd.DataFrame(
                 {
-                    'İleri Primer': [str(i) for i in last_fp],
-                    'İleri Primer %GC': [gc_fraction(str(i)) * 100 for i in last_fp],
-                    'İleri Primer TM(°C)': [mt.Tm_Wallace(str(i)) for i in last_fp],
+                    'Bölge': seq_dict['Bölge'],
+                    'İleri Primer': [str(i) for i in seq_dict['Forward']],
+                    'İleri Primer %GC': [gc_fraction(str(i)) * 100 for i in seq_dict['Forward']],
+                    'İleri Primer TM(°C)': [mt.Tm_Wallace(str(i)) for i in seq_dict['Forward']],
 
-                    'Geri primer': [str(i) for i in last_rp],
-                    'Geri Primer %GC': [gc_fraction(str(i)) * 100 for i in last_rp],
-                    'Geri Primer TM(°C)': [mt.Tm_Wallace(str(i)) for i in last_rp],
-                    'Hit score': [aligner.align(Seq(f), Seq(r)).score for f, r in zip(last_fp, last_rp)],
+                    'Komplement Geri primer': [str(i) for i in seq_dict['Reverse']],
+                    'Geri Primer %GC': [gc_fraction(str(i)) * 100 for i in seq_dict['Reverse']],
+                    'Geri Primer TM(°C)': [mt.Tm_Wallace(str(i)) for i in seq_dict['Reverse']],
+                    'Hit score': [aligner.align(Seq(f), Seq(r)).score for f, r in zip(seq_dict['Forward'], seq_dict['Reverse'])],
                 }
             )
 
@@ -1502,7 +1556,7 @@ def PrimerDesign(request):
 
         else:
 
-            seq_len = html.P(f"Henüz sekans girmediniz!", className="text-danger fst-italic")
+            seq_len = html.Small(f"Henüz sekans girmediniz!", className="text-danger fst-italic")
 
             return seq_len, None, None, None, None
 
@@ -1515,7 +1569,5 @@ def PrimerDesign(request):
         newFilter = Patch()
         newFilter['quickFilterText'] = filter_value
         return newFilter
-
-
 
     return HttpResponseRedirect("/laboratuvar/bioinformatic/app/primer-design/")
